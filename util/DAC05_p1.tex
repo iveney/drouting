@@ -1,0 +1,21 @@
+\begin{figure}
+\centering
+    \begin{tikzpicture}[scale=\scale,
+    %inner sep=1cm*\scale*\half,
+    inner sep=0,
+    minimum size=1cm*\scale,
+    >=latex,
+    pins/.style={rectangle,draw,fill=brown,font=\scriptsize},
+    arrow/.style={->,very thick},
+    block/.style={gray}]
+% define the row and column number
+\def \N{21}\def \M{21}
+% blockages
+% nets
+\drawtwopin{Dlt01}{3}{0}{Sample}{0}{10}{blue!70}
+\drawtwopin{Dlt01}{5}{3}{B1}{7}{20}{green!70}
+\drawgrid{\N}{\M}
+\end{tikzpicture}
+\caption{DAC05\_subproblem\_1}
+\end{figure}
+\clearpage

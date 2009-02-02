@@ -26,6 +26,7 @@ MAXGRID	header.h	/^const int MAXGRID=30;$/;"	v
 MAXNET	header.h	/^const int MAXNET=10;$/;"	v
 MAXSTR	header.h	/^const int MAXSTR=30;$/;"	v
 MAXSUB	header.h	/^const int MAXSUB=100;$/;"	v
+MAXTIME	header.h	/^const int MAXTIME=20;$/;"	v
 N	header.h	/^	int N,M,T;	\/\/ array size,timing constraint$/;"	m	class:Chip
 N	route.cpp	/^int N,M;				\/\/ row\/column count$/;"	v
 Net	header.h	/^class Net{\/\/ a net has a name and at most 3 pins$/;"	c
@@ -51,14 +52,17 @@ drawSubproblem	parser.cpp	/^void drawSubproblem(Subproblem * prob, int N,int M,i
 dx	route.cpp	/^static int dx[]={-1,1,0,0,0};$/;"	v	file:
 dy	route.cpp	/^static int dy[]={0,0,1,-1,0};$/;"	v	file:
 electrodeCheck	route.cpp	/^bool electrodeCheck(const Point & pt){$/;"	f
-fluidicCheck	route.cpp	/^bool fluidicCheck(const Point & pt){$/;"	f
+fluidicCheck	route.cpp	/^bool fluidicCheck(int which, const Point & pt,int t){$/;"	f
 getColor	parser.cpp	/^const char * getColor(){$/;"	f
+getColor	util/droute_draw.cpp	/^const char * getColor(){$/;"	f
 getNbr	route.cpp	/^vector<Point> getNbr(const Point & pt){$/;"	f
-grid	route.cpp	/^Grid grid[MAXNET][MAXGRID][MAXGRID];	\/\/ record the routes$/;"	v
+grid	route.cpp	/^Grid grid[MAXNET][MAXGRID][MAXGRID];	\/\/ record the routes, grid[i][x][y]: the time step that net i occupies (x,y)$/;"	v
+idx	route.cpp	/^int idx = 1;				\/\/ problem to solve$/;"	v
 inGrid	route.cpp	/^bool inGrid(const Point & pt){$/;"	f
 init	route.cpp	/^Chip * init(int argc, char * argv[], Chip * chip){$/;"	f
 initBlock	route.cpp	/^void initBlock(Subproblem *p){$/;"	f
 main	route.cpp	/^int main(int argc, char * argv[]){$/;"	f
+main	util/droute_draw.cpp	/^int main(){$/;"	f
 nBlock	header.h	/^	int nBlock;$/;"	m	class:Subproblem
 nNet	header.h	/^	int nNet;$/;"	m	class:Subproblem
 nSubProblem	header.h	/^	int nSubProblem;$/;"	m	class:Chip
@@ -66,6 +70,7 @@ name	header.h	/^	char name[MAXSTR];$/;"	m	class:Block
 name	header.h	/^	char name[MAXSTR];$/;"	m	class:Net
 name	header.h	/^	char name[MAXSTR];$/;"	m	class:Pin
 net	header.h	/^	Net net[MAXNET];$/;"	m	class:Subproblem
+netcount	route.cpp	/^int netcount;				\/\/ current subproblem's net count$/;"	v
 netorder	route.cpp	/^int netorder[MAXNET];			\/\/ net routing order$/;"	v
 numPin	header.h	/^	int numPin;$/;"	m	class:Net
 operator	header.c	/^ostream & operator <<(ostream & out,Point & pt){$/;"	f
@@ -73,6 +78,7 @@ operator !=	header.h	/^	bool operator != (const Point & pt) const {return !opera
 operator <	header.h	/^	bool operator < (const GridPoint& g){ return weight >= g.weight; }$/;"	f	class:GridPoint
 operator ==	header.h	/^	bool operator == (const Point & pt) const {return x==pt.x && y==pt.y;}$/;"	f	class:Point
 parse	parser.cpp	/^Chip * parse(FILE * f,Chip * chip){$/;"	f
+path	route.cpp	/^Point path[MAXNET][MAXTIME];		\/\/ the routing path : path[i][t]: net i's position at time t$/;"	v
 pin	header.h	/^	Pin pin[3];$/;"	m	class:Net
 prob	header.h	/^	Subproblem prob[MAXSUB];\/\/ note:prob starts from index 1$/;"	m	class:Chip
 pt	header.h	/^	Point pt;$/;"	m	class:GridPoint

@@ -14,29 +14,37 @@ static int dy[]={0,0,1,-1,0};
 
 BYTE blockage[MAXGRID][MAXGRID];	// Blockage bitmap
 Chip chip;				// Chip data and subproblem
-Grid grid[MAXNET][MAXGRID][MAXGRID];	// record the routes
+Grid grid[MAXNET][MAXGRID][MAXGRID];	// record the routes, grid[i][x][y]: the time step that net i occupies (x,y)
 int N,M;				// row/column count
 int netorder[MAXNET];			// net routing order
 int netcount;				// current subproblem's net count
-Point path[MAXNET][MAXTIME];		// the routing path of each net
+int idx = 1;				// problem to solve
+Point path[MAXNET][MAXTIME];		// the routing path : path[i][t]: net i's position at time t
 
 // perform electrode constraint check
 bool electrodeCheck(const Point & pt){
+	// use DFS to check : 2-color
+	
 	return true;
 }
 
 // perform fluidic constraint check
-bool fluidicCheck(int which, const Point & pt){
+bool fluidicCheck(int which, const Point & pt,int t){
 	int i;
 	// for each routed net, 
-	// check if the current routing net violate any rule
+	// check if the current routing net(which) violate fluidic rule
+	// we have known the previous routed net 
+	// from netorder[0] to netorder[i]!=which
+	// t's range: [1..T]
 	for(i=0;i<netcount && netorder[i] != which;i++){
 		int checking = netorder[i];
 		// static fluidic check
-		if( grid[checking][pt.x][pt.y] )
+		if( !(abs(pt.x - path[checking][t].x) >=2 ||
+		      abs(pt.y - path[checking][t].y) >=2) )
 			return false;
 		// dynamic fluidic check
-		else if ( grid[checking][pt.x][pt.y] )
+		if ( !(abs(pt.x - path[checking][t-1].x) >=2 ||
+		       abs(pt.y - path[checking][t-1].y) >=2) )
 			return false;
 	}
 	return true;
@@ -44,8 +52,8 @@ bool fluidicCheck(int which, const Point & pt){
 
 // test if a point is in the chip array
 bool inGrid(const Point & pt){
-	if( pt.x >=0 && pt.x <=N && 
-	    pt.y >=0 && pt.y <=M) return true;
+	if( pt.x >=0 && pt.x <N && 
+	    pt.y >=0 && pt.y <M) return true;
 	else return false;
 }
 
@@ -83,14 +91,13 @@ void sortNet(Subproblem * p, int * netorder){
 // parse chip description file and store in `chip'
 Chip * init(int argc, char * argv[], Chip * chip){
 	FILE * f;
-	/*
-	if(argc<2) {
-		printf("Usage ./%s filename [subproblem]\n","main");
-		return 1;
+	if(argc<3) {
+		printf("Usage ./%s filename subproblem\n","main");
+		exit(1);
 	}
-	*/
 	const char * filename = argv[1];
-	filename = "DAC05";	// temporarily hard code to DAC05
+	idx = atoi(argv[2]);
+	//filename = "DAC05";	// temporarily hard code to DAC05
        	if( (f = fopen(filename,"r")) == NULL ){
 		printf("open file error\n");
 		exit(1);
@@ -101,7 +108,7 @@ Chip * init(int argc, char * argv[], Chip * chip){
 	return chip;
 }
 
-// try to avoid zig-zag heuristic
+// try to avoid zig-zag heuristic, along lines as much as possible
 Point traceback_line(int which, int t, const Point & current, DIRECTION dir){
 	// heuristic: see if along the direction satisfies...
 	Point rtn(current.x+dx[dir],current.y+dy[dir]);
@@ -138,17 +145,19 @@ int main(int argc, char * argv[]){
 	init(argc,argv,&chip);
 
 	// solve subproblem 1
-	int idx = 1;
-	scanf("%d",&idx);
+//	scanf("%d",&idx);
 	Subproblem * pProb = &chip.prob[idx];
+#ifdef DEBUG
 	printf("Start to solve subproblem %d\n",idx);
+#endif
 	
 	// sort : decide net order
 	netcount = pProb->nNet;
 	sortNet(pProb,netorder);
-	printf("net order:\n");
+#ifdef DEBUG
+	printf("net order: [ ");
 	for(int i=0;i<pProb->nNet;i++){printf("%d ",netorder[i]);}
-	printf("\n");
+#endif
 
 	// generate blockage bitmap
 	initBlock(pProb);
@@ -162,14 +171,18 @@ int main(int argc, char * argv[]){
 	for(i=0;i<pProb->nNet;i++){
 		int which = netorder[i];
 		Net * pNet = &pProb->net[which]; // according to netorder
+#ifdef DEBUF
 		printf("** Routing net[%d] **\n",which);
+#endif
 
 		// do Lee's propagation,handles 2-pin net only currently
 		int numPin = pNet->numPin;
 		Point S = pNet->pin[0].pt; // source
 		Point T = pNet->pin[1].pt; // sink
+#ifdef DEBUG
 		for(int i=0;i<numPin;i++)
 			cout<<"\tpin["<<i<<"]:"<<pNet->pin[i].pt<<endl;
+#endif
 
 		// initialize the queue
 		deque<GridPoint> p,q;
@@ -179,10 +192,12 @@ int main(int argc, char * argv[]){
 		bool success = false;
 		do{// propagate process
 			t++;
+			/*
 			if( t > MAXTIME ){ // timing constraint
 				printf("Exceed route time!\n");
 				exit(1);
 			}
+			*/
 #ifdef DEBUG
 			printf("t=%d\n",t);
 #endif
@@ -195,7 +210,9 @@ int main(int argc, char * argv[]){
 #endif
 				// check if it is the sink
 				if( (*qit).pt == T ) {
+#ifdef DEBUG
 					cout<<"Find "<<T<<"!"<<endl;
+#endif
 					success = true;
 					break;
 				}
@@ -211,10 +228,10 @@ int main(int argc, char * argv[]){
 						// calculate its weight
 						Point tmp(x,y);
 						if( blockage[x][y] ) grid[which][x][y] = INF;
-						else if( fluidicCheck( tmp ) == false ) grid[which][x][y] = INF;
+						else if( fluidicCheck( which,tmp,t ) == false ) grid[which][x][y] = INF;
 						else if( electrodeCheck( tmp ) == false ) grid[which][x][y] = INF;
 						else {
-							grid[which][x][y] = t;
+							grid[which][x][y] = t; // the droplet can reach (x,y) at time t
 #ifdef DEBUG
 							cout<<"\tPoint "<<tmp<<" pushed."<<endl;
 #endif
@@ -229,25 +246,28 @@ int main(int argc, char * argv[]){
 			fprintf(stderr,"Error: failed to find path\n");
 			exit(1);
 		}
-		else
+		else{
+#ifdef DEBUG
 			printf("Success - start to backtrack\n");
+#endif
+		}
 		
-		// backtrack phase
+		// backtrack phase for the net `which'
 		int arrive_time = grid[which][T.x][T.y];
 		Point back,new_back=T;
-		cout<<"Route:\n"<<setw(8)<<arrive_time<<" : "<<new_back<<endl;
+		cout<<"net["<<which<<"]:"<<arrive_time<<endl<<setw(8)<<arrive_time<<" : "<<new_back<<endl;
 		DIRECTION dir = STAY;
 		for(j=arrive_time;j<=chip.time;j++) path[which][j] = T;
 		for(j=arrive_time;j>=1;j--){
-			// find the next backtrack grid
-			dir = PtRelativePos(new_back,back);
+			// try not to change direction, but need to decide first dir
+			dir = PtRelativePos(new_back,back); // decide the previous DIR
 			back=new_back;
 			new_back = traceback_line(which,j,back,dir);
 			cout<<setw(8)<<j-1<<" : "<<new_back<<endl;
 			// if impossible, report error
 			path[which][j-1] = new_back;
 		}
-		printf("==========================\n\n");
+//		printf("==========================\n");
 	}
 	return 0;
 }
