@@ -192,12 +192,10 @@ int main(int argc, char * argv[]){
 		bool success = false;
 		do{// propagate process
 			t++;
-			/*
-			if( t > MAXTIME ){ // timing constraint
+			if( t > MAXTIME+1 ){ // timing constraint
 				printf("Exceed route time!\n");
 				exit(1);
 			}
-			*/
 #ifdef DEBUG
 			printf("t=%d\n",t);
 #endif
