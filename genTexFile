@@ -1,0 +1,15 @@
+#!/bin/bash
+# given a filename
+# generate a tex file containg all pattern to filename
+
+NAME=$1
+./parser $NAME
+rm -rf "${NAME}.tex"
+NUM=`ls ${NAME}_p* | wc -l`
+for i in `seq 1 $NUM`
+do
+	cat ${1}_p${i}.tex >> "${NAME}.tex"
+done
+rm ${NAME}_p*
+
+exit 0

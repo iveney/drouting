@@ -1,0 +1,9 @@
+# command
+# cat * | grep NUMNETS | cut -d ' ' -f 2 | sort | uniq 
+
+1
+2
+3
+4
+5
+6

@@ -1,0 +1,6 @@
+Fixed:
+
+TODO:
+* add heuristic to traceback
+* add electrode constraint detection
+* how to ensure the traceback path valid?
