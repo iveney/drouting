@@ -1,0 +1,9 @@
+Problem:
+* how to ensure the least bending? See DAC05 subproblem 3, net 2
+  the program go right first...
+
+TODO:
+* Visualize the route result
+* add heuristic to traceback
+* add electrode constraint detection
+* how to ensure the traceback path valid?
