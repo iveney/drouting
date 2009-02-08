@@ -1,4 +1,6 @@
 #!/bin/bash
+# should have two arguments 
+# $1=file name $2=sub problem number
 
 FILE=$1
 SUBPROB=$2

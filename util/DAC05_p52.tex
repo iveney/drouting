@@ -1,0 +1,27 @@
+\begin{figure}
+\centering
+    \begin{tikzpicture}[scale=\scale,
+    %inner sep=1cm*\scale*\half,
+    inner sep=0,
+    minimum size=1cm*\scale,
+    >=latex,
+    pins/.style={rectangle,draw,fill=brown,font=\scriptsize},
+    arrow/.style={->,very thick},
+    block/.style={gray}]
+% define the row and column number
+\def \N{21}\def \M{21}
+% blockages
+\blockage{5}{6}{8}{9}
+\blockage{15}{6}{18}{9}
+\blockage{1}{16}{4}{19}
+\blockage{6}{11}{9}{14}
+\blockage{15}{16}{17}{18}
+\blockage{1}{6}{3}{8}
+\blockage{15}{11}{17}{13}
+% nets
+\drawthreepin{Mix05}{6}{3}{R1}{7}{0}{Dlt36_to_Mix05}{0}{16}
+\drawgrid{\N}{\M}
+\end{tikzpicture}
+\caption{DAC05\_subproblem\_52}
+\end{figure}
+\clearpage
