@@ -108,18 +108,20 @@ Chip * init(int argc, char * argv[], Chip * chip){
 	return chip;
 }
 
-// try to avoid zig-zag heuristic, along lines as much as possible
+// (heuristic)try to avoid zig-zag , use least bends
 Point traceback_line(int which, int t, const Point & current, DIRECTION dir){
 	// heuristic: see if along the direction satisfies...
 	Point rtn(current.x+dx[dir],current.y+dy[dir]);
 	if( inGrid( rtn ) && grid[which][rtn.x][rtn.y] == t-1 )
 		return rtn;
 	// failed, search other direction
+	// note that for the first backtrack step, will reach here
 	vector<Point> nbr = getNbr(current); 
 	vector<Point>::iterator iter;
 	for(iter = nbr.begin();iter!=nbr.end();iter++){
 		rtn = (*iter);
-		if( grid[which][rtn.x][rtn.y] == t-1 )
+		// set to `<=' in case there's stalling
+		if( grid[which][rtn.x][rtn.y] <= t-1 ) 
 			return rtn;
 	}
 	fprintf(stderr,"traceback_line failed\n");
@@ -177,8 +179,9 @@ int main(int argc, char * argv[]){
 
 		// do Lee's propagation,handles 2-pin net only currently
 		int numPin = pNet->numPin;
+		//if( numPin == 3 ) {} // handle three pin net
 		Point S = pNet->pin[0].pt; // source
-		Point T = pNet->pin[1].pt; // sink
+		Point T = pNet->pin[2].pt; // sink
 #ifdef DEBUG
 		for(int i=0;i<numPin;i++)
 			cout<<"\tpin["<<i<<"]:"<<pNet->pin[i].pt<<endl;
@@ -192,8 +195,9 @@ int main(int argc, char * argv[]){
 		bool success = false;
 		do{// propagate process
 			t++;
-			if( t > MAXTIME+1 ){ // timing constraint
-				printf("Exceed route time!\n");
+			if( t > MAXTIME+1 ){ // timing constraint violated
+				fprintf(stderr,"Exceed route time!\n");
+				// try re-route?
 				exit(1);
 			}
 #ifdef DEBUG
@@ -249,6 +253,20 @@ int main(int argc, char * argv[]){
 			printf("Success - start to backtrack\n");
 #endif
 		}
+
+#ifdef DEBUG
+		// output the maze
+		for(int y=MAXGRID-1;y>=0;y--){
+			for(int x=0;x<MAXGRID;x++){
+				int tmp=grid[which][x][y];
+				if(tmp == INF)
+					cout<<setw(4)<<"#";
+				else
+					cout<<setw(4)<<tmp;
+			}
+			cout<<endl;
+		}
+#endif
 		
 		// backtrack phase for the net `which'
 		int arrive_time = grid[which][T.x][T.y];
