@@ -1,9 +1,30 @@
 Problem:
-* how to ensure the least bending? See DAC05 subproblem 3, net 2
-  the program go right first...
+* how to ensure the least bending? (See DAC05 subproblem 3, net 2.)
+Currently the program go right first, maybe solve this should solve net-order
+problem?
+According to Liliang:
+use another value to denote bending, also it can be added into weight
+also, for other bounding box, can be added as weight
+
+* problem: how to decide the first step of the backtrack, when there are two
+direction to choose?
+
+* how to determine the net-order?
+seems to be a crucial problem:(see DAC05 subproblem 6)
+order: 0 -> 1 -> 2 -> 3, then after 0,1, 
+When traceback, 2 should move down at the 1st step i.e. HOW to avoid bounding
+box overlapping when traceback
+
+* unknown dead loop
+seems that it is caused by more than one net has the same destination
 
 TODO:
-* Visualize the route result
+* droplet should stay in a position until routing end
+* 3pin net
+* better visualized view(may be step number)
 * add heuristic to traceback
 * add electrode constraint detection
+
+DONE:
+* Visualize the route result
 * how to ensure the traceback path valid?
