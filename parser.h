@@ -5,6 +5,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include "header.h"
+
 /* parser.c */
 const char *getColor(void);
 Chip *parse(FILE *f, Chip *chip);

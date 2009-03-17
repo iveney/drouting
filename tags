@@ -19,14 +19,21 @@ Chip::prob	header.h	/^	Subproblem prob[MAXSUB];\/\/ note:prob starts from index 
 Chip::time	header.h	/^	int time;$/;"	m	class:Chip	access:public
 DIRECTION	route.h	/^enum DIRECTION{LEFT,RIGHT,UP,DOWN,STAY}; \/\/ LEFT, RIGHT, UP, DOWN$/;"	g
 DOWN	route.h	/^enum DIRECTION{LEFT,RIGHT,UP,DOWN,STAY}; \/\/ LEFT, RIGHT, UP, DOWN$/;"	e	enum:DIRECTION
+ELECT_PENALTY	header.h	/^int ELECT_PENALTY=20;$/;"	v
+FLUDIC_PENALTY	header.h	/^int FLUDIC_PENALTY=20;$/;"	v
 Grid	header.h	/^typedef BYTE Grid ;$/;"	t
-GridPoint	header.h	/^	GridPoint(){weight=0;pt=Point(0,0);}$/;"	f	class:GridPoint	access:public	signature:()
-GridPoint	header.h	/^	GridPoint(int w,Point p):weight(w),pt(p){}$/;"	f	class:GridPoint	access:public	signature:(int w,Point p)
+GridPoint	header.h	/^	GridPoint():bend(0),fluidic(0),time(0),weight(0),electro(0){$/;"	f	class:GridPoint	access:public	signature:()
+GridPoint	header.h	/^	GridPoint(Point p,const GridPoint &par;$/;"	f	class:GridPoint	access:public	signature:(Point p,const GridPoint &par; int w=0,int t=0,int b=0,int f=0,int e=0)
 GridPoint	header.h	/^class GridPoint{$/;"	c
-GridPoint::GridPoint	header.h	/^	GridPoint(){weight=0;pt=Point(0,0);}$/;"	f	class:GridPoint	access:public	signature:()
-GridPoint::GridPoint	header.h	/^	GridPoint(int w,Point p):weight(w),pt(p){}$/;"	f	class:GridPoint	access:public	signature:(int w,Point p)
-GridPoint::operator <	header.h	/^	bool operator < (const GridPoint& g){ return weight >= g.weight; }$/;"	f	class:GridPoint	access:public	signature:(const GridPoint& g)
+GridPoint::GridPoint	header.h	/^	GridPoint():bend(0),fluidic(0),time(0),weight(0),electro(0){$/;"	f	class:GridPoint	access:public	signature:()
+GridPoint::GridPoint	header.h	/^	GridPoint(Point p,const GridPoint &par;$/;"	f	class:GridPoint	access:public	signature:(Point p,const GridPoint &par; int w=0,int t=0,int b=0,int f=0,int e=0)
+GridPoint::bend	header.h	/^	int bend;$/;"	m	class:GridPoint	access:public
+GridPoint::electro	header.h	/^	int electro;$/;"	m	class:GridPoint	access:public
+GridPoint::fluidic	header.h	/^	int fluidic;$/;"	m	class:GridPoint	access:public
+GridPoint::operator <	header.h	/^	bool operator < (const GridPoint& g){ $/;"	f	class:GridPoint	access:public	signature:(const GridPoint& g)
+GridPoint::parent	header.h	/^	GridPoint & parent;$/;"	m	class:GridPoint	access:public
 GridPoint::pt	header.h	/^	Point pt;$/;"	m	class:GridPoint	access:public
+GridPoint::time	header.h	/^	int time;$/;"	m	class:GridPoint	access:public
 GridPoint::weight	header.h	/^	int weight;$/;"	m	class:GridPoint	access:public
 INF	header.h	/^const Grid INF=2<<7-1;$/;"	v
 LEFT	route.h	/^enum DIRECTION{LEFT,RIGHT,UP,DOWN,STAY}; \/\/ LEFT, RIGHT, UP, DOWN$/;"	e	enum:DIRECTION
@@ -77,6 +84,7 @@ UR	header.h	/^enum CORNER{LL,UR};$/;"	e	enum:CORNER
 __HEADER_H__	header.h	2;"	d
 __PARSER_H__	parser.h	2;"	d
 __ROUTE_H__	route.h	2;"	d
+bend	header.h	/^	int bend;$/;"	m	class:GridPoint	access:public
 block	header.h	/^	Block block[MAXBLK];$/;"	m	class:Subproblem	access:public
 chip	main.cpp	/^Chip chip;				\/\/ Chip data and subproblem$/;"	v
 cmpNet	route.cpp	/^int cmpNet(const void * id1, const void * id2){$/;"	f	signature:(const void * id1, const void * id2)
@@ -84,8 +92,10 @@ drawSubproblem	parser.cpp	/^void drawSubproblem(Subproblem * prob, int N,int M,i
 drawSubproblem	parser.h	/^void drawSubproblem(Subproblem *prob, int N, int M, int num, char *name);$/;"	p	signature:(Subproblem *prob, int N, int M, int num, char *name)
 dx	route.cpp	/^int dx[]={-1,1,0,0,0};$/;"	v
 dy	route.cpp	/^int dy[]={0,0,1,-1,0};$/;"	v
+electro	header.h	/^	int electro;$/;"	m	class:GridPoint	access:public
 electrodeCheck	route.cpp	/^bool electrodeCheck(const Point & pt){$/;"	f	signature:(const Point & pt)
 electrodeCheck	route.h	/^bool electrodeCheck(const Point & pt);$/;"	p	signature:(const Point & pt)
+fluidic	header.h	/^	int fluidic;$/;"	m	class:GridPoint	access:public
 fluidicCheck	route.cpp	/^bool fluidicCheck(int which, const Point & pt,int t){$/;"	f	signature:(int which, const Point & pt,int t)
 fluidicCheck	route.h	/^bool fluidicCheck(int which, const Point & pt,int t);$/;"	p	signature:(int which, const Point & pt,int t)
 getBoundingBox	route.cpp	/^Block getBoundingBox(const Pin & p1, const Pin & p2){$/;"	f	signature:(const Pin & p1, const Pin & p2)
@@ -115,9 +125,10 @@ netorder	main.cpp	/^int netorder[MAXNET];			\/\/ net routing order$/;"	v
 numPin	header.h	/^	int numPin;$/;"	m	class:Net	access:public
 operator	header.c	/^ostream & operator <<(ostream & out,Point & pt){$/;"	f	signature:(ostream & out,Point & pt)
 operator !=	header.h	/^	bool operator != (const Point & pt) const {return !operator==(pt);}$/;"	f	class:Point	access:public	signature:(const Point & pt) const
-operator <	header.h	/^	bool operator < (const GridPoint& g){ return weight >= g.weight; }$/;"	f	class:GridPoint	access:public	signature:(const GridPoint& g)
+operator <	header.h	/^	bool operator < (const GridPoint& g){ $/;"	f	class:GridPoint	access:public	signature:(const GridPoint& g)
 operator <<	header.h	/^	friend ostream &operator <<(ostream&,Point&);$/;"	p	class:Point	access:friend	signature:(ostream&,Point&)
 operator ==	header.h	/^	bool operator == (const Point & pt) const {return x==pt.x && y==pt.y;}$/;"	f	class:Point	access:public	signature:(const Point & pt) const
+parent	header.h	/^	GridPoint & parent;$/;"	m	class:GridPoint	access:public
 parse	parser.cpp	/^Chip * parse(FILE * f,Chip * chip){$/;"	f	signature:(FILE * f,Chip * chip)
 parse	parser.h	/^Chip *parse(FILE *f, Chip *chip);$/;"	p	signature:(FILE *f, Chip *chip)
 path	main.cpp	/^Point path[MAXNET][MAXTIME];		\/\/ the routing path : path[i][t]: net i's position at time t$/;"	v
@@ -131,6 +142,7 @@ sortNet	route.cpp	/^void sortNet(Subproblem * p, int * netorder){$/;"	f	signatur
 sortNet	route.h	/^void sortNet(Subproblem * p, int * netorder);$/;"	p	signature:(Subproblem * p, int * netorder)
 swap	route.cpp	/^void swap(int &a,int &b){$/;"	f	signature:(int &a,int &b)
 time	header.h	/^	int time;$/;"	m	class:Chip	access:public
+time	header.h	/^	int time;$/;"	m	class:GridPoint	access:public
 traceback	route.cpp	/^void traceback(int which, Point & current){$/;"	f	signature:(int which, Point & current)
 traceback	route.h	/^void traceback(int which, Point & current);$/;"	p	signature:(int which, Point & current)
 traceback_line	route.cpp	/^Point traceback_line(int which, int t, const Point & current, DIRECTION dir){$/;"	f	signature:(int which, int t, const Point & current, DIRECTION dir)

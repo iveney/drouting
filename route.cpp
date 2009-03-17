@@ -14,10 +14,7 @@
 #include "header.h"
 #include "parser.h"
 #include "route.h"
-using namespace std;
-
-int dx[]={-1,1,0,0,0};
-int dy[]={0,0,1,-1,0};
+using std::vector;
 
 extern int netcount;
 extern Chip chip;
@@ -28,6 +25,9 @@ extern BYTE blockage[MAXGRID][MAXGRID];
 extern Grid grid[MAXNET][MAXGRID][MAXGRID];
 extern int idx;
 
+int dx[]={-1,1,0,0,0};
+int dy[]={0,0,1,-1,0};
+
 // perform electrode constraint check
 bool electrodeCheck(const Point & pt){
 	// use DFS to check : 2-color
@@ -35,8 +35,11 @@ bool electrodeCheck(const Point & pt){
 	return true;
 }
 
+// for a net `which' at location `pt' at time `t', 
 // perform fluidic constraint check
-bool fluidicCheck(int which, const Point & pt,int t){
+// if successful return 0 
+// else return the conflicting net
+int fluidicCheck(int which, const Point & pt,int t){
 	int i;
 	// for each routed net, 
 	// check if the current routing net(which) violate fluidic rule
@@ -48,13 +51,13 @@ bool fluidicCheck(int which, const Point & pt,int t){
 		// static fluidic check
 		if( !(abs(pt.x - path[checking][t].x) >=2 ||
 		      abs(pt.y - path[checking][t].y) >=2) )
-			return false;
+			return i;
 		// dynamic fluidic check
 		if ( !(abs(pt.x - path[checking][t-1].x) >=2 ||
 		       abs(pt.y - path[checking][t-1].y) >=2) )
-			return false;
+			return i;
 	}
-	return true;
+	return 0;
 }
 
 // test if a point is in the chip array
@@ -198,7 +201,7 @@ Point traceback_line(int which, int t, const Point & current, DIRECTION dir){
 }
 
 // determine the relative position of l to r
-DIRECTION PtRelativePos(const Point & l ,const Point & r){
+int PtRelativePos(const Point & l ,const Point & r){
 	int dx = l.x-r.x;
 	int dy = l.y-r.y;
 	if( dx < 0 ) return LEFT;
@@ -210,4 +213,11 @@ DIRECTION PtRelativePos(const Point & l ,const Point & r){
 
 // use some heuristic to trace back a path
 void traceback(int which, Point & current){
+}
+
+bool checkBending(const Point & p1,const Point & p2){
+	if( p1.x == p2.x ||
+	    p1.y == p2.y)
+		return false;
+	return true;
 }

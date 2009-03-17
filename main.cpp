@@ -8,6 +8,7 @@
 #include <deque>
 #include <iomanip>
 #include <vector>
+#include <queue>
 #include "route.h"
 using namespace std;
 
@@ -67,12 +68,14 @@ int main(int argc, char * argv[]){
 
 		// p and q is two heap
 		// initialize the heap
-		vector<GridPoint> p,q;
-		p.push_back(GridPoint(S));
-		vector<GridPoint>::iterator qit;
+		priority_queue<GridPoint> p,q;
+		GridPoint S();
+		p.push(S);
+		//priority_queue<GridPoint>::iterator qit;
+
 		int t=0;
 		bool success = false;
-		do{// propagate process
+		while(!p.empty()){// propagate process
 			t++;
 			if( t > MAXTIME+1 ){ // timing constraint violated
 				fprintf(stderr,"Exceed route time!\n");
@@ -84,49 +87,79 @@ int main(int argc, char * argv[]){
 #ifdef DEBUG
 			printf("t=%d\n",t);
 #endif
-			q=p;        // copy p to q
-			p.clear();
+			//q=p;        // copy p to q
+			//p.clear();
 
 			// get wave_front and propagate its neighbour
-			for(qit = q.begin(); qit != q.end(); ++qit ){
+			//while( !p.empty() ){
+			GridPoint current = p.top();
+			p.pop();
 #ifdef DEBUG
-				printf("Propagating %d\n",(*qit).pt);
+			cout<<"Propagating"<<current.pt<<endl;
 #endif
-				// find the sink, horray!
-				if( (*qit).pt == T ) {
+			// find the sink, horray!
+			if( current.pt == T ) {
 #ifdef DEBUG
-					printf("Find %d!\n",T);
+				printf("Find %d!\n",T);
 #endif
-					success = true;
-					break;
-				}
-
-				// get its neighbours
-				vector<Point> nbr = getNbr((*qit).pt);
-				vector<Point>::iterator iter;
-
-				// enqueue neighbours
-				for(iter = nbr.begin();iter!=nbr.end();iter++){
-					int x=(*iter).x,y=(*iter).y;
-					if( *iter != S ){ //&& // S should not be propagated again
-						//grid[which][x][y] == 0){ //not routed yet
-						// calculate its weight
-						Point tmp(x,y);
-						if( blockage[x][y] ) grid[which][x][y] = INF;
-						else if( fluidicCheck( which,tmp,t ) == false ) grid[which][x][y] = INF;
-						else if( electrodeCheck( tmp ) == false ) grid[which][x][y] = INF;
-						else {
-							grid[which][x][y] = t; // the droplet can reach (x,y) at time t
-#ifdef DEBUG
-							cout<<"\tPoint "<<tmp<<" pushed."<<endl;
-#endif
-							// (*qit).pt is the parent
-							p.push_back( GridPoint(t,(*qit).pt,tmp) );
-						}
-					}
-				}
+				success = true;
+				break;
 			}
-		}while(!success); // end of propagate
+
+			// enqueue stalling (same position)
+			GridPoint same=current;
+			same.parent = current;
+			same.time++;
+			same.stalling++;
+			same.weight+=2;    // how to control the stalling weight?
+			p.push(same);
+
+			// get its neighbours( PROBLEM: can it be back? )
+			vector<Point> nbr = getNbr(current.pt);
+			vector<Point>::iterator iter;
+
+			// enqueue neighbours
+			for(iter = nbr.begin();iter!=nbr.end();iter++){
+				int x=(*iter).x,y=(*iter).y;
+				// its parent should not be propagated again
+				// also blockage should be check
+				if( *iter != current.parent.pt && 
+				    !blockage[x][y] ){ 
+					// calculate its weight
+					Point tmp(x,y);
+					int f_pen=0,e_pen=0,bending=current.bend;
+					int fluidic_result = fluidicCheck( which,tmp,t );
+					bool electro_result = electrodeCheck( tmp );
+
+					// fluidic constraint
+					if( fluidic_result != 0 )
+						f_pen = FLUDIC_PENALTY;
+
+					// electro constraint
+					if( !electro_result )
+						e_pen = ELECT_PENALTY;
+
+					// check bending
+					if( checkBending() == true )
+						bending++;
+#ifdef DEBUG
+					cout<<"\tPoint "<<tmp<<" pushed."<<endl;
+#endif
+					// (*qit).pt is the parent
+					GridPoint gp(tmp,	//position
+						     current,   //parent
+						     t,
+						     bending,
+						     f_pen,
+						     e_pen,
+						     current.stalling;
+						     );
+					p.push_back(gp);
+				}
+			}// end of enqueue neighbours
+			//}
+		}// end of propagate
+		//}while(!success); // end of propagate
 
 		if( success == false ){// failed to find path
 			fprintf(stderr,"Error: failed to find path\n");
@@ -138,18 +171,20 @@ int main(int argc, char * argv[]){
 		}
 
 		// output the maze
-		for(int y=MAXGRID-1;y>=0;y--){
-			for(int x=0;x<MAXGRID;x++){
-				int tmp=grid[which][x][y];
-				if(tmp == INF)
-					cout<<setw(4)<<"#";
-				else
-					cout<<setw(4)<<tmp;
-			}
-			cout<<endl;
-		}
+		/*
+		   for(int y=MAXGRID-1;y>=0;y--){
+		   for(int x=0;x<MAXGRID;x++){
+		   int tmp=grid[which][x][y];
+		   if(tmp == INF)
+		   cout<<setw(4)<<"#";
+		   else
+		   cout<<setw(4)<<tmp;
+		   }
+		   cout<<endl;
+		   }
+		   */
 #endif
-		
+
 		// backtrack phase for the net `which'
 		int arrive_time = grid[which][T.x][T.y];
 		Point back,new_back=T;
@@ -165,6 +200,6 @@ int main(int argc, char * argv[]){
 			// if impossible, report error
 			path[which][j-1] = new_back;
 		}
-	}
-	return 0;
+}
+return 0;
 }

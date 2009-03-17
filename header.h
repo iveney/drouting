@@ -2,7 +2,7 @@
 #define __HEADER_H__
 
 #include <iostream>
-using namespace std;
+using std::ostream;
 
 #define ABS(a) ((a)<0.0?(-(a)):(a))
 #define MHT(s,t) (ABS((s.x)-(t.x)) + ABS((s.y)-(t.y)))
@@ -20,6 +20,8 @@ const int MAXSUB=100;
 const int MAXGRID=30;
 const int MAXTIME=20;
 const Grid INF=2<<7-1;
+int FLUDIC_PENALTY=20;
+int ELECT_PENALTY=20;
 
 class Point{// a point denote by (row,col)
 public:
@@ -69,26 +71,39 @@ public:
 
 class GridPoint{
 public:
-	GridPoint():bend(0),fluidic(0),time(0),weight(0),electro(0){
+	/*
+	GridPoint():bend(0),fluidic(0),time(0),
+		weight(0),electro(0),stalling(0){
 		pt=Point(0,0);
-		Parent=Point(0,0);
 	}
-	GridPoint(Point p,Point par;
-		int w=0,int t=0,int b=0,int f=0,int e=0):
-		weight(w),time(t),bend(b),fluidic(f),electro(e),
-		pt(p),parent(par){}
+	*/
+	GridPoint(Point _pt,GridPoint &par,
+		int t=0,int b=0,int f=0,int e=0,int s=0):
+		pt(_pt),parent(par),time(t),bend(b),
+		fluidic(f),electro(e), stalling(s){
+			updateWeight();
+		}
+
 	// note that the small element wins
 	bool operator < (const GridPoint& g){ 
 		return weight >= g.weight; 
 	}
 
-	Point parent;
-	Point pt;
+	Point pt;		// its position
+	GridPoint & parent;     // from which GridPoint it was propagated
+
 	int weight;
+	// weight is the sum of:
 	int time;
 	int bend;
 	int fluidic;
 	int electro;
+	int stalling;
+
+	int updateWeight(){
+		weight = time+bend+fluidic+electro+stalling;
+		return weight;
+	}
 };
 
 #endif
