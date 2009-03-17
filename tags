@@ -4,21 +4,34 @@
 !_TAG_PROGRAM_NAME	Exuberant Ctags	//
 !_TAG_PROGRAM_URL	http://ctags.sourceforge.net	/official site/
 !_TAG_PROGRAM_VERSION	5.7	//
-BIN	makefile	/^BIN=main$/;"	m
+BIN	Makefile	/^BIN=main$/;"	m
 BYTE	header.h	/^typedef unsigned char BYTE ;$/;"	t
 Block	header.h	/^class Block{\/\/ a block denote by two points$/;"	c
-CC	makefile	/^CC=\/usr\/bin\/g++$/;"	m
+Block::name	header.h	/^	char name[MAXSTR];$/;"	m	class:Block	access:public
+Block::pt	header.h	/^	Point pt[2];$/;"	m	class:Block	access:public
+CC	Makefile	/^CC=\/usr\/bin\/g++$/;"	m
 Chip	header.h	/^class Chip{\/\/ a chip has an array, timing constraint and subproblems$/;"	c
-DBG	makefile	/^DBG=debug$/;"	m
+Chip::M	header.h	/^	int N,M,T;	\/\/ array size,timing constraint$/;"	m	class:Chip	access:public
+Chip::N	header.h	/^	int N,M,T;	\/\/ array size,timing constraint$/;"	m	class:Chip	access:public
+Chip::T	header.h	/^	int N,M,T;	\/\/ array size,timing constraint$/;"	m	class:Chip	access:public
+Chip::nSubProblem	header.h	/^	int nSubProblem;$/;"	m	class:Chip	access:public
+Chip::prob	header.h	/^	Subproblem prob[MAXSUB];\/\/ note:prob starts from index 1$/;"	m	class:Chip	access:public
+Chip::time	header.h	/^	int time;$/;"	m	class:Chip	access:public
+DBG	Makefile	/^DBG=debug$/;"	m
 DIRECTION	route.cpp	/^enum DIRECTION{LEFT,RIGHT,UP,DOWN,STAY}; \/\/ LEFT, RIGHT, UP, DOWN$/;"	g	file:
 DOWN	route.cpp	/^enum DIRECTION{LEFT,RIGHT,UP,DOWN,STAY}; \/\/ LEFT, RIGHT, UP, DOWN$/;"	e	enum:DIRECTION	file:
 Grid	header.h	/^typedef BYTE Grid ;$/;"	t
-GridPoint	header.h	/^	GridPoint(){weight=0;pt=Point(0,0);}$/;"	f	class:GridPoint
-GridPoint	header.h	/^	GridPoint(int w,Point p):weight(w),pt(p){}$/;"	f	class:GridPoint
+GridPoint	header.h	/^	GridPoint(){weight=0;pt=Point(0,0);}$/;"	f	class:GridPoint	access:public	signature:()
+GridPoint	header.h	/^	GridPoint(int w,Point p):weight(w),pt(p){}$/;"	f	class:GridPoint	access:public	signature:(int w,Point p)
 GridPoint	header.h	/^class GridPoint{$/;"	c
+GridPoint::GridPoint	header.h	/^	GridPoint(){weight=0;pt=Point(0,0);}$/;"	f	class:GridPoint	access:public	signature:()
+GridPoint::GridPoint	header.h	/^	GridPoint(int w,Point p):weight(w),pt(p){}$/;"	f	class:GridPoint	access:public	signature:(int w,Point p)
+GridPoint::operator <	header.h	/^	bool operator < (const GridPoint& g){ return weight >= g.weight; }$/;"	f	class:GridPoint	access:public	signature:(const GridPoint& g)
+GridPoint::pt	header.h	/^	Point pt;$/;"	m	class:GridPoint	access:public
+GridPoint::weight	header.h	/^	int weight;$/;"	m	class:GridPoint	access:public
 INF	header.h	/^const Grid INF=2<<7-1;$/;"	v
 LEFT	route.cpp	/^enum DIRECTION{LEFT,RIGHT,UP,DOWN,STAY}; \/\/ LEFT, RIGHT, UP, DOWN$/;"	e	enum:DIRECTION	file:
-M	header.h	/^	int N,M,T;	\/\/ array size,timing constraint$/;"	m	class:Chip
+M	header.h	/^	int N,M,T;	\/\/ array size,timing constraint$/;"	m	class:Chip	access:public
 M	route.cpp	/^int N,M;				\/\/ row\/column count$/;"	v
 MAXBLK	header.h	/^const int MAXBLK=10;$/;"	v
 MAXBUF	header.h	/^const int MAXBUF=256;$/;"	v
@@ -27,67 +40,89 @@ MAXNET	header.h	/^const int MAXNET=10;$/;"	v
 MAXSTR	header.h	/^const int MAXSTR=30;$/;"	v
 MAXSUB	header.h	/^const int MAXSUB=100;$/;"	v
 MAXTIME	header.h	/^const int MAXTIME=20;$/;"	v
-N	header.h	/^	int N,M,T;	\/\/ array size,timing constraint$/;"	m	class:Chip
+N	header.h	/^	int N,M,T;	\/\/ array size,timing constraint$/;"	m	class:Chip	access:public
 N	route.cpp	/^int N,M;				\/\/ row\/column count$/;"	v
 Net	header.h	/^class Net{\/\/ a net has a name and at most 3 pins$/;"	c
-OBJ	makefile	/^OBJ=parser.o route.o header.o$/;"	m
-OPT	makefile	/^OPT=-Wall -g$/;"	m
+Net::name	header.h	/^	char name[MAXSTR];$/;"	m	class:Net	access:public
+Net::numPin	header.h	/^	int numPin;$/;"	m	class:Net	access:public
+Net::pin	header.h	/^	Pin pin[3];$/;"	m	class:Net	access:public
+OBJ	Makefile	/^OBJ=parser.o header.o$/;"	m
+OPT	Makefile	/^OPT=-Wall -g$/;"	m
 Pin	header.h	/^class Pin{\/\/ a pin has a name and a location$/;"	c
-Point	header.h	/^	Point(){x=y=0;}$/;"	f	class:Point
-Point	header.h	/^	Point(int xx,int yy):x(xx),y(yy){}$/;"	f	class:Point
+Pin::name	header.h	/^	char name[MAXSTR];$/;"	m	class:Pin	access:public
+Pin::pt	header.h	/^	Point pt;$/;"	m	class:Pin	access:public
+Point	header.h	/^	Point(){x=y=0;}$/;"	f	class:Point	access:public	signature:()
+Point	header.h	/^	Point(int xx,int yy):x(xx),y(yy){}$/;"	f	class:Point	access:public	signature:(int xx,int yy)
 Point	header.h	/^class Point{\/\/ a point denote by (row,col)$/;"	c
-PtRelativePos	route.cpp	/^DIRECTION PtRelativePos(const Point & l ,const Point & r){$/;"	f
+Point::Point	header.h	/^	Point(){x=y=0;}$/;"	f	class:Point	access:public	signature:()
+Point::Point	header.h	/^	Point(int xx,int yy):x(xx),y(yy){}$/;"	f	class:Point	access:public	signature:(int xx,int yy)
+Point::operator !=	header.h	/^	bool operator != (const Point & pt) const {return !operator==(pt);}$/;"	f	class:Point	access:public	signature:(const Point & pt) const
+Point::operator <<	header.h	/^	friend ostream &operator <<(ostream&,Point&);$/;"	p	class:Point	access:friend	signature:(ostream&,Point&)
+Point::operator ==	header.h	/^	bool operator == (const Point & pt) const {return x==pt.x && y==pt.y;}$/;"	f	class:Point	access:public	signature:(const Point & pt) const
+Point::x	header.h	/^	int x,y;$/;"	m	class:Point	access:public
+Point::y	header.h	/^	int x,y;$/;"	m	class:Point	access:public
+PtRelativePos	route.cpp	/^DIRECTION PtRelativePos(const Point & l ,const Point & r){$/;"	f	signature:(const Point & l ,const Point & r)
 RIGHT	route.cpp	/^enum DIRECTION{LEFT,RIGHT,UP,DOWN,STAY}; \/\/ LEFT, RIGHT, UP, DOWN$/;"	e	enum:DIRECTION	file:
-SRC	makefile	/^SRC=parser.cpp route.cpp header.c$/;"	m
+SRC	Makefile	/^SRC=parser.cpp header.c $/;"	m
 STAY	route.cpp	/^enum DIRECTION{LEFT,RIGHT,UP,DOWN,STAY}; \/\/ LEFT, RIGHT, UP, DOWN$/;"	e	enum:DIRECTION	file:
 Subproblem	header.h	/^class Subproblem{\/\/ a subproblem has some blocks and nets$/;"	c
-T	header.h	/^	int N,M,T;	\/\/ array size,timing constraint$/;"	m	class:Chip
+Subproblem::block	header.h	/^	Block block[MAXBLK];$/;"	m	class:Subproblem	access:public
+Subproblem::nBlock	header.h	/^	int nBlock;$/;"	m	class:Subproblem	access:public
+Subproblem::nNet	header.h	/^	int nNet;$/;"	m	class:Subproblem	access:public
+Subproblem::net	header.h	/^	Net net[MAXNET];$/;"	m	class:Subproblem	access:public
+T	header.h	/^	int N,M,T;	\/\/ array size,timing constraint$/;"	m	class:Chip	access:public
 UP	route.cpp	/^enum DIRECTION{LEFT,RIGHT,UP,DOWN,STAY}; \/\/ LEFT, RIGHT, UP, DOWN$/;"	e	enum:DIRECTION	file:
 __HEADER_H__	header.h	2;"	d
 __PARSER_H__	parser.h	2;"	d
-block	header.h	/^	Block block[MAXBLK];$/;"	m	class:Subproblem
+block	header.h	/^	Block block[MAXBLK];$/;"	m	class:Subproblem	access:public
 blockage	route.cpp	/^BYTE blockage[MAXGRID][MAXGRID];	\/\/ Blockage bitmap$/;"	v
 chip	route.cpp	/^Chip chip;				\/\/ Chip data and subproblem$/;"	v
-drawSubproblem	parser.cpp	/^void drawSubproblem(Subproblem * prob, int N,int M,int num,char * name){$/;"	f
+drawSubproblem	parser.cpp	/^void drawSubproblem(Subproblem * prob, int N,int M,int num,char * name){$/;"	f	signature:(Subproblem * prob, int N,int M,int num,char * name)
+drawSubproblem	parser.h	/^void drawSubproblem(Subproblem *prob, int N, int M, int num, char *name);$/;"	p	signature:(Subproblem *prob, int N, int M, int num, char *name)
 dx	route.cpp	/^static int dx[]={-1,1,0,0,0};$/;"	v	file:
 dy	route.cpp	/^static int dy[]={0,0,1,-1,0};$/;"	v	file:
-electrodeCheck	route.cpp	/^bool electrodeCheck(const Point & pt){$/;"	f
-fluidicCheck	route.cpp	/^bool fluidicCheck(int which, const Point & pt,int t){$/;"	f
-getColor	parser.cpp	/^const char * getColor(){$/;"	f
-getColor	util/droute_draw.cpp	/^const char * getColor(){$/;"	f
-getNbr	route.cpp	/^vector<Point> getNbr(const Point & pt){$/;"	f
+electrodeCheck	route.cpp	/^bool electrodeCheck(const Point & pt){$/;"	f	signature:(const Point & pt)
+fluidicCheck	route.cpp	/^bool fluidicCheck(int which, const Point & pt,int t){$/;"	f	signature:(int which, const Point & pt,int t)
+getColor	parser.cpp	/^const char * getColor(){$/;"	f	signature:()
+getColor	parser.h	/^const char *getColor(void);$/;"	p	signature:(void)
+getColor	util/droute_draw.cpp	/^const char * getColor(){$/;"	f	signature:()
+getNbr	route.cpp	/^vector<Point> getNbr(const Point & pt){$/;"	f	signature:(const Point & pt)
 grid	route.cpp	/^Grid grid[MAXNET][MAXGRID][MAXGRID];	\/\/ record the routes, grid[i][x][y]: the time step that net i occupies (x,y)$/;"	v
 idx	route.cpp	/^int idx = 1;				\/\/ problem to solve$/;"	v
-inGrid	route.cpp	/^bool inGrid(const Point & pt){$/;"	f
-init	route.cpp	/^Chip * init(int argc, char * argv[], Chip * chip){$/;"	f
-initBlock	route.cpp	/^void initBlock(Subproblem *p){$/;"	f
-main	route.cpp	/^int main(int argc, char * argv[]){$/;"	f
-main	util/droute_draw.cpp	/^int main(){$/;"	f
-nBlock	header.h	/^	int nBlock;$/;"	m	class:Subproblem
-nNet	header.h	/^	int nNet;$/;"	m	class:Subproblem
-nSubProblem	header.h	/^	int nSubProblem;$/;"	m	class:Chip
-name	header.h	/^	char name[MAXSTR];$/;"	m	class:Block
-name	header.h	/^	char name[MAXSTR];$/;"	m	class:Net
-name	header.h	/^	char name[MAXSTR];$/;"	m	class:Pin
-net	header.h	/^	Net net[MAXNET];$/;"	m	class:Subproblem
+inGrid	route.cpp	/^bool inGrid(const Point & pt){$/;"	f	signature:(const Point & pt)
+init	route.cpp	/^Chip * init(int argc, char * argv[], Chip * chip){$/;"	f	signature:(int argc, char * argv[], Chip * chip)
+initBlock	route.cpp	/^void initBlock(Subproblem *p){$/;"	f	signature:(Subproblem *p)
+main	parser_main.cpp	/^int main(int argc, char * argv[]){$/;"	f	signature:(int argc, char * argv[])
+main	route.cpp	/^int main(int argc, char * argv[]){$/;"	f	signature:(int argc, char * argv[])
+main	util/droute_draw.cpp	/^int main(){$/;"	f	signature:()
+nBlock	header.h	/^	int nBlock;$/;"	m	class:Subproblem	access:public
+nNet	header.h	/^	int nNet;$/;"	m	class:Subproblem	access:public
+nSubProblem	header.h	/^	int nSubProblem;$/;"	m	class:Chip	access:public
+name	header.h	/^	char name[MAXSTR];$/;"	m	class:Block	access:public
+name	header.h	/^	char name[MAXSTR];$/;"	m	class:Net	access:public
+name	header.h	/^	char name[MAXSTR];$/;"	m	class:Pin	access:public
+net	header.h	/^	Net net[MAXNET];$/;"	m	class:Subproblem	access:public
 netcount	route.cpp	/^int netcount;				\/\/ current subproblem's net count$/;"	v
 netorder	route.cpp	/^int netorder[MAXNET];			\/\/ net routing order$/;"	v
-numPin	header.h	/^	int numPin;$/;"	m	class:Net
-operator	header.c	/^ostream & operator <<(ostream & out,Point & pt){$/;"	f
-operator !=	header.h	/^	bool operator != (const Point & pt) const {return !operator==(pt);}$/;"	f	class:Point
-operator <	header.h	/^	bool operator < (const GridPoint& g){ return weight >= g.weight; }$/;"	f	class:GridPoint
-operator ==	header.h	/^	bool operator == (const Point & pt) const {return x==pt.x && y==pt.y;}$/;"	f	class:Point
-parse	parser.cpp	/^Chip * parse(FILE * f,Chip * chip){$/;"	f
+numPin	header.h	/^	int numPin;$/;"	m	class:Net	access:public
+operator	header.c	/^ostream & operator <<(ostream & out,Point & pt){$/;"	f	signature:(ostream & out,Point & pt)
+operator !=	header.h	/^	bool operator != (const Point & pt) const {return !operator==(pt);}$/;"	f	class:Point	access:public	signature:(const Point & pt) const
+operator <	header.h	/^	bool operator < (const GridPoint& g){ return weight >= g.weight; }$/;"	f	class:GridPoint	access:public	signature:(const GridPoint& g)
+operator <<	header.h	/^	friend ostream &operator <<(ostream&,Point&);$/;"	p	class:Point	access:friend	signature:(ostream&,Point&)
+operator ==	header.h	/^	bool operator == (const Point & pt) const {return x==pt.x && y==pt.y;}$/;"	f	class:Point	access:public	signature:(const Point & pt) const
+parse	parser.cpp	/^Chip * parse(FILE * f,Chip * chip){$/;"	f	signature:(FILE * f,Chip * chip)
+parse	parser.h	/^Chip *parse(FILE *f, Chip *chip);$/;"	p	signature:(FILE *f, Chip *chip)
+parser	Makefile	/^parser=parser$/;"	m
 path	route.cpp	/^Point path[MAXNET][MAXTIME];		\/\/ the routing path : path[i][t]: net i's position at time t$/;"	v
-pin	header.h	/^	Pin pin[3];$/;"	m	class:Net
-prob	header.h	/^	Subproblem prob[MAXSUB];\/\/ note:prob starts from index 1$/;"	m	class:Chip
-pt	header.h	/^	Point pt;$/;"	m	class:GridPoint
-pt	header.h	/^	Point pt;$/;"	m	class:Pin
-pt	header.h	/^	Point pt[2];$/;"	m	class:Block
-sortNet	route.cpp	/^void sortNet(Subproblem * p, int * netorder){$/;"	f
-time	header.h	/^	int time;$/;"	m	class:Chip
-traceback	route.cpp	/^void traceback(int which, Point & current){$/;"	f
-traceback_line	route.cpp	/^Point traceback_line(int which, int t, const Point & current, DIRECTION dir){$/;"	f
-weight	header.h	/^	int weight;$/;"	m	class:GridPoint
-x	header.h	/^	int x,y;$/;"	m	class:Point
-y	header.h	/^	int x,y;$/;"	m	class:Point
+pin	header.h	/^	Pin pin[3];$/;"	m	class:Net	access:public
+prob	header.h	/^	Subproblem prob[MAXSUB];\/\/ note:prob starts from index 1$/;"	m	class:Chip	access:public
+pt	header.h	/^	Point pt;$/;"	m	class:GridPoint	access:public
+pt	header.h	/^	Point pt;$/;"	m	class:Pin	access:public
+pt	header.h	/^	Point pt[2];$/;"	m	class:Block	access:public
+sortNet	route.cpp	/^void sortNet(Subproblem * p, int * netorder){$/;"	f	signature:(Subproblem * p, int * netorder)
+time	header.h	/^	int time;$/;"	m	class:Chip	access:public
+traceback	route.cpp	/^void traceback(int which, Point & current){$/;"	f	signature:(int which, Point & current)
+traceback_line	route.cpp	/^Point traceback_line(int which, int t, const Point & current, DIRECTION dir){$/;"	f	signature:(int which, int t, const Point & current, DIRECTION dir)
+weight	header.h	/^	int weight;$/;"	m	class:GridPoint	access:public
+x	header.h	/^	int x,y;$/;"	m	class:Point	access:public
+y	header.h	/^	int x,y;$/;"	m	class:Point	access:public
