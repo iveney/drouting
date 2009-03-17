@@ -1,6 +1,6 @@
 CC=/usr/bin/g++
-SRC=parser.cpp header.c 
-OBJ=parser.o header.o
+SRC=parser.cpp header.c route.cpp
+OBJ=parser.o header.o route.o
 BIN=main
 DBG=debug
 parser=parser
@@ -9,17 +9,17 @@ OPT=-Wall -g
 .PHONY: all
 all: $(OBJ) parser release debug 
 	cp ./main ./util/
-	ctags -R *
+	ctags -R *.c *.cpp *.h
 
 release:
-	$(CC) $(OPT) -c route.cpp
 	$(CC) $(OPT) -c $(SRC)
-	$(CC) $(OPT) -o $(BIN) $(OBJ) route.o
+	$(CC) $(OPT) -c main.cpp
+	$(CC) $(OPT) -o $(BIN) $(OBJ) main.o
 
 debug:
-	$(CC) $(OPT) -DDEBUG -c route.cpp
 	$(CC) $(OPT) -DDEBUG -c $(SRC)
-	$(CC) $(OPT) -o $(DBG) $(OBJ) route.cpp
+	$(CC) $(OPT) -DDEBUG -c main.cpp
+	$(CC) $(OPT) -o $(DBG) $(OBJ) main.o
 
 parser:
 	$(CC) $(OPT) -c parser_main.cpp

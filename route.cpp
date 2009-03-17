@@ -1,24 +1,32 @@
+// Filename : route.cpp
+// functions and heuristics used for routing
+//
+// Author : Xiao Zigang
+// Modifed: < Tue Mar 17 10:39:54 HKT 2009 >
+// ----------------------------------------------------------------//
+
 #include <algorithm>
 #include <vector>
 #include <deque>
 #include <iostream>
 #include <iomanip>
+#include <stdlib.h>
 #include "header.h"
 #include "parser.h"
+#include "route.h"
 using namespace std;
 
-enum DIRECTION{LEFT,RIGHT,UP,DOWN,STAY}; // LEFT, RIGHT, UP, DOWN
-static int dx[]={-1,1,0,0,0};
-static int dy[]={0,0,1,-1,0};
+int dx[]={-1,1,0,0,0};
+int dy[]={0,0,1,-1,0};
 
-BYTE blockage[MAXGRID][MAXGRID];	// Blockage bitmap
-Chip chip;				// Chip data and subproblem
-Grid grid[MAXNET][MAXGRID][MAXGRID];	// record the routes, grid[i][x][y]: the time step that net i occupies (x,y)
-int N,M;				// row/column count
-int netorder[MAXNET];			// net routing order
-int netcount;				// current subproblem's net count
-int idx = 1;				// problem to solve
-Point path[MAXNET][MAXTIME];		// the routing path : path[i][t]: net i's position at time t
+extern int netcount;
+extern Chip chip;
+extern int N,M;
+extern int netorder[MAXNET];
+extern Point path[MAXNET][MAXTIME];
+extern BYTE blockage[MAXGRID][MAXGRID];
+extern Grid grid[MAXNET][MAXGRID][MAXGRID];
+extern int idx;
 
 // perform electrode constraint check
 bool electrodeCheck(const Point & pt){
@@ -79,12 +87,74 @@ void initBlock(Subproblem *p){
 	}
 }
 
+// swap two integers
+void swap(int &a,int &b){
+	int t=a;
+	a=b;
+	b=t;
+}
+
+// compare which net should be routed first
+/*
+int cmpNet(const Net & n1,const Net & n2){
+	Block b1,b2;
+	b1.pt[LL] = n1.pin[0];
+	b1.pt[UR] = n1.pin[1];
+	b2.pt[LL] = n2.pin[0];
+	b2.pt[UR] = n2.pin[1];
+}
+*/
+
+// get the bounding box of two nets
+Block getBoundingBox(const Pin & p1, const Pin & p2){
+	Block bb;
+	bb.pt[LL].x = MIN(p1.pt.x,p2.pt.x);
+	bb.pt[LL].y = MIN(p1.pt.y,p2.pt.y);
+	bb.pt[UR].x = MAX(p1.pt.x,p2.pt.x);
+	bb.pt[UR].y = MAX(p1.pt.y,p2.pt.y);
+	return bb;
+}
+
+// determine if a point is inside a rect
+bool ptInRect(const Block & bb, const Point & pt){
+	if( pt.x<=bb.pt[UR].x && pt.x>=bb.pt[LL].x &&
+	    pt.y<=bb.pt[UR].y && pt.y>=bb.pt[LL].y)
+		return true;
+	return false;
+}
+
+// compare which net should be routed first
+int cmpNet(const void * id1, const void * id2){
+	int i1 = *(int*)id1;
+	int i2 = *(int*)id2;
+	Net * n1 = &chip.prob[idx].net[i1];
+	Net * n2 = &chip.prob[idx].net[i2];
+	Block b1,b2;
+	// get two bounding box
+	b1 = getBoundingBox(n1->pin[0],n1->pin[1]);
+	b2 = getBoundingBox(n2->pin[0],n2->pin[1]);
+	// pin1's source inside bounding box 2,should route 1 first
+	if( ptInRect(b2,n1->pin[0].pt) ) return -1;
+	// pin2's source inside bounding box 1,should route 2 first
+	else if( ptInRect(b1,n2->pin[0].pt) ) return 1;
+
+	// use manhattance to judge
+	int m1 = MHT(n1->pin[0].pt,n1->pin[1].pt);
+	int m2 = MHT(n2->pin[0].pt,n2->pin[1].pt);
+	return m1-m2;
+}
+
 // use some heuristic to get a net order of a subproblem
+// NOW: use manhattance distance & bounding box
+//      and only handle 2-pin net by now
+// bounded net first, if not bounding happens
+// route the short net first
 void sortNet(Subproblem * p, int * netorder){
 	// do nothing here now, just initialize
 	int i;
-	for(i=0;i<p->nNet;i++)
-		netorder[i]=i;
+	int N=p->nNet;
+	for(i=0;i<N;i++) netorder[i]=i;
+	qsort(netorder,N,sizeof(int),cmpNet);
 }
 
 // parse chip description file and store in `chip'
@@ -140,151 +210,4 @@ DIRECTION PtRelativePos(const Point & l ,const Point & r){
 
 // use some heuristic to trace back a path
 void traceback(int which, Point & current){
-}
-
-int main(int argc, char * argv[]){
-	init(argc,argv,&chip);
-
-	// solve subproblem 1
-//	scanf("%d",&idx);
-	Subproblem * pProb = &chip.prob[idx];
-#ifdef DEBUG
-	printf("Start to solve subproblem %d\n",idx);
-#endif
-	
-	// sort : decide net order
-	netcount = pProb->nNet;
-	sortNet(pProb,netorder);
-#ifdef DEBUG
-	printf("net order: [ ");
-	for(int i=0;i<pProb->nNet;i++){printf("%d ",netorder[i]);}
-#endif
-
-	// generate blockage bitmap
-	initBlock(pProb);
-
-	// route each net
-	int i,j;
-	N=chip.N;
-       	M=chip.M;
-	memset(grid,0,sizeof(grid));
-	// start to route each net according to decided order
-	for(i=0;i<pProb->nNet;i++){
-		int which = netorder[i];
-		Net * pNet = &pProb->net[which]; // according to netorder
-#ifdef DEBUF
-		printf("** Routing net[%d] **\n",which);
-#endif
-
-		// do Lee's propagation,handles 2-pin net only currently
-		int numPin = pNet->numPin;
-		//if( numPin == 3 ) {} // handle three pin net
-		Point S = pNet->pin[0].pt; // source
-		Point T = pNet->pin[2].pt; // sink
-#ifdef DEBUG
-		for(int i=0;i<numPin;i++)
-			cout<<"\tpin["<<i<<"]:"<<pNet->pin[i].pt<<endl;
-#endif
-
-		// initialize the queue
-		deque<GridPoint> p,q;
-		p.push_back(GridPoint(0,S));
-		deque<GridPoint>::iterator qit;
-		int t=0;
-		bool success = false;
-		do{// propagate process
-			/*
-			t++;
-			if( t > MAXTIME+1 ){ // timing constraint violated
-				fprintf(stderr,"Exceed route time!\n");
-				// try re-route?
-				exit(1);
-			}
-			*/
-#ifdef DEBUG
-			printf("t=%d\n",t);
-#endif
-			q=p;
-			p.clear();
-			// handle wave_front
-			for(qit = q.begin(); qit != q.end(); ++qit ){
-#ifdef DEBUG
-				cout<<"Propagating "<<(*qit).pt<<endl;
-#endif
-				// check if it is the sink
-				if( (*qit).pt == T ) {
-#ifdef DEBUG
-					cout<<"Find "<<T<<"!"<<endl;
-#endif
-					success = true;
-					break;
-				}
-				// get its neighbours
-				vector<Point> nbr = getNbr((*qit).pt);
-				vector<Point>::iterator iter;
-				// enqueue neighbours
-				for(iter = nbr.begin();iter!=nbr.end();iter++){
-					int x=(*iter).x,y=(*iter).y;
-					if( *iter != S && // S should not be propagated again
-						grid[which][x][y] == 0){ //not routed yet
-
-						// calculate its weight
-						Point tmp(x,y);
-						if( blockage[x][y] ) grid[which][x][y] = INF;
-						else if( fluidicCheck( which,tmp,t ) == false ) grid[which][x][y] = INF;
-						else if( electrodeCheck( tmp ) == false ) grid[which][x][y] = INF;
-						else {
-							grid[which][x][y] = t; // the droplet can reach (x,y) at time t
-#ifdef DEBUG
-							cout<<"\tPoint "<<tmp<<" pushed."<<endl;
-#endif
-							p.push_back( GridPoint(t,tmp) );
-						}
-					}
-				}
-			}
-		}while(!success); // end of propagate
-
-		if( success == false ){// failed to find path
-			fprintf(stderr,"Error: failed to find path\n");
-			exit(1);
-		}
-		else{
-#ifdef DEBUG
-			printf("Success - start to backtrack\n");
-#endif
-		}
-
-#ifdef DEBUG
-		// output the maze
-		for(int y=MAXGRID-1;y>=0;y--){
-			for(int x=0;x<MAXGRID;x++){
-				int tmp=grid[which][x][y];
-				if(tmp == INF)
-					cout<<setw(4)<<"#";
-				else
-					cout<<setw(4)<<tmp;
-			}
-			cout<<endl;
-		}
-#endif
-		
-		// backtrack phase for the net `which'
-		int arrive_time = grid[which][T.x][T.y];
-		Point back,new_back=T;
-		cout<<"net["<<which<<"]:"<<arrive_time<<endl<<setw(8)<<arrive_time<<" : "<<new_back<<endl;
-		DIRECTION dir = STAY;
-		for(j=arrive_time;j<=chip.time;j++) path[which][j] = T;
-		for(j=arrive_time;j>=1;j--){
-			// try not to change direction, but need to decide first dir
-			dir = PtRelativePos(new_back,back); // decide the previous DIR
-			back=new_back;
-			new_back = traceback_line(which,j,back,dir);
-			cout<<setw(8)<<j-1<<" : "<<new_back<<endl;
-			// if impossible, report error
-			path[which][j-1] = new_back;
-		}
-//		printf("==========================\n");
-	}
-	return 0;
 }

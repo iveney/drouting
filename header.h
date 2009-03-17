@@ -4,6 +4,11 @@
 #include <iostream>
 using namespace std;
 
+#define ABS(a) ((a)<0.0?(-(a)):(a))
+#define MHT(s,t) (ABS((s.x)-(t.x)) + ABS((s.y)-(t.y)))
+#define MAX(a,b) ((a)>(b)?(a):(b))
+#define MIN(a,b) ((a)>(b)?(b):(a))
+
 typedef unsigned char BYTE ;
 typedef BYTE Grid ;
 
@@ -26,10 +31,11 @@ public:
 	int x,y;
 };
 
+enum CORNER{LL,UR};
 class Block{// a block denote by two points
 public:
 	char name[MAXSTR];
-	Point pt[2];
+	Point pt[2]; // LL=0, UR=1
 };
 
 class Pin{// a pin has a name and a location
@@ -63,12 +69,26 @@ public:
 
 class GridPoint{
 public:
-	GridPoint(){weight=0;pt=Point(0,0);}
-	GridPoint(int w,Point p):weight(w),pt(p){}
-	int weight;
-	Point pt;
+	GridPoint():bend(0),fluidic(0),time(0),weight(0),electro(0){
+		pt=Point(0,0);
+		Parent=Point(0,0);
+	}
+	GridPoint(Point p,Point par;
+		int w=0,int t=0,int b=0,int f=0,int e=0):
+		weight(w),time(t),bend(b),fluidic(f),electro(e),
+		pt(p),parent(par){}
 	// note that the small element wins
-	bool operator < (const GridPoint& g){ return weight >= g.weight; }
+	bool operator < (const GridPoint& g){ 
+		return weight >= g.weight; 
+	}
+
+	Point parent;
+	Point pt;
+	int weight;
+	int time;
+	int bend;
+	int fluidic;
+	int electro;
 };
 
 #endif

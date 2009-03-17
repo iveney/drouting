@@ -1,4 +1,5 @@
 #!/bin/bash
+# try to run the `main' program and see if any exception happens
 
 for i in `seq 1 78`
 do
