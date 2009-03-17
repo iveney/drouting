@@ -69,8 +69,9 @@ int main(int argc, char * argv[]){
 		// p and q is two heap
 		// initialize the heap
 		priority_queue<GridPoint> p,q;
-		GridPoint S();
-		p.push(S);
+		GridPoint dummy;
+		GridPoint src(S,dummy);
+		p.push(src);
 		//priority_queue<GridPoint>::iterator qit;
 
 		int t=0;
@@ -140,7 +141,7 @@ int main(int argc, char * argv[]){
 						e_pen = ELECT_PENALTY;
 
 					// check bending
-					if( checkBending() == true )
+					if( checkBending(tmp,current.pt) == true )
 						bending++;
 #ifdef DEBUG
 					cout<<"\tPoint "<<tmp<<" pushed."<<endl;
@@ -152,9 +153,9 @@ int main(int argc, char * argv[]){
 						     bending,
 						     f_pen,
 						     e_pen,
-						     current.stalling;
+						     current.stalling
 						     );
-					p.push_back(gp);
+					p.push(gp);
 				}
 			}// end of enqueue neighbours
 			//}

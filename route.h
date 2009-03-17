@@ -14,8 +14,9 @@ void initBlock(Subproblem *p);
 void sortNet(Subproblem * p, int * netorder);
 Chip * init(int argc, char * argv[], Chip * chip);
 Point traceback_line(int which, int t, const Point & current, DIRECTION dir);
-int PtRelativePos(const Point & l ,const Point & r);
+DIRECTION PtRelativePos(const Point & l ,const Point & r);
 void traceback(int which, Point & current);
 int fluidicCheck(int which, const Point & pt,int t);
+bool checkBending(const Point & p1,const Point & p2);
 
 #endif

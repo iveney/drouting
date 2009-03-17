@@ -201,7 +201,7 @@ Point traceback_line(int which, int t, const Point & current, DIRECTION dir){
 }
 
 // determine the relative position of l to r
-int PtRelativePos(const Point & l ,const Point & r){
+DIRECTION PtRelativePos(const Point & l ,const Point & r){
 	int dx = l.x-r.x;
 	int dy = l.y-r.y;
 	if( dx < 0 ) return LEFT;

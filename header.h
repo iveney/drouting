@@ -20,8 +20,8 @@ const int MAXSUB=100;
 const int MAXGRID=30;
 const int MAXTIME=20;
 const Grid INF=2<<7-1;
-int FLUDIC_PENALTY=20;
-int ELECT_PENALTY=20;
+const int FLUDIC_PENALTY=20;
+const int ELECT_PENALTY=20;
 
 class Point{// a point denote by (row,col)
 public:
@@ -84,8 +84,20 @@ public:
 			updateWeight();
 		}
 
+	// a little bit tricky: reference type should be init 
+	// but there must be sth. to pass in
+	// just set to itself here
+	GridPoint():parent(*this){}
+
+	// a little bit tricky: reference binding can not be changed
+	// just set assignment opeartor no use
+	// should AVOID use !! but copy constructor is ok
+	GridPoint & operator =(const GridPoint &g){
+		return (*this);
+	}
+
 	// note that the small element wins
-	bool operator < (const GridPoint& g){ 
+	bool operator < (const GridPoint& g) const{ 
 		return weight >= g.weight; 
 	}
 
