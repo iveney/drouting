@@ -7,6 +7,7 @@
 // Modifed: < Tue Mar 17 10:39:54 HKT 2009 >
 // ----------------------------------------------------------------//
 #include "parser.h"
+#include "main.h"
 
 int main(int argc, char * argv[]){
 	FILE * f;

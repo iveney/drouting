@@ -98,7 +98,12 @@ public:
 
 	// note that the small element wins
 	bool operator < (const GridPoint& g) const{ 
-		return weight >= g.weight; 
+		/*
+		if( this->time != g.time )
+			return g.time - this->time;
+		else
+		*/
+		       	return weight >= g.weight; 
 	}
 
 	Point pt;		// its position
