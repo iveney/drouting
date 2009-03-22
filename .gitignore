@@ -1,3 +1,6 @@
 *.swp
 *.o
 *.out
+debug
+parser
+main
