@@ -2,7 +2,10 @@
 #define __HEADER_H__
 
 #include <iostream>
+#include <vector>
+#include "heap.h"
 using std::ostream;
+using std::vector;
 
 #define ABS(a) ((a)<0.0?(-(a)):(a))
 #define MHT(s,t) (ABS((s.x)-(t.x)) + ABS((s.y)-(t.y)))
@@ -20,8 +23,9 @@ const int MAXSUB=100;
 const int MAXGRID=30;
 const int MAXTIME=20;
 const Grid INF=2<<7-1;
-const int FLUDIC_PENALTY=20;
+const int FLUID_PENALTY=20;
 const int ELECT_PENALTY=20;
+const int STALL_PENALTY=20;
 
 class Point{// a point denote by (row,col)
 public:
@@ -71,45 +75,28 @@ public:
 
 class GridPoint{
 public:
-	/*
-	GridPoint():bend(0),fluidic(0),time(0),
-		weight(0),electro(0),stalling(0){
-		pt=Point(0,0);
-	}
-	*/
-	GridPoint(Point _pt,GridPoint &par,
+	GridPoint(Point pt_=Point(0,0),GridPoint *par=NULL,
 		int t=0,int b=0,int f=0,int e=0,int s=0):
-		pt(_pt),parent(par),time(t),bend(b),
+		pt(pt_),parent(par),time(t),bend(b),
 		fluidic(f),electro(e), stalling(s){
 			updateWeight();
 		}
 
-	// a little bit tricky: reference type should be init 
-	// but there must be sth. to pass in
-	// just set to itself here
-	GridPoint():parent(*this){}
-
-	// a little bit tricky: reference binding can not be changed
-	// just set assignment opeartor no use
-	// should AVOID use !! but copy constructor is ok
-	GridPoint & operator =(const GridPoint &g){
-		return (*this);
-	}
-
-	// note that the small element wins
+	// TODO: how to determine there size if weights are equal?
+	// because we need a strictly weak ordering here for heap comparison...
 	bool operator < (const GridPoint& g) const{ 
 		/*
 		if( this->time != g.time )
 			return g.time - this->time;
 		else
 		*/
-		       	return weight > g.weight; 
+		return weight < g.weight; 
 	}
 
 	Point pt;		// its position
-	GridPoint & parent;     // from which GridPoint it was propagated
-
+	GridPoint * parent;     // from which GridPoint it was propagated
 	int weight;
+
 	// weight is the sum of:
 	int time;
 	int bend;
@@ -118,9 +105,30 @@ public:
 	int stalling;
 
 	int updateWeight(){
+		int old = weight;
 		weight = time+bend+fluidic+electro+stalling;
-		return weight;
+		return old;
 	}
+
+	class GPpointerCmp {
+	public:
+		bool operator()(const GridPoint *a, const GridPoint *b) const 
+		{ return *a < *b; }
+	};
+};
+
+class NetRouter{
+	public:
+		~NetRouter(){
+			for(size_t i=0;i<resource.size();i++) delete resource[i];
+		}
+		int size() const{ return resource.size(); }
+		bool route(){
+			return true;
+		}
+
+		vector<GridPoint*> resource;      // a pointer collection 
+		// gp_heap;
 };
 
 #endif

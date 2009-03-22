@@ -12,12 +12,13 @@
 #include "route.h"
 #include "main.h"
 using namespace std;
-typedef priority_queue<GridPoint,vector<GridPoint>,less<vector<GridPoint>::value_type> > gp_queue;
+
+typedef heap<GridPoint*,vector<GridPoint*>,GridPoint::GPpointerCmp> GP_HEAP;
 
 int main(int argc, char * argv[]){
 	idx=1;
 	// read configuration file and parse it
-	init(argc,argv,&chip);
+	read_file(argc,argv,&chip);
 
 	// solve subproblem `idx'
 	Subproblem * pProb = &chip.prob[idx];
@@ -62,43 +63,48 @@ int main(int argc, char * argv[]){
 
 		// p and q is two heap
 		// initialize the heap
-		gp_queue p,q;
-		GridPoint dummy;
-		GridPoint src(S,dummy); // start time = 0
+		vector<GridPoint *> resource;
+		GP_HEAP p;
+		GridPoint *src = new GridPoint(S,NULL); // start time = 0, source point = S, no parent!
+		resource.push_back(src);
 		p.push(src);
-		//priority_queue<GridPoint>::iterator qit;
 
 		int t=0;
 		bool success = false;
 		while( !p.empty() ){// propagate process
 			// get wave_front and propagate its neighbour
+			cout<<"------------------------------------------------------------"<<endl;
 			cout<<"before pop:"<<endl;
-			gp_queue::iterator it;
-			for(it=p.begin();it!=p.end();it++){
-				cout<<i<<"="<<(*it).pt<<endl;
-			}
-			GridPoint current = p.top();
+			p.sort();
+			for(int i=0;i<p.size();i++)
+				cout<<i<<" "<<(p.c[i])->pt<<" t="<<p.c[i]->time<<" w="<<p.c[i]->weight<<endl;
+			GridPoint *current = p.top();
 			p.pop();
+
 			cout<<"after pop:"<<endl;
-			for(it=p.begin();it!=p.end();it++){
-				cout<<i<<"="<<(*it).pt<<endl;
-			}
-			//cout<<"Pop "<<current.pt<<" at time "<<current.time<<", queue size="<<p.size()<<endl;
-			t = current.time;
+			p.sort();
+			for(int i=0;i<p.size();i++)
+				cout<<i<<" "<<(p.c[i])->pt<<" t="<<p.c[i]->time<<" w="<<p.c[i]->weight<<endl;
+			cout<<"Pop "<<current->pt<<" at time "<<current->time<<", queue size="<<p.size()<<endl;
+			t = current->time;
 			t++;
 			if( t > MAXTIME+1 ){ // timing constraint violated
-				fprintf(stderr,"Exceed route time!\n");
-				// try rip-up and re-route?
-				// reroute();
-				success = false;
-				break;
+				if( p.size() != 0 )
+					continue;
+				else{
+					fprintf(stderr,"Exceed route time!\n");
+					// try rip-up and re-route?
+					// reroute();
+					success = false;
+					break;
+				}
 			}
 #ifdef DEBUG
 			printf("t=%d\n",t);
-			cout<<"Propagating"<<current.pt<<endl;
+			cout<<"Propagating"<<current->pt<<endl;
 #endif
 			// find the sink, horray!
-			if( current.pt == T ) {
+			if( current->pt == T ) {
 #ifdef DEBUG
 				cout<<"Find "<<T<<"!\n";
 #endif
@@ -107,53 +113,57 @@ int main(int argc, char * argv[]){
 			}
 
 			// same position, stall for 1 time step
-			GridPoint same(current.pt,current,
-					t,current.bend,current.fluidic,
-					current.electro,current.stalling+2);
-			//p.push(same);
+			GridPoint *same = new GridPoint(current->pt,current,
+					t,current->bend,current->fluidic,
+					current->electro,current->stalling+STALL_PENALTY);
+			resource.push_back(same);
+			p.push(same);
 
 			// get its neighbours( PROBLEM: can it be back? )
-			vector<Point> nbr = getNbr(current.pt);
+			vector<Point> nbr = getNbr(current->pt);
 			vector<Point>::iterator iter;
 
 			// enqueue neighbours
 			for(iter = nbr.begin();iter!=nbr.end();iter++){
 				int x=(*iter).x,y=(*iter).y;
-				// its parent should not be propagated again
-				// also blockage should be check
-				cout<<"neighbour pt of "<<current.pt<<endl;
-				if( (*iter) != current.pt && 
-						!blockage[x][y] ){ 
+				// 0.current pt should be avoided
+				// 1.parent should not be propagated again
+				// 2.check if there is blockage 
+				// 3.forbid circular move (1->2...->1)
+				if( !blockage[x][y] &&
+				    (*iter) != current->pt ){ 
+					if(current->parent != NULL && (*iter) == current->parent->pt) continue;
 					// calculate its weight
 					Point tmp(x,y);
-					int f_pen=0,e_pen=0,bending=current.bend;
+					int f_pen=0,e_pen=0,bending=current->bend;
 					int fluidic_result = fluidicCheck( which,tmp,t );
 					bool electro_result = electrodeCheck( tmp );
 
 					// fluidic constraint
 					if( fluidic_result != 0 )
-						f_pen = FLUDIC_PENALTY;
+						f_pen = FLUID_PENALTY;
 
 					// electro constraint
 					if( !electro_result )
 						e_pen = ELECT_PENALTY;
 
 					// check bending
-					if( checkBending(tmp,current.pt) == true )
+					if( checkBending(tmp,current->pt) == true )
 						bending++;
 #ifdef DEBUG
-					cout<<"\tPoint "<<tmp<<" pushed."<<endl;
+					cout<<"\tPoint "<<tmp<<" pushed.parent = "<<current->pt<<endl;
 #endif
 					// (*qit).pt is the parent
-					GridPoint gp(tmp,	//position
+					GridPoint *nbpt = new GridPoint(tmp,	//position
 							current,   //parent
 							t,
 							bending,
 							f_pen,
 							e_pen,
-							current.stalling
+							current->stalling
 						    );
-					p.push(gp);
+					resource.push_back(nbpt);
+					p.push(nbpt);
 				}
 			}// end of enqueue neighbours
 		}// end of propagate
@@ -196,6 +206,9 @@ int main(int argc, char * argv[]){
 			// if impossible, report error
 			path[which][j-1] = new_back;
 		}
+
+		for(size_t i=0;i<resource.size();i++)
+			delete resource[i];
 	}
 	return 0;
 }

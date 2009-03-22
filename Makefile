@@ -7,7 +7,7 @@ parser=parser
 OPT=-Wall -g
 
 .PHONY: all
-all: $(OBJ) parser release debug 
+all: $(OBJ) parser debug release
 	cp ./main ./util/
 	ctags -R *.c *.cpp *.h
 

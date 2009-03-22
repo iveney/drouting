@@ -161,7 +161,7 @@ void sortNet(Subproblem * p, int * netorder){
 }
 
 // parse chip description file and store in `chip'
-Chip * init(int argc, char * argv[], Chip * chip){
+Chip * read_file(int argc, char * argv[], Chip * chip){
 	FILE * f;
 	if(argc<3) {
 		printf("Usage ./%s filename subproblem\n","main");
