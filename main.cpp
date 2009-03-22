@@ -55,17 +55,16 @@ int main(int argc, char * argv[]){
 		//if( numPin == 3 ) {} // handle three pin net
 		Point S = pNet->pin[0].pt; // source
 		Point T = pNet->pin[1].pt; // sink
-
 #ifdef DEBUG
 		for(int i=0;i<numPin;i++)
 			cout<<"\t"<<"pin "<<i<<" src:"<<pNet->pin[i].pt<<endl;
 #endif
 
-		// p and q is two heap
 		// initialize the heap
 		vector<GridPoint *> resource;
 		GP_HEAP p;
 		GridPoint *src = new GridPoint(S,NULL); // start time = 0, source point = S, no parent!
+		src->distance = MHT(S,T);
 		resource.push_back(src);
 		p.push(src);
 
@@ -74,20 +73,24 @@ int main(int argc, char * argv[]){
 		while( !p.empty() ){// propagate process
 			// get wave_front and propagate its neighbour
 			cout<<"------------------------------------------------------------"<<endl;
+
 			cout<<"before pop:"<<endl;
 			p.sort();
 			for(int i=0;i<p.size();i++)
 				cout<<i<<" "<<(p.c[i])->pt<<" t="<<p.c[i]->time<<" w="<<p.c[i]->weight<<endl;
+
+			////
 			GridPoint *current = p.top();
 			p.pop();
+			////
 
 			cout<<"after pop:"<<endl;
 			p.sort();
 			for(int i=0;i<p.size();i++)
 				cout<<i<<" "<<(p.c[i])->pt<<" t="<<p.c[i]->time<<" w="<<p.c[i]->weight<<endl;
+
 			cout<<"Pop "<<current->pt<<" at time "<<current->time<<", queue size="<<p.size()<<endl;
-			t = current->time;
-			t++;
+			t = current->time+1;
 			if( t > MAXTIME+1 ){ // timing constraint violated
 				if( p.size() != 0 )
 					continue;
@@ -113,9 +116,10 @@ int main(int argc, char * argv[]){
 			}
 
 			// same position, stall for 1 time step
-			GridPoint *same = new GridPoint(current->pt,current,
-					t,current->bend,current->fluidic,
-					current->electro,current->stalling+STALL_PENALTY);
+			GridPoint *same = new GridPoint( current->pt,current,
+					t,current->bend,  current->fluidic,
+					current->electro, current->stalling+STALL_PENALTY,
+					current->distance );
 			resource.push_back(same);
 			p.push(same);
 
@@ -148,7 +152,8 @@ int main(int argc, char * argv[]){
 						e_pen = ELECT_PENALTY;
 
 					// check bending
-					if( checkBending(tmp,current->pt) == true )
+					if( current->parent != NULL &&
+					    checkBending(tmp,current->parent->pt) == true )
 						bending++;
 #ifdef DEBUG
 					cout<<"\tPoint "<<tmp<<" pushed.parent = "<<current->pt<<endl;
@@ -160,7 +165,8 @@ int main(int argc, char * argv[]){
 							bending,
 							f_pen,
 							e_pen,
-							current->stalling
+							current->stalling,
+							MHT(tmp,T)
 						    );
 					resource.push_back(nbpt);
 					p.push(nbpt);

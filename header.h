@@ -76,9 +76,9 @@ public:
 class GridPoint{
 public:
 	GridPoint(Point pt_=Point(0,0),GridPoint *par=NULL,
-		int t=0,int b=0,int f=0,int e=0,int s=0):
+		int t=0,int b=0,int f=0,int e=0,int s=0,int d=0):
 		pt(pt_),parent(par),time(t),bend(b),
-		fluidic(f),electro(e), stalling(s){
+		fluidic(f),electro(e),stalling(s),distance(d){
 			updateWeight();
 		}
 
@@ -93,6 +93,7 @@ public:
 		return weight < g.weight; 
 	}
 
+	/////////////////////////////////////////////////////////////////
 	Point pt;		// its position
 	GridPoint * parent;     // from which GridPoint it was propagated
 	int weight;
@@ -103,10 +104,11 @@ public:
 	int fluidic;
 	int electro;
 	int stalling;
+	int distance;  // the manhattance distance to the sink
 
 	int updateWeight(){
 		int old = weight;
-		weight = time+bend+fluidic+electro+stalling;
+		weight = time+bend+fluidic+electro+stalling+distance;
 		return old;
 	}
 

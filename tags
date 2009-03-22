@@ -24,12 +24,13 @@ FLUID_PENALTY	header.h	/^const int FLUID_PENALTY=20;$/;"	v
 GP_HEAP	main.cpp	/^typedef heap<GridPoint*,vector<GridPoint*>,GridPoint::GPpointerCmp> GP_HEAP;$/;"	t	file:
 GPpointerCmp	header.h	/^	class GPpointerCmp {$/;"	c	class:GridPoint	access:public
 Grid	header.h	/^typedef BYTE Grid ;$/;"	t
-GridPoint	header.h	/^	GridPoint(Point pt_=Point(0,0),GridPoint *par=NULL,$/;"	f	class:GridPoint	access:public	signature:(Point pt_=Point(0,0),GridPoint *par=NULL, int t=0,int b=0,int f=0,int e=0,int s=0)
+GridPoint	header.h	/^	GridPoint(Point pt_=Point(0,0),GridPoint *par=NULL,$/;"	f	class:GridPoint	access:public	signature:(Point pt_=Point(0,0),GridPoint *par=NULL, int t=0,int b=0,int f=0,int e=0,int s=0,int d=0)
 GridPoint	header.h	/^class GridPoint{$/;"	c
 GridPoint::GPpointerCmp	header.h	/^	class GPpointerCmp {$/;"	c	class:GridPoint	access:public
 GridPoint::GPpointerCmp::operator ()	header.h	/^		bool operator()(const GridPoint *a, const GridPoint *b) const $/;"	f	class:GridPoint::GPpointerCmp	access:public	signature:(const GridPoint *a, const GridPoint *b) const
-GridPoint::GridPoint	header.h	/^	GridPoint(Point pt_=Point(0,0),GridPoint *par=NULL,$/;"	f	class:GridPoint	access:public	signature:(Point pt_=Point(0,0),GridPoint *par=NULL, int t=0,int b=0,int f=0,int e=0,int s=0)
+GridPoint::GridPoint	header.h	/^	GridPoint(Point pt_=Point(0,0),GridPoint *par=NULL,$/;"	f	class:GridPoint	access:public	signature:(Point pt_=Point(0,0),GridPoint *par=NULL, int t=0,int b=0,int f=0,int e=0,int s=0,int d=0)
 GridPoint::bend	header.h	/^	int bend;$/;"	m	class:GridPoint	access:public
+GridPoint::distance	header.h	/^	int distance;  \/\/ the manhattance distance to the sink$/;"	m	class:GridPoint	access:public
 GridPoint::electro	header.h	/^	int electro;$/;"	m	class:GridPoint	access:public
 GridPoint::fluidic	header.h	/^	int fluidic;$/;"	m	class:GridPoint	access:public
 GridPoint::operator <	header.h	/^	bool operator < (const GridPoint& g) const{ $/;"	f	class:GridPoint	access:public	signature:(const GridPoint& g) const
@@ -106,6 +107,7 @@ checkBending	route.h	/^bool checkBending(const Point & p1,const Point & p2);$/;"
 chip	main.h	/^Chip chip;				\/\/ Chip data and subproblem$/;"	v
 cmpNet	route.cpp	/^int cmpNet(const void * id1, const void * id2){$/;"	f	signature:(const void * id1, const void * id2)
 comp	heap.h	/^	Compare comp;$/;"	m	class:heap	access:public
+distance	header.h	/^	int distance;  \/\/ the manhattance distance to the sink$/;"	m	class:GridPoint	access:public
 drawSubproblem	parser.cpp	/^void drawSubproblem(Subproblem * prob, int N,int M,int num,char * name){$/;"	f	signature:(Subproblem * prob, int N,int M,int num,char * name)
 drawSubproblem	parser.h	/^void drawSubproblem(Subproblem *prob, int N, int M, int num, char *name);$/;"	p	signature:(Subproblem *prob, int N, int M, int num, char *name)
 dx	route.cpp	/^int dx[]={-1,1,0,0,0};$/;"	v
