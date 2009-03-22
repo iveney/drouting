@@ -1,1 +1,28 @@
-Test: This is the readme of my project
+TODO:
+* implement a priority queue for use!
+  since STL manual says that priority_queue can not be raondomly accessed
+  have to implement a heap by own, or wrap make_heap sort_heap into a custom class
+
+* how to denote a node's parent?
+  is it reasonable to use Reference Type in C++ in the class?
+  or use map + macro to find its parent?
+  one idea is tha map is a static member in the class, 
+  which stores all the mapping
+  and use a method to return current object's parent
+  BUT:  map has to declare the type, but the definition of this class is not ended!
+
+* what is the definition of parent?
+  Position + time already enough?
+    3
+    |
+  1-2
+
+  2-3
+  |
+  1
+
+ for both case, 3 is two bend with time = 3, position the same
+ but its parent is different!
+ HENCE: it's neccessary to let different obj have own parent
+
+* note that a cell that was propagated is not nessessary to be propagated again

@@ -12,6 +12,7 @@
 #include "route.h"
 #include "main.h"
 using namespace std;
+typedef priority_queue<GridPoint,vector<GridPoint>,less<vector<GridPoint>::value_type> > gp_queue;
 
 int main(int argc, char * argv[]){
 	idx=1;
@@ -56,12 +57,12 @@ int main(int argc, char * argv[]){
 
 #ifdef DEBUG
 		for(int i=0;i<numPin;i++)
-			cout<<"\t"<<"pin["<<pNet->pin[i].pt<<"]:\n";
+			cout<<"\t"<<"pin "<<i<<" src:"<<pNet->pin[i].pt<<endl;
 #endif
 
 		// p and q is two heap
 		// initialize the heap
-		priority_queue<GridPoint> p,q;
+		gp_queue p,q;
 		GridPoint dummy;
 		GridPoint src(S,dummy); // start time = 0
 		p.push(src);
@@ -69,12 +70,20 @@ int main(int argc, char * argv[]){
 
 		int t=0;
 		bool success = false;
-		while(!p.empty()){// propagate process
+		while( !p.empty() ){// propagate process
 			// get wave_front and propagate its neighbour
-			cout<<"queue size="<<p.size()<<endl;
+			cout<<"before pop:"<<endl;
+			gp_queue::iterator it;
+			for(it=p.begin();it!=p.end();it++){
+				cout<<i<<"="<<(*it).pt<<endl;
+			}
 			GridPoint current = p.top();
 			p.pop();
-			cout<<"Pop "<<current.pt<<" at time "<<current.time<<", queue size="<<p.size()<<endl;
+			cout<<"after pop:"<<endl;
+			for(it=p.begin();it!=p.end();it++){
+				cout<<i<<"="<<(*it).pt<<endl;
+			}
+			//cout<<"Pop "<<current.pt<<" at time "<<current.time<<", queue size="<<p.size()<<endl;
 			t = current.time;
 			t++;
 			if( t > MAXTIME+1 ){ // timing constraint violated
@@ -112,7 +121,8 @@ int main(int argc, char * argv[]){
 				int x=(*iter).x,y=(*iter).y;
 				// its parent should not be propagated again
 				// also blockage should be check
-				if( *iter != current.parent.pt && 
+				cout<<"neighbour pt of "<<current.pt<<endl;
+				if( (*iter) != current.pt && 
 						!blockage[x][y] ){ 
 					// calculate its weight
 					Point tmp(x,y);

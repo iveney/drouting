@@ -103,7 +103,7 @@ public:
 			return g.time - this->time;
 		else
 		*/
-		       	return weight >= g.weight; 
+		       	return weight > g.weight; 
 	}
 
 	Point pt;		// its position

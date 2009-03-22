@@ -25,6 +25,9 @@ parser:
 	$(CC) $(OPT) -c parser_main.cpp
 	$(CC) $(OPT) -o $(parser) $(OBJ) parser_main.o
 
+%.o: %.cpp 
+	$(CC) -c $< $(OPT) -o $@
+
 .PHONY : clean
 clean:
 	rm -rf $(OBJ) $(DBG) $(BIN) $(parser)
