@@ -38,87 +38,37 @@ public:
 };
 
 enum CORNER{LL,UR};
-class Block{// a block denote by two points
-public:
+struct Block{// a block denote by two points
 	char name[MAXSTR];
 	Point pt[2]; // LL=0, UR=1
 };
 
-class Pin{// a pin has a name and a location
-public:
+struct Pin{// a pin has a name and a location
 	char name[MAXSTR];
 	Point pt;
 };
 
-class Net{// a net has a name and at most 3 pins
-public:
+struct Net{// a net has a name and at most 3 pins
 	char name[MAXSTR];
 	int numPin;
 	Pin pin[3];
 };
 
-class Subproblem{// a subproblem has some blocks and nets
-public:
+struct Subproblem{// a subproblem has some blocks and nets
 	int nBlock;
 	Block block[MAXBLK];
 	int nNet;
 	Net net[MAXNET];
 };
 
-class Chip{// a chip has an array, timing constraint and subproblems
-public:
+struct Chip{// a chip has an array, timing constraint and subproblems
 	int N,M,T;	// array size,timing constraint
 	int time;
 	int nSubProblem;
 	Subproblem prob[MAXSUB];// note:prob starts from index 1
 };
 
-class GridPoint{
-public:
-	GridPoint(Point pt_=Point(0,0),GridPoint *par=NULL,
-		int t=0,int b=0,int f=0,int e=0,int s=0,int d=0):
-		pt(pt_),parent(par),time(t),bend(b),
-		fluidic(f),electro(e),stalling(s),distance(d){
-			updateWeight();
-		}
-
-	// TODO: how to determine there size if weights are equal?
-	// because we need a strictly weak ordering here for heap comparison...
-	bool operator < (const GridPoint& g) const{ 
-		/*
-		if( this->time != g.time )
-			return g.time - this->time;
-		else
-		*/
-		return weight < g.weight; 
-	}
-
-	/////////////////////////////////////////////////////////////////
-	Point pt;		// its position
-	GridPoint * parent;     // from which GridPoint it was propagated
-	int weight;
-
-	// weight is the sum of:
-	int time;
-	int bend;
-	int fluidic;
-	int electro;
-	int stalling;
-	int distance;  // the manhattance distance to the sink
-
-	int updateWeight(){
-		int old = weight;
-		weight = time+bend+fluidic+electro+stalling+distance;
-		return old;
-	}
-
-	class GPpointerCmp {
-	public:
-		bool operator()(const GridPoint *a, const GridPoint *b) const 
-		{ return *a < *b; }
-	};
-};
-
+/*
 class NetRouter{
 	public:
 		~NetRouter(){
@@ -128,9 +78,8 @@ class NetRouter{
 		bool route(){
 			return true;
 		}
-
 		vector<GridPoint*> resource;      // a pointer collection 
 		// gp_heap;
 };
-
+*/
 #endif
