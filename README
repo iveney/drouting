@@ -1,4 +1,9 @@
 TODO:
+* note that a cell that was propagated is not nessessary to be propagated again
+  however, if the cell is reached before at time A, and reached at another time B
+  1. A<=B , no need to propagate
+  2. A>B  , can propagate
+
 * implement a priority queue for use!
   since STL manual says that priority_queue can not be raondomly accessed
   have to implement a heap by own, or wrap make_heap sort_heap into a custom class
@@ -25,4 +30,3 @@ TODO:
  but its parent is different!
  HENCE: it's neccessary to let different obj have own parent
 
-* note that a cell that was propagated is not nessessary to be propagated again
