@@ -1,6 +1,6 @@
 CC=/usr/bin/g++
-SRC=parser.cpp header.c route.cpp
-OBJ=parser.o header.o route.o
+SRC=parser.cpp header.cpp route.cpp GridPoint.cpp
+OBJ=parser.o header.o route.o GridPoint.o
 BIN=main
 DBG=debug
 parser=parser
@@ -9,7 +9,7 @@ OPT=-Wall -g
 .PHONY: all
 all: $(OBJ) parser debug release
 	cp ./main ./util/
-	ctags -R *.c *.cpp *.h
+	ctags -R *.cpp *.h
 
 release:
 	$(CC) $(OPT) -c $(SRC)

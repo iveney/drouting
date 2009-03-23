@@ -6,44 +6,49 @@
 !_TAG_PROGRAM_VERSION	5.7	//
 ABS	header.h	10;"	d
 BYTE	header.h	/^typedef unsigned char BYTE ;$/;"	t
-Block	header.h	/^class Block{\/\/ a block denote by two points$/;"	c
-Block::name	header.h	/^	char name[MAXSTR];$/;"	m	class:Block	access:public
-Block::pt	header.h	/^	Point pt[2]; \/\/ LL=0, UR=1$/;"	m	class:Block	access:public
+Block	header.h	/^struct Block{\/\/ a block denote by two points$/;"	s
+Block::name	header.h	/^	char name[MAXSTR];$/;"	m	struct:Block	access:public
+Block::pt	header.h	/^	Point pt[2]; \/\/ LL=0, UR=1$/;"	m	struct:Block	access:public
 CORNER	header.h	/^enum CORNER{LL,UR};$/;"	g
-Chip	header.h	/^class Chip{\/\/ a chip has an array, timing constraint and subproblems$/;"	c
-Chip::M	header.h	/^	int N,M,T;	\/\/ array size,timing constraint$/;"	m	class:Chip	access:public
-Chip::N	header.h	/^	int N,M,T;	\/\/ array size,timing constraint$/;"	m	class:Chip	access:public
-Chip::T	header.h	/^	int N,M,T;	\/\/ array size,timing constraint$/;"	m	class:Chip	access:public
-Chip::nSubProblem	header.h	/^	int nSubProblem;$/;"	m	class:Chip	access:public
-Chip::prob	header.h	/^	Subproblem prob[MAXSUB];\/\/ note:prob starts from index 1$/;"	m	class:Chip	access:public
-Chip::time	header.h	/^	int time;$/;"	m	class:Chip	access:public
+Chip	header.h	/^struct Chip{\/\/ a chip has an array, timing constraint and subproblems$/;"	s
+Chip::M	header.h	/^	int N,M,T;	\/\/ array size,timing constraint$/;"	m	struct:Chip	access:public
+Chip::N	header.h	/^	int N,M,T;	\/\/ array size,timing constraint$/;"	m	struct:Chip	access:public
+Chip::T	header.h	/^	int N,M,T;	\/\/ array size,timing constraint$/;"	m	struct:Chip	access:public
+Chip::nSubProblem	header.h	/^	int nSubProblem;$/;"	m	struct:Chip	access:public
+Chip::prob	header.h	/^	Subproblem prob[MAXSUB];\/\/ note:prob starts from index 1$/;"	m	struct:Chip	access:public
+Chip::time	header.h	/^	int time;$/;"	m	struct:Chip	access:public
 DIRECTION	route.h	/^enum DIRECTION{LEFT,RIGHT,UP,DOWN,STAY}; \/\/ LEFT, RIGHT, UP, DOWN$/;"	g
 DOWN	route.h	/^enum DIRECTION{LEFT,RIGHT,UP,DOWN,STAY}; \/\/ LEFT, RIGHT, UP, DOWN$/;"	e	enum:DIRECTION
 ELECT_PENALTY	header.h	/^const int ELECT_PENALTY=20;$/;"	v
 FLUID_PENALTY	header.h	/^const int FLUID_PENALTY=20;$/;"	v
 GP_HEAP	main.cpp	/^typedef heap<GridPoint*,vector<GridPoint*>,GridPoint::GPpointerCmp> GP_HEAP;$/;"	t	file:
-GPpointerCmp	header.h	/^	class GPpointerCmp {$/;"	c	class:GridPoint	access:public
+GPpointerCmp	GridPoint.h	/^	class GPpointerCmp{$/;"	c	class:GridPoint	access:public
 Grid	header.h	/^typedef BYTE Grid ;$/;"	t
-GridPoint	header.h	/^	GridPoint(Point pt_=Point(0,0),GridPoint *par=NULL,$/;"	f	class:GridPoint	access:public	signature:(Point pt_=Point(0,0),GridPoint *par=NULL, int t=0,int b=0,int f=0,int e=0,int s=0,int d=0)
-GridPoint	header.h	/^class GridPoint{$/;"	c
-GridPoint::GPpointerCmp	header.h	/^	class GPpointerCmp {$/;"	c	class:GridPoint	access:public
-GridPoint::GPpointerCmp::operator ()	header.h	/^		bool operator()(const GridPoint *a, const GridPoint *b) const $/;"	f	class:GridPoint::GPpointerCmp	access:public	signature:(const GridPoint *a, const GridPoint *b) const
-GridPoint::GridPoint	header.h	/^	GridPoint(Point pt_=Point(0,0),GridPoint *par=NULL,$/;"	f	class:GridPoint	access:public	signature:(Point pt_=Point(0,0),GridPoint *par=NULL, int t=0,int b=0,int f=0,int e=0,int s=0,int d=0)
-GridPoint::bend	header.h	/^	int bend;$/;"	m	class:GridPoint	access:public
-GridPoint::distance	header.h	/^	int distance;  \/\/ the manhattance distance to the sink$/;"	m	class:GridPoint	access:public
-GridPoint::electro	header.h	/^	int electro;$/;"	m	class:GridPoint	access:public
-GridPoint::fluidic	header.h	/^	int fluidic;$/;"	m	class:GridPoint	access:public
-GridPoint::operator <	header.h	/^	bool operator < (const GridPoint& g) const{ $/;"	f	class:GridPoint	access:public	signature:(const GridPoint& g) const
-GridPoint::parent	header.h	/^	GridPoint * parent;     \/\/ from which GridPoint it was propagated$/;"	m	class:GridPoint	access:public
-GridPoint::pt	header.h	/^	Point pt;		\/\/ its position$/;"	m	class:GridPoint	access:public
-GridPoint::stalling	header.h	/^	int stalling;$/;"	m	class:GridPoint	access:public
-GridPoint::time	header.h	/^	int time;$/;"	m	class:GridPoint	access:public
-GridPoint::updateWeight	header.h	/^	int updateWeight(){$/;"	f	class:GridPoint	access:public	signature:()
-GridPoint::weight	header.h	/^	int weight;$/;"	m	class:GridPoint	access:public
+GridPoint	GridPoint.h	/^	GridPoint(Point pt_=Point(0,0),GridPoint *par=NULL,$/;"	f	class:GridPoint	access:public	signature:(Point pt_=Point(0,0),GridPoint *par=NULL, int t=0,int b=0,int f=0,int e=0,int s=0,int d=0)
+GridPoint	GridPoint.h	/^class GridPoint{$/;"	c
+GridPoint::GPpointerCmp	GridPoint.h	/^	class GPpointerCmp{$/;"	c	class:GridPoint	access:public
+GridPoint::GPpointerCmp::operator ()	GridPoint.h	/^		bool operator()(const GridPoint *a, const GridPoint *b) const{$/;"	f	class:GridPoint::GPpointerCmp	access:public	signature:(const GridPoint *a, const GridPoint *b) const
+GridPoint::GridPoint	GridPoint.h	/^	GridPoint(Point pt_=Point(0,0),GridPoint *par=NULL,$/;"	f	class:GridPoint	access:public	signature:(Point pt_=Point(0,0),GridPoint *par=NULL, int t=0,int b=0,int f=0,int e=0,int s=0,int d=0)
+GridPoint::bend	GridPoint.h	/^	int bend;$/;"	m	class:GridPoint	access:public
+GridPoint::counter	GridPoint.cpp	/^int GridPoint::counter=0;$/;"	m	class:GridPoint	file:
+GridPoint::counter	GridPoint.h	/^	static int counter;$/;"	m	class:GridPoint	access:public
+GridPoint::distance	GridPoint.h	/^	int distance;   \/\/ the manhattance distance to the sink$/;"	m	class:GridPoint	access:public
+GridPoint::electro	GridPoint.h	/^	int electro;$/;"	m	class:GridPoint	access:public
+GridPoint::fluidic	GridPoint.h	/^	int fluidic;$/;"	m	class:GridPoint	access:public
+GridPoint::operator <	GridPoint.h	/^	bool operator < (const GridPoint& g) const{ $/;"	f	class:GridPoint	access:public	signature:(const GridPoint& g) const
+GridPoint::operator ==	GridPoint.h	/^	bool operator == (const GridPoint &g) const{$/;"	f	class:GridPoint	access:public	signature:(const GridPoint &g) const
+GridPoint::order	GridPoint.h	/^	int order;      \/\/ orde the GridPoint was generated$/;"	m	class:GridPoint	access:public
+GridPoint::parent	GridPoint.h	/^	GridPoint * parent;     \/\/ from which GridPoint it was propagated$/;"	m	class:GridPoint	access:public
+GridPoint::pt	GridPoint.h	/^	Point pt;		\/\/ its position$/;"	m	class:GridPoint	access:public
+GridPoint::stalling	GridPoint.h	/^	int stalling;$/;"	m	class:GridPoint	access:public
+GridPoint::time	GridPoint.h	/^	int time;$/;"	m	class:GridPoint	access:public
+GridPoint::updateWeight	GridPoint.cpp	/^int GridPoint::updateWeight(){$/;"	f	class:GridPoint	signature:()
+GridPoint::updateWeight	GridPoint.h	/^	int updateWeight();$/;"	p	class:GridPoint	access:public	signature:()
+GridPoint::weight	GridPoint.h	/^	int weight;$/;"	m	class:GridPoint	access:public
 INF	header.h	/^const Grid INF=2<<7-1;$/;"	v
 LEFT	route.h	/^enum DIRECTION{LEFT,RIGHT,UP,DOWN,STAY}; \/\/ LEFT, RIGHT, UP, DOWN$/;"	e	enum:DIRECTION
 LL	header.h	/^enum CORNER{LL,UR};$/;"	e	enum:CORNER
-M	header.h	/^	int N,M,T;	\/\/ array size,timing constraint$/;"	m	class:Chip	access:public
+M	header.h	/^	int N,M,T;	\/\/ array size,timing constraint$/;"	m	struct:Chip	access:public
 M	main.h	/^int N,M;				\/\/ row\/column count$/;"	v
 MAX	header.h	12;"	d
 MAXBLK	header.h	/^const int MAXBLK=10;$/;"	v
@@ -55,20 +60,15 @@ MAXSUB	header.h	/^const int MAXSUB=100;$/;"	v
 MAXTIME	header.h	/^const int MAXTIME=20;$/;"	v
 MHT	header.h	11;"	d
 MIN	header.h	13;"	d
-N	header.h	/^	int N,M,T;	\/\/ array size,timing constraint$/;"	m	class:Chip	access:public
+N	header.h	/^	int N,M,T;	\/\/ array size,timing constraint$/;"	m	struct:Chip	access:public
 N	main.h	/^int N,M;				\/\/ row\/column count$/;"	v
-Net	header.h	/^class Net{\/\/ a net has a name and at most 3 pins$/;"	c
-Net::name	header.h	/^	char name[MAXSTR];$/;"	m	class:Net	access:public
-Net::numPin	header.h	/^	int numPin;$/;"	m	class:Net	access:public
-Net::pin	header.h	/^	Pin pin[3];$/;"	m	class:Net	access:public
-NetRouter	header.h	/^class NetRouter{$/;"	c
-NetRouter::resource	header.h	/^		vector<GridPoint*> resource;      \/\/ a pointer collection $/;"	m	class:NetRouter	access:public
-NetRouter::route	header.h	/^		bool route(){$/;"	f	class:NetRouter	access:public	signature:()
-NetRouter::size	header.h	/^		int size() const{ return resource.size(); }$/;"	f	class:NetRouter	access:public	signature:() const
-NetRouter::~NetRouter	header.h	/^		~NetRouter(){$/;"	f	class:NetRouter	access:public	signature:()
-Pin	header.h	/^class Pin{\/\/ a pin has a name and a location$/;"	c
-Pin::name	header.h	/^	char name[MAXSTR];$/;"	m	class:Pin	access:public
-Pin::pt	header.h	/^	Point pt;$/;"	m	class:Pin	access:public
+Net	header.h	/^struct Net{\/\/ a net has a name and at most 3 pins$/;"	s
+Net::name	header.h	/^	char name[MAXSTR];$/;"	m	struct:Net	access:public
+Net::numPin	header.h	/^	int numPin;$/;"	m	struct:Net	access:public
+Net::pin	header.h	/^	Pin pin[3];$/;"	m	struct:Net	access:public
+Pin	header.h	/^struct Pin{\/\/ a pin has a name and a location$/;"	s
+Pin::name	header.h	/^	char name[MAXSTR];$/;"	m	struct:Pin	access:public
+Pin::pt	header.h	/^	Point pt;$/;"	m	struct:Pin	access:public
 Point	header.h	/^	Point(){x=y=0;}$/;"	f	class:Point	access:public	signature:()
 Point	header.h	/^	Point(int xx,int yy):x(xx),y(yy){}$/;"	f	class:Point	access:public	signature:(int xx,int yy)
 Point	header.h	/^class Point{\/\/ a point denote by (row,col)$/;"	c
@@ -84,59 +84,75 @@ PtRelativePos	route.h	/^DIRECTION PtRelativePos(const Point & l ,const Point & r
 RIGHT	route.h	/^enum DIRECTION{LEFT,RIGHT,UP,DOWN,STAY}; \/\/ LEFT, RIGHT, UP, DOWN$/;"	e	enum:DIRECTION
 STALL_PENALTY	header.h	/^const int STALL_PENALTY=20;$/;"	v
 STAY	route.h	/^enum DIRECTION{LEFT,RIGHT,UP,DOWN,STAY}; \/\/ LEFT, RIGHT, UP, DOWN$/;"	e	enum:DIRECTION
-Subproblem	header.h	/^class Subproblem{\/\/ a subproblem has some blocks and nets$/;"	c
-Subproblem::block	header.h	/^	Block block[MAXBLK];$/;"	m	class:Subproblem	access:public
-Subproblem::nBlock	header.h	/^	int nBlock;$/;"	m	class:Subproblem	access:public
-Subproblem::nNet	header.h	/^	int nNet;$/;"	m	class:Subproblem	access:public
-Subproblem::net	header.h	/^	Net net[MAXNET];$/;"	m	class:Subproblem	access:public
-T	header.h	/^	int N,M,T;	\/\/ array size,timing constraint$/;"	m	class:Chip	access:public
+Subproblem	header.h	/^struct Subproblem{\/\/ a subproblem has some blocks and nets$/;"	s
+Subproblem::block	header.h	/^	Block block[MAXBLK];$/;"	m	struct:Subproblem	access:public
+Subproblem::nBlock	header.h	/^	int nBlock;$/;"	m	struct:Subproblem	access:public
+Subproblem::nNet	header.h	/^	int nNet;$/;"	m	struct:Subproblem	access:public
+Subproblem::net	header.h	/^	Net net[MAXNET];$/;"	m	struct:Subproblem	access:public
+T	header.h	/^	int N,M,T;	\/\/ array size,timing constraint$/;"	m	struct:Chip	access:public
 UP	route.h	/^enum DIRECTION{LEFT,RIGHT,UP,DOWN,STAY}; \/\/ LEFT, RIGHT, UP, DOWN$/;"	e	enum:DIRECTION
 UR	header.h	/^enum CORNER{LL,UR};$/;"	e	enum:CORNER
+__GRIDPOINT_H__	GridPoint.h	2;"	d
 __HEADER_H__	header.h	2;"	d
 __HEAP_H__	heap.h	4;"	d
 __MAIN_H__	main.h	2;"	d
 __PARSER_H__	parser.h	2;"	d
 __ROUTE_H__	route.h	2;"	d
 begin	heap.h	/^	iterator begin() { return c.begin(); }$/;"	f	class:heap	access:public	signature:()
-bend	header.h	/^	int bend;$/;"	m	class:GridPoint	access:public
-block	header.h	/^	Block block[MAXBLK];$/;"	m	class:Subproblem	access:public
+bend	GridPoint.h	/^	int bend;$/;"	m	class:GridPoint	access:public
+block	header.h	/^	Block block[MAXBLK];$/;"	m	struct:Subproblem	access:public
 blockage	main.h	/^BYTE blockage[MAXGRID][MAXGRID];	\/\/ Blockage bitmap$/;"	v
-c	heap.h	/^	Container c;$/;"	m	class:heap	access:public
+c	heap.h	/^	Container c;   \/\/ the container to store elements$/;"	m	class:heap	access:public
 checkBending	route.cpp	/^bool checkBending(const Point & p1,const Point & p2){$/;"	f	signature:(const Point & p1,const Point & p2)
 checkBending	route.h	/^bool checkBending(const Point & p1,const Point & p2);$/;"	p	signature:(const Point & p1,const Point & p2)
 chip	main.h	/^Chip chip;				\/\/ Chip data and subproblem$/;"	v
 cmpNet	route.cpp	/^int cmpNet(const void * id1, const void * id2){$/;"	f	signature:(const void * id1, const void * id2)
-comp	heap.h	/^	Compare comp;$/;"	m	class:heap	access:public
-distance	header.h	/^	int distance;  \/\/ the manhattance distance to the sink$/;"	m	class:GridPoint	access:public
+comp	heap.h	/^	Compare comp;  \/\/ compare function(strictly weak order$/;"	m	class:heap	access:public
+counter	GridPoint.cpp	/^int GridPoint::counter=0;$/;"	m	class:GridPoint	file:
+counter	GridPoint.h	/^	static int counter;$/;"	m	class:GridPoint	access:public
+counter	heap.h	/^	static int counter;$/;"	m	class:heap	access:public
+counter	heap.h	/^int heap<T,Container,Compare>::counter=0;$/;"	m	class:heap
+distance	GridPoint.h	/^	int distance;   \/\/ the manhattance distance to the sink$/;"	m	class:GridPoint	access:public
 drawSubproblem	parser.cpp	/^void drawSubproblem(Subproblem * prob, int N,int M,int num,char * name){$/;"	f	signature:(Subproblem * prob, int N,int M,int num,char * name)
 drawSubproblem	parser.h	/^void drawSubproblem(Subproblem *prob, int N, int M, int num, char *name);$/;"	p	signature:(Subproblem *prob, int N, int M, int num, char *name)
 dx	route.cpp	/^int dx[]={-1,1,0,0,0};$/;"	v
 dy	route.cpp	/^int dy[]={0,0,1,-1,0};$/;"	v
-electro	header.h	/^	int electro;$/;"	m	class:GridPoint	access:public
+electro	GridPoint.h	/^	int electro;$/;"	m	class:GridPoint	access:public
 electrodeCheck	route.cpp	/^bool electrodeCheck(const Point & pt){$/;"	f	signature:(const Point & pt)
 electrodeCheck	route.h	/^bool electrodeCheck(const Point & pt);$/;"	p	signature:(const Point & pt)
 empty	heap.h	/^	bool empty() const{return c.size() == 0; }$/;"	f	class:heap	access:public	signature:() const
 end	heap.h	/^	iterator end() { return c.end(); }$/;"	f	class:heap	access:public	signature:()
-fluidic	header.h	/^	int fluidic;$/;"	m	class:GridPoint	access:public
+fluidic	GridPoint.h	/^	int fluidic;$/;"	m	class:GridPoint	access:public
 fluidicCheck	route.cpp	/^int fluidicCheck(int which, const Point & pt,int t){$/;"	f	signature:(int which, const Point & pt,int t)
 fluidicCheck	route.h	/^int fluidicCheck(int which, const Point & pt,int t);$/;"	p	signature:(int which, const Point & pt,int t)
+free	heap.h	/^	static void free(){$/;"	f	class:heap	access:public	signature:()
 getBoundingBox	route.cpp	/^Block getBoundingBox(const Pin & p1, const Pin & p2){$/;"	f	signature:(const Pin & p1, const Pin & p2)
 getColor	parser.cpp	/^const char * getColor(){$/;"	f	signature:()
 getColor	parser.h	/^const char *getColor(void);$/;"	p	signature:(void)
 getNbr	route.cpp	/^vector<Point> getNbr(const Point & pt){$/;"	f	signature:(const Point & pt)
 getNbr	route.h	/^std::vector<Point> getNbr(const Point & pt);$/;"	p	signature:(const Point & pt)
+get_order	heap.h	/^	static void get_order(const T &x){$/;"	f	class:heap	access:public	signature:(const T &x)
 grid	main.h	/^Grid grid[MAXNET][MAXGRID][MAXGRID];	\/\/ record the routes, grid[i][x][y]: the time step that net i occupies (x,y)$/;"	v
 heap	heap.h	/^class heap{$/;"	c
 heap::begin	heap.h	/^	iterator begin() { return c.begin(); }$/;"	f	class:heap	access:public	signature:()
-heap::c	heap.h	/^	Container c;$/;"	m	class:heap	access:public
-heap::comp	heap.h	/^	Compare comp;$/;"	m	class:heap	access:public
+heap::c	heap.h	/^	Container c;   \/\/ the container to store elements$/;"	m	class:heap	access:public
+heap::comp	heap.h	/^	Compare comp;  \/\/ compare function(strictly weak order$/;"	m	class:heap	access:public
+heap::counter	heap.h	/^	static int counter;$/;"	m	class:heap	access:public
+heap::counter	heap.h	/^int heap<T,Container,Compare>::counter=0;$/;"	m	class:heap
 heap::empty	heap.h	/^	bool empty() const{return c.size() == 0; }$/;"	f	class:heap	access:public	signature:() const
 heap::end	heap.h	/^	iterator end() { return c.end(); }$/;"	f	class:heap	access:public	signature:()
+heap::free	heap.h	/^	static void free(){$/;"	f	class:heap	access:public	signature:()
+heap::get_order	heap.h	/^	static void get_order(const T &x){$/;"	f	class:heap	access:public	signature:(const T &x)
 heap::iterator	heap.h	/^	typedef class Container::iterator iterator;$/;"	t	class:heap	typeref:class:heap::iterator	access:public
+heap::order	heap.h	/^	static map<T,int> order; \/\/ mark the generated order$/;"	m	class:heap	access:public
+heap::order	heap.h	/^map<T,int> heap<T,Container,Compare>::order=map<T,int>();$/;"	m	class:heap
 heap::pop	heap.h	/^	void pop() {$/;"	f	class:heap	access:public	signature:()
 heap::push	heap.h	/^	void push(const T & x){$/;"	f	class:heap	access:public	signature:(const T & x)
+heap::resource	heap.h	/^	static vector<T> resource;  \/\/ resource collector$/;"	m	class:heap	access:public
+heap::resource	heap.h	/^vector<T> heap<T,Container,Compare>::resource=vector<T>();$/;"	m	class:heap
 heap::size	heap.h	/^	int size() const {return c.size();}$/;"	f	class:heap	access:public	signature:() const
 heap::sort	heap.h	/^	void sort(){$/;"	f	class:heap	access:public	signature:()
+heap::store	heap.h	/^	static void store(const T &x) {$/;"	f	class:heap	access:public	signature:(const T &x)
 heap::top	heap.h	/^	T top() const {return c.front();}$/;"	f	class:heap	access:public	signature:() const
 idx	main.h	/^int idx;				\/\/ problem to solve$/;"	v
 inGrid	route.cpp	/^bool inGrid(const Point & pt){$/;"	f	signature:(const Point & pt)
@@ -148,55 +164,59 @@ main	main.cpp	/^int main(int argc, char * argv[]){$/;"	f	signature:(int argc, ch
 main	parser_main.cpp	/^int main(int argc, char * argv[]){$/;"	f	signature:(int argc, char * argv[])
 main	test.cpp	/^int main(){$/;"	f	signature:()
 main	test_heap.cpp	/^int main(){$/;"	f	signature:()
-nBlock	header.h	/^	int nBlock;$/;"	m	class:Subproblem	access:public
-nNet	header.h	/^	int nNet;$/;"	m	class:Subproblem	access:public
-nSubProblem	header.h	/^	int nSubProblem;$/;"	m	class:Chip	access:public
-name	header.h	/^	char name[MAXSTR];$/;"	m	class:Block	access:public
-name	header.h	/^	char name[MAXSTR];$/;"	m	class:Net	access:public
-name	header.h	/^	char name[MAXSTR];$/;"	m	class:Pin	access:public
-net	header.h	/^	Net net[MAXNET];$/;"	m	class:Subproblem	access:public
+nBlock	header.h	/^	int nBlock;$/;"	m	struct:Subproblem	access:public
+nNet	header.h	/^	int nNet;$/;"	m	struct:Subproblem	access:public
+nSubProblem	header.h	/^	int nSubProblem;$/;"	m	struct:Chip	access:public
+name	header.h	/^	char name[MAXSTR];$/;"	m	struct:Block	access:public
+name	header.h	/^	char name[MAXSTR];$/;"	m	struct:Net	access:public
+name	header.h	/^	char name[MAXSTR];$/;"	m	struct:Pin	access:public
+net	header.h	/^	Net net[MAXNET];$/;"	m	struct:Subproblem	access:public
 netcount	main.h	/^int netcount;				\/\/ current subproblem's net count$/;"	v
 netorder	main.h	/^int netorder[MAXNET];			\/\/ net routing order$/;"	v
-numPin	header.h	/^	int numPin;$/;"	m	class:Net	access:public
-operator	header.c	/^ostream & operator <<(ostream & out,Point & pt){$/;"	f	signature:(ostream & out,Point & pt)
+numPin	header.h	/^	int numPin;$/;"	m	struct:Net	access:public
 operator !=	header.h	/^	bool operator != (const Point & pt) const {return !operator==(pt);}$/;"	f	class:Point	access:public	signature:(const Point & pt) const
-operator ()	header.h	/^		bool operator()(const GridPoint *a, const GridPoint *b) const $/;"	f	class:GridPoint::GPpointerCmp	access:public	signature:(const GridPoint *a, const GridPoint *b) const
-operator <	header.h	/^	bool operator < (const GridPoint& g) const{ $/;"	f	class:GridPoint	access:public	signature:(const GridPoint& g) const
+operator ()	GridPoint.h	/^		bool operator()(const GridPoint *a, const GridPoint *b) const{$/;"	f	class:GridPoint::GPpointerCmp	access:public	signature:(const GridPoint *a, const GridPoint *b) const
+operator <	GridPoint.h	/^	bool operator < (const GridPoint& g) const{ $/;"	f	class:GridPoint	access:public	signature:(const GridPoint& g) const
+operator <<	header.cpp	/^ostream & operator <<(ostream & out,Point & pt){$/;"	f	signature:(ostream & out,Point & pt)
 operator <<	header.h	/^	friend ostream &operator <<(ostream&,Point&);$/;"	p	class:Point	access:friend	signature:(ostream&,Point&)
+operator ==	GridPoint.h	/^	bool operator == (const GridPoint &g) const{$/;"	f	class:GridPoint	access:public	signature:(const GridPoint &g) const
 operator ==	header.h	/^	bool operator == (const Point & pt) const {return x==pt.x && y==pt.y;}$/;"	f	class:Point	access:public	signature:(const Point & pt) const
-parent	header.h	/^	GridPoint * parent;     \/\/ from which GridPoint it was propagated$/;"	m	class:GridPoint	access:public
+order	GridPoint.h	/^	int order;      \/\/ orde the GridPoint was generated$/;"	m	class:GridPoint	access:public
+order	heap.h	/^	static map<T,int> order; \/\/ mark the generated order$/;"	m	class:heap	access:public
+order	heap.h	/^map<T,int> heap<T,Container,Compare>::order=map<T,int>();$/;"	m	class:heap
+parent	GridPoint.h	/^	GridPoint * parent;     \/\/ from which GridPoint it was propagated$/;"	m	class:GridPoint	access:public
 parse	parser.cpp	/^Chip * parse(FILE * f,Chip * chip){$/;"	f	signature:(FILE * f,Chip * chip)
 parse	parser.h	/^Chip *parse(FILE *f, Chip *chip);$/;"	p	signature:(FILE *f, Chip *chip)
 path	main.h	/^Point path[MAXNET][MAXTIME];		\/\/ the routing path : path[i][t]: net i's position at time t$/;"	v
-pin	header.h	/^	Pin pin[3];$/;"	m	class:Net	access:public
+pin	header.h	/^	Pin pin[3];$/;"	m	struct:Net	access:public
 pop	heap.h	/^	void pop() {$/;"	f	class:heap	access:public	signature:()
-prob	header.h	/^	Subproblem prob[MAXSUB];\/\/ note:prob starts from index 1$/;"	m	class:Chip	access:public
-pt	header.h	/^	Point pt;		\/\/ its position$/;"	m	class:GridPoint	access:public
-pt	header.h	/^	Point pt;$/;"	m	class:Pin	access:public
-pt	header.h	/^	Point pt[2]; \/\/ LL=0, UR=1$/;"	m	class:Block	access:public
+prob	header.h	/^	Subproblem prob[MAXSUB];\/\/ note:prob starts from index 1$/;"	m	struct:Chip	access:public
+pt	GridPoint.h	/^	Point pt;		\/\/ its position$/;"	m	class:GridPoint	access:public
+pt	header.h	/^	Point pt;$/;"	m	struct:Pin	access:public
+pt	header.h	/^	Point pt[2]; \/\/ LL=0, UR=1$/;"	m	struct:Block	access:public
 ptInRect	route.cpp	/^bool ptInRect(const Block & bb, const Point & pt){$/;"	f	signature:(const Block & bb, const Point & pt)
 push	heap.h	/^	void push(const T & x){$/;"	f	class:heap	access:public	signature:(const T & x)
 read_file	route.cpp	/^Chip * read_file(int argc, char * argv[], Chip * chip){$/;"	f	signature:(int argc, char * argv[], Chip * chip)
 read_file	route.h	/^Chip * read_file(int argc, char * argv[], Chip * chip);$/;"	p	signature:(int argc, char * argv[], Chip * chip)
-resource	header.h	/^		vector<GridPoint*> resource;      \/\/ a pointer collection $/;"	m	class:NetRouter	access:public
-route	header.h	/^		bool route(){$/;"	f	class:NetRouter	access:public	signature:()
-size	header.h	/^		int size() const{ return resource.size(); }$/;"	f	class:NetRouter	access:public	signature:() const
+resource	heap.h	/^	static vector<T> resource;  \/\/ resource collector$/;"	m	class:heap	access:public
+resource	heap.h	/^vector<T> heap<T,Container,Compare>::resource=vector<T>();$/;"	m	class:heap
 size	heap.h	/^	int size() const {return c.size();}$/;"	f	class:heap	access:public	signature:() const
 sort	heap.h	/^	void sort(){$/;"	f	class:heap	access:public	signature:()
 sortNet	route.cpp	/^void sortNet(Subproblem * p, int * netorder){$/;"	f	signature:(Subproblem * p, int * netorder)
 sortNet	route.h	/^void sortNet(Subproblem * p, int * netorder);$/;"	p	signature:(Subproblem * p, int * netorder)
-stalling	header.h	/^	int stalling;$/;"	m	class:GridPoint	access:public
+stalling	GridPoint.h	/^	int stalling;$/;"	m	class:GridPoint	access:public
+store	heap.h	/^	static void store(const T &x) {$/;"	f	class:heap	access:public	signature:(const T &x)
 string_heap	test_heap.cpp	/^typedef heap<string*,vector<string*> > string_heap;$/;"	t	file:
 swap	route.cpp	/^void swap(int &a,int &b){$/;"	f	signature:(int &a,int &b)
-time	header.h	/^	int time;$/;"	m	class:Chip	access:public
-time	header.h	/^	int time;$/;"	m	class:GridPoint	access:public
+time	GridPoint.h	/^	int time;$/;"	m	class:GridPoint	access:public
+time	header.h	/^	int time;$/;"	m	struct:Chip	access:public
 top	heap.h	/^	T top() const {return c.front();}$/;"	f	class:heap	access:public	signature:() const
 traceback	route.cpp	/^void traceback(int which, Point & current){$/;"	f	signature:(int which, Point & current)
 traceback	route.h	/^void traceback(int which, Point & current);$/;"	p	signature:(int which, Point & current)
 traceback_line	route.cpp	/^Point traceback_line(int which, int t, const Point & current, DIRECTION dir){$/;"	f	signature:(int which, int t, const Point & current, DIRECTION dir)
 traceback_line	route.h	/^Point traceback_line(int which, int t, const Point & current, DIRECTION dir);$/;"	p	signature:(int which, int t, const Point & current, DIRECTION dir)
-updateWeight	header.h	/^	int updateWeight(){$/;"	f	class:GridPoint	access:public	signature:()
-weight	header.h	/^	int weight;$/;"	m	class:GridPoint	access:public
+updateWeight	GridPoint.cpp	/^int GridPoint::updateWeight(){$/;"	f	class:GridPoint	signature:()
+updateWeight	GridPoint.h	/^	int updateWeight();$/;"	p	class:GridPoint	access:public	signature:()
+weight	GridPoint.h	/^	int weight;$/;"	m	class:GridPoint	access:public
 x	header.h	/^	int x,y;$/;"	m	class:Point	access:public
 y	header.h	/^	int x,y;$/;"	m	class:Point	access:public
-~NetRouter	header.h	/^		~NetRouter(){$/;"	f	class:NetRouter	access:public	signature:()
