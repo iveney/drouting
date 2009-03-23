@@ -1,6 +1,7 @@
 #ifndef __MAIN_H__
 #define __MAIN_H__
 
+// global variables
 BYTE blockage[MAXGRID][MAXGRID];	// Blockage bitmap
 Chip chip;				// Chip data and subproblem
 Grid grid[MAXNET][MAXGRID][MAXGRID];	// record the routes, grid[i][x][y]: the time step that net i occupies (x,y)

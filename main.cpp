@@ -19,22 +19,21 @@ typedef heap<GridPoint*,vector<GridPoint*>,GridPoint::GPpointerCmp> GP_HEAP;
 
 int main(int argc, char * argv[]){
 	idx=1;
+
 	// read configuration file and parse it
 	read_file(argc,argv,&chip);
 
 	// solve subproblem `idx'
 	Subproblem * pProb = &chip.prob[idx];
-#ifdef DEBUG
-	printf("Start to solve subproblem %d\n",idx);
-#endif
+	printf("--- Solving subproblem %d ---\n",idx);
 	
 	// sort : decide net order
 	netcount = pProb->nNet;
 	sortNet(pProb,netorder);
 #ifdef DEBUG
-	printf("net order: [ ");
-	for(int i=0;i<pProb->nNet;i++){printf("%d ",netorder[i]);}
-	printf("]\n");
+	cout<<"net order: [ ";
+	for(int i=0;i<pProb->nNet;i++) cout<<netorder[i]" ";
+	cout<<"]"<<endl;
 #endif
 
 	// generate blockage bitmap
@@ -45,15 +44,17 @@ int main(int argc, char * argv[]){
        	M=chip.M;
 	memset(grid,0,sizeof(grid));
 	GridPoint *current;
+
 	// start to route each net according to sorted order
 	for(i=0;i<(pProb->nNet);i++){
 		int which = netorder[i];
 		Net * pNet = &pProb->net[which]; // according to netorder
 #ifdef DEBUF
-		printf("** Routing net[%d] **\n",which);
+		cout<<"** Routing net["<<which<<"] **"<<endl;
 #endif
 		// do Lee's propagation,handles 2-pin net only currently
 		int numPin = pNet->numPin;
+
 		//if( numPin == 3 ) {} // handle three pin net
 		Point S = pNet->pin[0].pt; // source
 		Point T = pNet->pin[1].pt; // sink
@@ -61,9 +62,9 @@ int main(int argc, char * argv[]){
 		for(int i=0;i<numPin;i++)// output Net infor
 			cout<<"\t"<<"pin "<<i<<":"<<pNet->pin[i].pt<<endl;
 #endif
-
 		// initialize the heap
 		GP_HEAP p;
+
 		// start time = 0, source point = S, no parent
 		GridPoint *src = new GridPoint(S,NULL); 
 		src->distance = MHT(S,T);
@@ -116,8 +117,10 @@ int main(int argc, char * argv[]){
 					current->electro, current->stalling+STALL_PENALTY,
 					current->distance );
 			p.push(same);
+#ifdef DEBUG
 			cout<<"\tStalling Point "<<same->pt<<" pushed. w="<<same->weight<<
 				", parent = "<<same->parent->pt<<endl;
+#endif
 
 			// get its neighbours( PROBLEM: can it be back? )
 			vector<Point> nbr = getNbr(current->pt);
@@ -132,7 +135,9 @@ int main(int argc, char * argv[]){
 				// 3.forbid circular move (1->2...->1)
 				if( !blockage[x][y] &&
 				    (*iter) != current->pt ){ 
-					if(current->parent != NULL && (*iter) == current->parent->pt) continue;
+					if(current->parent != NULL && 
+					   (*iter) == current->parent->pt) 
+						continue;
 					// calculate its weight
 					Point tmp(x,y);
 					int f_pen=0,e_pen=0,bending=current->bend;
