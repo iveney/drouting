@@ -68,18 +68,9 @@ struct Chip{// a chip has an array, timing constraint and subproblems
 	Subproblem prob[MAXSUB];// note:prob starts from index 1
 };
 
-/*
-class NetRouter{
-	public:
-		~NetRouter(){
-			for(size_t i=0;i<resource.size();i++) delete resource[i];
-		}
-		int size() const{ return resource.size(); }
-		bool route(){
-			return true;
-		}
-		vector<GridPoint*> resource;      // a pointer collection 
-		// gp_heap;
-};
-*/
+
+void swap(int &a,int &b);
+Block getBoundingBox(const Pin & p1, const Pin & p2);
+bool ptInRect(const Block & bb, const Point & pt);
+
 #endif

@@ -90,42 +90,6 @@ void initBlock(Subproblem *p){
 	}
 }
 
-// swap two integers
-void swap(int &a,int &b){
-	int t=a;
-	a=b;
-	b=t;
-}
-
-// compare which net should be routed first
-/*
-int cmpNet(const Net & n1,const Net & n2){
-	Block b1,b2;
-	b1.pt[LL] = n1.pin[0];
-	b1.pt[UR] = n1.pin[1];
-	b2.pt[LL] = n2.pin[0];
-	b2.pt[UR] = n2.pin[1];
-}
-*/
-
-// get the bounding box of two nets
-Block getBoundingBox(const Pin & p1, const Pin & p2){
-	Block bb;
-	bb.pt[LL].x = MIN(p1.pt.x,p2.pt.x);
-	bb.pt[LL].y = MIN(p1.pt.y,p2.pt.y);
-	bb.pt[UR].x = MAX(p1.pt.x,p2.pt.x);
-	bb.pt[UR].y = MAX(p1.pt.y,p2.pt.y);
-	return bb;
-}
-
-// determine if a point is inside a rect
-bool ptInRect(const Block & bb, const Point & pt){
-	if( pt.x<=bb.pt[UR].x && pt.x>=bb.pt[LL].x &&
-	    pt.y<=bb.pt[UR].y && pt.y>=bb.pt[LL].y)
-		return true;
-	return false;
-}
-
 // compare which net should be routed first
 int cmpNet(const void * id1, const void * id2){
 	int i1 = *(int*)id1;

@@ -5,46 +5,50 @@
 // Modifed: < Tue Mar 17 10:39:54 HKT 2009 >
 // ----------------------------------------------------------------//
 
-#include <deque>
 #include <iomanip>
 #include <vector>
-#include <queue>
 #include "header.h"
-#include "route.h"
+//#include "route.h"
 #include "GridPoint.h"
+#include "Router.h"
 #include "main.h"
 using namespace std;
 
-typedef heap<GridPoint*,vector<GridPoint*>,GridPoint::GPpointerCmp> GP_HEAP;
 
 int main(int argc, char * argv[]){
-	idx=1;
+	Router router;
+	router.read_file(argc,argv);
+	router.solve_subproblem(router.tosolve);
+	//idx=1;
 
 	// read configuration file and parse it
-	read_file(argc,argv,&chip);
-
+	//read_file(argc,argv,&chip);
+	
 	// solve subproblem `idx'
-	Subproblem * pProb = &chip.prob[idx];
-	printf("--- Solving subproblem %d ---\n",idx);
+	//Subproblem * pProb = &chip.prob[idx];
+	//cout<<"--- Solving subproblem "<<idx<<" ---"<<endl;
 	
 	// sort : decide net order
-	netcount = pProb->nNet;
-	sortNet(pProb,netorder);
+	//netcount = pProb->nNet;
+	//sortNet(pProb,netorder);
+	/*
 #ifdef DEBUG
 	cout<<"net order: [ ";
 	for(int i=0;i<pProb->nNet;i++) cout<<netorder[i]" ";
 	cout<<"]"<<endl;
 #endif
+*/
 
 	// generate blockage bitmap
-	initBlock(pProb);
+	//initBlock(pProb);
 
-	int i,j;
-	N=chip.N;
-       	M=chip.M;
-	memset(grid,0,sizeof(grid));
+	//int i,j;
+	//N=chip.N;
+       	//M=chip.M;
+	//memset(grid,0,sizeof(grid));
+	
+	/*
 	GridPoint *current;
-
 	// start to route each net according to sorted order
 	for(i=0;i<(pProb->nNet);i++){
 		int which = netorder[i];
@@ -188,5 +192,6 @@ int main(int argc, char * argv[]){
 		
 		p.free();
 	}// end of for each net
+*/
 	return 0;
 }
