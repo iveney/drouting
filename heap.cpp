@@ -1,4 +1,14 @@
+// very disgusting problem with g++
+// I just can not separte .h and .cpp
+// so do not compile this file directly
+// but just include "heap.h"
 #include "heap.h"
+
+template <typename T,typename Container, typename Compare>
+heap<T,Container,Compare>::heap(){}
+
+template <typename T,typename Container, typename Compare>
+heap<T,Container,Compare>::~heap(){}
 
 template <typename T,typename Container, typename Compare>
 int heap<T,Container,Compare>::size() const{
@@ -52,10 +62,8 @@ void heap<T,Container,Compare>::free(){
 	resource.clear();
 	order.clear();
 }
+
 template <typename T,typename Container, typename Compare>
 void heap<T,Container,Compare>::get_order(const T &x){
 	return order[x];
 }
-
-//template <typename T,typename Container, typename Compare>
-//template <typename T,typename Container, typename Compare>

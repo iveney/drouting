@@ -24,22 +24,27 @@ DOWN	route.h	/^enum DIRECTION{LEFT,RIGHT,UP,DOWN,STAY}; \/\/ LEFT, RIGHT, UP, DO
 DOWN	util.h	/^enum DIRECTION{LEFT,RIGHT,UP,DOWN,STAY}; \/\/ LEFT, RIGHT, UP, DOWN$/;"	e	enum:DIRECTION
 ELECT_PENALTY	header.h	/^const int ELECT_PENALTY=20;$/;"	v
 FLUID_PENALTY	header.h	/^const int FLUID_PENALTY=20;$/;"	v
-GP_HEAP	Router.h	/^		     GridPoint::GPpointerCmp> GP_HEAP;$/;"	t	class:Router	access:public
+GP_HEAP	Router.h	/^		     GridPoint::GPpointerCmp > GP_HEAP;$/;"	t	class:Router	access:public
 GPpointerCmp	GridPoint.h	/^	class GPpointerCmp{$/;"	c	class:GridPoint	access:public
 Grid	header.h	/^typedef BYTE Grid ;$/;"	t
-GridPoint	GridPoint.h	/^	GridPoint(Point pt_=Point(0,0),GridPoint *par=NULL,$/;"	f	class:GridPoint	access:public	signature:(Point pt_=Point(0,0),GridPoint *par=NULL, int t=0,int b=0,int f=0,int e=0,int s=0,int d=0)
+GridPoint	GridPoint.cpp	/^GridPoint::GridPoint(Point pt_,GridPoint *par,$/;"	f	class:GridPoint	signature:(Point pt_,GridPoint *par, int t,int b,int f,int e,int s,int d)
+GridPoint	GridPoint.h	/^	GridPoint(Point pt_=Point(0,0),GridPoint *par=NULL,$/;"	p	class:GridPoint	access:public	signature:(Point pt_=Point(0,0),GridPoint *par=NULL, int t=0,int b=0,int f=0,int e=0,int s=0,int d=0)
 GridPoint	GridPoint.h	/^class GridPoint{$/;"	c
 GridPoint::GPpointerCmp	GridPoint.h	/^	class GPpointerCmp{$/;"	c	class:GridPoint	access:public
 GridPoint::GPpointerCmp::operator ()	GridPoint.h	/^		bool operator()(const GridPoint *a, const GridPoint *b) const{$/;"	f	class:GridPoint::GPpointerCmp	access:public	signature:(const GridPoint *a, const GridPoint *b) const
-GridPoint::GridPoint	GridPoint.h	/^	GridPoint(Point pt_=Point(0,0),GridPoint *par=NULL,$/;"	f	class:GridPoint	access:public	signature:(Point pt_=Point(0,0),GridPoint *par=NULL, int t=0,int b=0,int f=0,int e=0,int s=0,int d=0)
+GridPoint::GridPoint	GridPoint.cpp	/^GridPoint::GridPoint(Point pt_,GridPoint *par,$/;"	f	class:GridPoint	signature:(Point pt_,GridPoint *par, int t,int b,int f,int e,int s,int d)
+GridPoint::GridPoint	GridPoint.h	/^	GridPoint(Point pt_=Point(0,0),GridPoint *par=NULL,$/;"	p	class:GridPoint	access:public	signature:(Point pt_=Point(0,0),GridPoint *par=NULL, int t=0,int b=0,int f=0,int e=0,int s=0,int d=0)
 GridPoint::bend	GridPoint.h	/^	int bend;$/;"	m	class:GridPoint	access:public
 GridPoint::counter	GridPoint.cpp	/^int GridPoint::counter=0;$/;"	m	class:GridPoint	file:
 GridPoint::counter	GridPoint.h	/^	static int counter;$/;"	m	class:GridPoint	access:public
 GridPoint::distance	GridPoint.h	/^	int distance;   \/\/ the manhattance distance to the sink$/;"	m	class:GridPoint	access:public
 GridPoint::electro	GridPoint.h	/^	int electro;$/;"	m	class:GridPoint	access:public
 GridPoint::fluidic	GridPoint.h	/^	int fluidic;$/;"	m	class:GridPoint	access:public
-GridPoint::operator <	GridPoint.h	/^	bool operator < (const GridPoint& g) const{ $/;"	f	class:GridPoint	access:public	signature:(const GridPoint& g) const
-GridPoint::operator ==	GridPoint.h	/^	bool operator == (const GridPoint &g) const{$/;"	f	class:GridPoint	access:public	signature:(const GridPoint &g) const
+GridPoint::operator <	GridPoint.cpp	/^bool GridPoint::operator < (const GridPoint& g) const{ $/;"	f	class:GridPoint	signature:(const GridPoint& g) const
+GridPoint::operator <	GridPoint.h	/^	bool operator < (const GridPoint& g) const;$/;"	p	class:GridPoint	access:public	signature:(const GridPoint& g) const
+GridPoint::operator <<	GridPoint.h	/^	friend ostream & operator <<(ostream & out,const GridPoint & g);$/;"	p	class:GridPoint	access:friend	signature:(ostream & out,const GridPoint & g)
+GridPoint::operator ==	GridPoint.cpp	/^bool GridPoint::operator == (const GridPoint &g) const{$/;"	f	class:GridPoint	signature:(const GridPoint &g) const
+GridPoint::operator ==	GridPoint.h	/^	bool operator == (const GridPoint &g) const;$/;"	p	class:GridPoint	access:public	signature:(const GridPoint &g) const
 GridPoint::order	GridPoint.h	/^	int order;      \/\/ orde the GridPoint was generated$/;"	m	class:GridPoint	access:public
 GridPoint::parent	GridPoint.h	/^	GridPoint * parent;     \/\/ from which GridPoint it was propagated$/;"	m	class:GridPoint	access:public
 GridPoint::pt	GridPoint.h	/^	Point pt;		\/\/ its position$/;"	m	class:GridPoint	access:public
@@ -48,6 +53,8 @@ GridPoint::time	GridPoint.h	/^	int time;$/;"	m	class:GridPoint	access:public
 GridPoint::updateWeight	GridPoint.cpp	/^int GridPoint::updateWeight(){$/;"	f	class:GridPoint	signature:()
 GridPoint::updateWeight	GridPoint.h	/^	int updateWeight();$/;"	p	class:GridPoint	access:public	signature:()
 GridPoint::weight	GridPoint.h	/^	int weight;$/;"	m	class:GridPoint	access:public
+INCLUDE_SHEILD	heap.h	92;"	d
+INCLUDE_SHEILD	heap.h	94;"	d
 INF	header.h	/^const Grid INF=2<<7-1;$/;"	v
 LEFT	route.h	/^enum DIRECTION{LEFT,RIGHT,UP,DOWN,STAY}; \/\/ LEFT, RIGHT, UP, DOWN$/;"	e	enum:DIRECTION
 LEFT	util.h	/^enum DIRECTION{LEFT,RIGHT,UP,DOWN,STAY}; \/\/ LEFT, RIGHT, UP, DOWN$/;"	e	enum:DIRECTION
@@ -79,7 +86,7 @@ Point	header.h	/^class Point{\/\/ a point denote by (row,col)$/;"	c
 Point::Point	header.h	/^	Point(){x=y=0;}$/;"	f	class:Point	access:public	signature:()
 Point::Point	header.h	/^	Point(int xx,int yy):x(xx),y(yy){}$/;"	f	class:Point	access:public	signature:(int xx,int yy)
 Point::operator !=	header.h	/^	bool operator != (const Point & pt) const {return !operator==(pt);}$/;"	f	class:Point	access:public	signature:(const Point & pt) const
-Point::operator <<	header.h	/^	friend ostream &operator <<(ostream&,Point&);$/;"	p	class:Point	access:friend	signature:(ostream&,Point&)
+Point::operator <<	header.h	/^	friend ostream &operator <<(ostream&,const Point&);$/;"	p	class:Point	access:friend	signature:(ostream&,const Point&)
 Point::operator ==	header.h	/^	bool operator == (const Point & pt) const {return x==pt.x && y==pt.y;}$/;"	f	class:Point	access:public	signature:(const Point & pt) const
 Point::x	header.h	/^	int x,y;$/;"	m	class:Point	access:public
 Point::y	header.h	/^	int x,y;$/;"	m	class:Point	access:public
@@ -90,14 +97,14 @@ RIGHT	util.h	/^enum DIRECTION{LEFT,RIGHT,UP,DOWN,STAY}; \/\/ LEFT, RIGHT, UP, DO
 RouteResult	Router.h	/^class RouteResult{$/;"	c
 Router	Router.h	/^	Router():read(false){$/;"	f	class:Router	access:public	signature:()
 Router	Router.h	/^class Router{$/;"	c
-Router::GP_HEAP	Router.h	/^		     GridPoint::GPpointerCmp> GP_HEAP;$/;"	t	class:Router	access:public
+Router::GP_HEAP	Router.h	/^		     GridPoint::GPpointerCmp > GP_HEAP;$/;"	t	class:Router	access:public
 Router::M	Router.h	/^	int N,M;$/;"	m	class:Router	access:public
 Router::N	Router.h	/^	int N,M;$/;"	m	class:Router	access:public
 Router::Router	Router.h	/^	Router():read(false){$/;"	f	class:Router	access:public	signature:()
 Router::blockage	Router.h	/^	BYTE blockage[MAXGRID][MAXGRID];$/;"	m	class:Router	access:public
 Router::chip	Router.h	/^	Chip chip;      \/\/ stores all the information$/;"	m	class:Router	access:public
-Router::cmp_net	Router.cpp	/^int Router::cmp_net(const void * id1, const void * id2){$/;"	f	class:Router	signature:(const void * id1, const void * id2)
-Router::cmp_net	Router.h	/^	int cmp_net(const void * id1, const void * id2);$/;"	p	class:Router	access:private	signature:(const void * id1, const void * id2)
+Router::cmp_net	Router.cpp	/^int Router::cmp_net(const void* id1,const void* id2){$/;"	f	class:Router	signature:(const void* id1,const void* id2)
+Router::cmp_net	Router.h	/^	static int cmp_net(const void* id1,const void* id2);$/;"	p	class:Router	access:private	signature:(const void* id1,const void* id2)
 Router::electrode_check	Router.cpp	/^bool Router::electrode_check(const Point & pt){$/;"	f	class:Router	signature:(const Point & pt)
 Router::electrode_check	Router.h	/^	bool electrode_check(const Point & pt);$/;"	p	class:Router	access:public	signature:(const Point & pt)
 Router::fluidic_check	Router.cpp	/^int Router::fluidic_check(int which, const Point & pt,int t){$/;"	f	class:Router	signature:(int which, const Point & pt,int t)
@@ -110,9 +117,14 @@ Router::init_block	Router.cpp	/^void Router::init_block(Subproblem *p){$/;"	f	cl
 Router::init_block	Router.h	/^	void init_block(Subproblem *p);$/;"	p	class:Router	access:private	signature:(Subproblem *p)
 Router::netcount	Router.h	/^	int netcount;$/;"	m	class:Router	access:public
 Router::netorder	Router.h	/^	int netorder[MAXNET];$/;"	m	class:Router	access:public
+Router::output_heap	Router.cpp	/^void Router::output_heap(const GP_HEAP & h){$/;"	f	class:Router	signature:(const GP_HEAP & h)
+Router::output_heap	Router.h	/^	void output_heap(const GP_HEAP & h);$/;"	p	class:Router	access:public	signature:(const GP_HEAP & h)
+Router::output_netinfo	Router.cpp	/^void Router::output_netinfo(Net *pNet){$/;"	f	class:Router	signature:(Net *pNet)
+Router::output_netinfo	Router.h	/^	void output_netinfo(Net *pNet);$/;"	p	class:Router	access:private	signature:(Net *pNet)
 Router::output_netorder	Router.cpp	/^void Router::output_netorder(int *netorder,int netcount){$/;"	f	class:Router	signature:(int *netorder,int netcount)
 Router::output_netorder	Router.h	/^	void output_netorder(int *netorder,int netcount);$/;"	p	class:Router	access:private	signature:(int *netorder,int netcount)
-Router::pProb	Router.h	/^	Subproblem * pProb;$/;"	m	class:Router	access:public
+Router::pProb	Router.cpp	/^Subproblem * Router::pProb=NULL;$/;"	m	class:Router	file:
+Router::pProb	Router.h	/^	static Subproblem * pProb;$/;"	m	class:Router	access:public
 Router::read	Router.h	/^	bool read;      \/\/ mark if configuration has been read$/;"	m	class:Router	access:public
 Router::read_file	Router.cpp	/^void Router::read_file(int argc, char * argv[]){$/;"	f	class:Router	signature:(int argc, char * argv[])
 Router::read_file	Router.h	/^	void read_file(int argc, char * argv[]);$/;"	p	class:Router	access:public	signature:(int argc, char * argv[])
@@ -128,7 +140,6 @@ Router::solve_subproblem	Router.h	/^	RouteResult solve_subproblem(int prob_idx);
 Router::sort_net	Router.cpp	/^void Router::sort_net(Subproblem *pProb, int * netorder){$/;"	f	class:Router	signature:(Subproblem *pProb, int * netorder)
 Router::sort_net	Router.h	/^	void sort_net(Subproblem *pProb, int * netorder);$/;"	p	class:Router	access:private	signature:(Subproblem *pProb, int * netorder)
 Router::tosolve	Router.h	/^	int tosolve;    \/\/ which subproblem to solve,given in cmd line$/;"	m	class:Router	access:public
-Router::wrapper	Router.h	/^	friend int wrapper(const void *id1,const void * id2);$/;"	p	class:Router	access:friend	signature:(const void *id1,const void * id2)
 Router::~Router	Router.h	/^	~Router(){}$/;"	f	class:Router	access:public	signature:()
 STALL_PENALTY	header.h	/^const int STALL_PENALTY=20;$/;"	v
 STAY	route.h	/^enum DIRECTION{LEFT,RIGHT,UP,DOWN,STAY}; \/\/ LEFT, RIGHT, UP, DOWN$/;"	e	enum:DIRECTION
@@ -154,7 +165,8 @@ __ROUTE_H__	route.h	2;"	d
 __UTIL_H__	util.h	2;"	d
 _report_exit	util.cpp	/^void _report_exit(const char *location, const char *msg){$/;"	f	signature:(const char *location, const char *msg)
 _report_exit	util.h	/^void _report_exit(const char *location, const char *msg);$/;"	p	signature:(const char *location, const char *msg)
-begin	heap.h	/^	iterator begin() { return c.begin(); }$/;"	f	class:heap	access:public	signature:()
+begin	heap.cpp	/^class Container::iterator heap<T,Container,Compare>::begin(){ return c.begin(); }$/;"	f	class:heap	signature:()
+begin	heap.h	/^	iterator begin();$/;"	p	class:heap	access:public	signature:()
 bend	GridPoint.h	/^	int bend;$/;"	m	class:GridPoint	access:public
 block	header.h	/^	Block block[MAXBLK];$/;"	m	struct:Subproblem	access:public
 blockage	Router.h	/^	BYTE blockage[MAXGRID][MAXGRID];$/;"	m	class:Router	access:public
@@ -165,8 +177,8 @@ check_bending	util.cpp	/^bool check_bending(const Point & p1,const Point & p2){$
 check_bending	util.h	/^bool check_bending(const Point & p1,const Point & p2);$/;"	p	signature:(const Point & p1,const Point & p2)
 chip	Router.h	/^	Chip chip;      \/\/ stores all the information$/;"	m	class:Router	access:public
 cmpNet	route.cpp	/^int cmpNet(const void * id1, const void * id2){$/;"	f	signature:(const void * id1, const void * id2)
-cmp_net	Router.cpp	/^int Router::cmp_net(const void * id1, const void * id2){$/;"	f	class:Router	signature:(const void * id1, const void * id2)
-cmp_net	Router.h	/^	int cmp_net(const void * id1, const void * id2);$/;"	p	class:Router	access:private	signature:(const void * id1, const void * id2)
+cmp_net	Router.cpp	/^int Router::cmp_net(const void* id1,const void* id2){$/;"	f	class:Router	signature:(const void* id1,const void* id2)
+cmp_net	Router.h	/^	static int cmp_net(const void* id1,const void* id2);$/;"	p	class:Router	access:private	signature:(const void* id1,const void* id2)
 comp	heap.h	/^	Compare comp;  \/\/ compare function(strictly weak order$/;"	m	class:heap	access:public
 counter	GridPoint.cpp	/^int GridPoint::counter=0;$/;"	m	class:GridPoint	file:
 counter	GridPoint.h	/^	static int counter;$/;"	m	class:GridPoint	access:public
@@ -184,45 +196,67 @@ electrodeCheck	route.cpp	/^bool electrodeCheck(const Point & pt){$/;"	f	signatur
 electrodeCheck	route.h	/^bool electrodeCheck(const Point & pt);$/;"	p	signature:(const Point & pt)
 electrode_check	Router.cpp	/^bool Router::electrode_check(const Point & pt){$/;"	f	class:Router	signature:(const Point & pt)
 electrode_check	Router.h	/^	bool electrode_check(const Point & pt);$/;"	p	class:Router	access:public	signature:(const Point & pt)
-empty	heap.h	/^	bool empty() const{return c.size() == 0; }$/;"	f	class:heap	access:public	signature:() const
-end	heap.h	/^	iterator end() { return c.end(); }$/;"	f	class:heap	access:public	signature:()
+empty	heap.cpp	/^bool heap<T,Container,Compare>::empty() const{$/;"	f	class:heap	signature:() const
+empty	heap.h	/^	bool empty() const;$/;"	p	class:heap	access:public	signature:() const
+end	heap.cpp	/^class Container::iterator heap<T,Container,Compare>::end(){ return c.end(); }$/;"	f	class:heap	signature:()
+end	heap.h	/^	iterator end(); $/;"	p	class:heap	access:public	signature:()
 fluidic	GridPoint.h	/^	int fluidic;$/;"	m	class:GridPoint	access:public
 fluidicCheck	route.cpp	/^int fluidicCheck(int which, const Point & pt,int t){$/;"	f	signature:(int which, const Point & pt,int t)
 fluidicCheck	route.h	/^int fluidicCheck(int which, const Point & pt,int t);$/;"	p	signature:(int which, const Point & pt,int t)
 fluidic_check	Router.cpp	/^int Router::fluidic_check(int which, const Point & pt,int t){$/;"	f	class:Router	signature:(int which, const Point & pt,int t)
 fluidic_check	Router.h	/^	int fluidic_check(int which, const Point & pt,int t);$/;"	p	class:Router	access:public	signature:(int which, const Point & pt,int t)
-free	heap.h	/^	static void free(){$/;"	f	class:heap	access:public	signature:()
-getBoundingBox	header.cpp	/^Block getBoundingBox(const Pin & p1, const Pin & p2){$/;"	f	signature:(const Pin & p1, const Pin & p2)
-getBoundingBox	header.h	/^Block getBoundingBox(const Pin & p1, const Pin & p2);$/;"	p	signature:(const Pin & p1, const Pin & p2)
+free	heap.cpp	/^void heap<T,Container,Compare>::free(){$/;"	f	class:heap	signature:()
+free	heap.h	/^	static void free();$/;"	p	class:heap	access:public	signature:()
 getColor	parser.cpp	/^const char * getColor(){$/;"	f	signature:()
 getColor	parser.h	/^const char *getColor(void);$/;"	p	signature:(void)
 getNbr	route.cpp	/^vector<Point> getNbr(const Point & pt){$/;"	f	signature:(const Point & pt)
 getNbr	route.h	/^std::vector<Point> getNbr(const Point & pt);$/;"	p	signature:(const Point & pt)
+get_bbox	header.cpp	/^Block get_bbox(const Pin & p1, const Pin & p2){$/;"	f	signature:(const Pin & p1, const Pin & p2)
+get_bbox	header.h	/^Block get_bbox(const Pin & p1, const Pin & p2);$/;"	p	signature:(const Pin & p1, const Pin & p2)
 get_neighbour	Router.cpp	/^vector<Point> Router::get_neighbour(const Point & pt){$/;"	f	class:Router	signature:(const Point & pt)
 get_neighbour	Router.h	/^	vector<Point> get_neighbour(const Point & pt);$/;"	p	class:Router	access:public	signature:(const Point & pt)
 get_neighbour	util.h	/^vector<Point> get_neighbour(const Point & pt);$/;"	p	signature:(const Point & pt)
-get_order	heap.h	/^	static void get_order(const T &x){$/;"	f	class:heap	access:public	signature:(const T &x)
+get_order	heap.cpp	/^void heap<T,Container,Compare>::get_order(const T &x){$/;"	f	class:heap	signature:(const T &x)
+get_order	heap.h	/^	static void get_order(const T &x);$/;"	p	class:heap	access:public	signature:(const T &x)
+heap	heap.cpp	/^heap<T,Container,Compare>::heap(){}$/;"	f	class:heap	signature:()
+heap	heap.h	/^	heap();$/;"	p	class:heap	access:public	signature:()
 heap	heap.h	/^class heap{$/;"	c
-heap::begin	heap.h	/^	iterator begin() { return c.begin(); }$/;"	f	class:heap	access:public	signature:()
+heap::begin	heap.cpp	/^class Container::iterator heap<T,Container,Compare>::begin(){ return c.begin(); }$/;"	f	class:heap	signature:()
+heap::begin	heap.h	/^	iterator begin();$/;"	p	class:heap	access:public	signature:()
 heap::c	heap.h	/^	Container c;   \/\/ the container to store elements$/;"	m	class:heap	access:public
 heap::comp	heap.h	/^	Compare comp;  \/\/ compare function(strictly weak order$/;"	m	class:heap	access:public
 heap::counter	heap.h	/^	static int counter;$/;"	m	class:heap	access:public
 heap::counter	heap.h	/^int heap<T,Container,Compare>::counter=0;$/;"	m	class:heap
-heap::empty	heap.h	/^	bool empty() const{return c.size() == 0; }$/;"	f	class:heap	access:public	signature:() const
-heap::end	heap.h	/^	iterator end() { return c.end(); }$/;"	f	class:heap	access:public	signature:()
-heap::free	heap.h	/^	static void free(){$/;"	f	class:heap	access:public	signature:()
-heap::get_order	heap.h	/^	static void get_order(const T &x){$/;"	f	class:heap	access:public	signature:(const T &x)
+heap::empty	heap.cpp	/^bool heap<T,Container,Compare>::empty() const{$/;"	f	class:heap	signature:() const
+heap::empty	heap.h	/^	bool empty() const;$/;"	p	class:heap	access:public	signature:() const
+heap::end	heap.cpp	/^class Container::iterator heap<T,Container,Compare>::end(){ return c.end(); }$/;"	f	class:heap	signature:()
+heap::end	heap.h	/^	iterator end(); $/;"	p	class:heap	access:public	signature:()
+heap::free	heap.cpp	/^void heap<T,Container,Compare>::free(){$/;"	f	class:heap	signature:()
+heap::free	heap.h	/^	static void free();$/;"	p	class:heap	access:public	signature:()
+heap::get_order	heap.cpp	/^void heap<T,Container,Compare>::get_order(const T &x){$/;"	f	class:heap	signature:(const T &x)
+heap::get_order	heap.h	/^	static void get_order(const T &x);$/;"	p	class:heap	access:public	signature:(const T &x)
+heap::heap	heap.cpp	/^heap<T,Container,Compare>::heap(){}$/;"	f	class:heap	signature:()
+heap::heap	heap.h	/^	heap();$/;"	p	class:heap	access:public	signature:()
 heap::iterator	heap.h	/^	typedef class Container::iterator iterator;$/;"	t	class:heap	typeref:class:heap::iterator	access:public
+heap::operator <<	heap.h	/^	friend ostream & operator <<(ostream & out,const heap<_T,_Container,_Compare> & h);$/;"	p	class:heap	access:friend	signature:(ostream & out,const heap<_T,_Container,_Compare> & h)
 heap::order	heap.h	/^	static map<T,int> order; \/\/ mark the generated order$/;"	m	class:heap	access:public
 heap::order	heap.h	/^map<T,int> heap<T,Container,Compare>::order=map<T,int>();$/;"	m	class:heap
-heap::pop	heap.h	/^	void pop() {$/;"	f	class:heap	access:public	signature:()
-heap::push	heap.h	/^	void push(const T & x){$/;"	f	class:heap	access:public	signature:(const T & x)
+heap::pop	heap.cpp	/^void heap<T,Container,Compare>::pop() {$/;"	f	class:heap	signature:()
+heap::pop	heap.h	/^	void pop();$/;"	p	class:heap	access:public	signature:()
+heap::push	heap.cpp	/^void heap<T,Container,Compare>::push(const T & x){$/;"	f	class:heap	signature:(const T & x)
+heap::push	heap.h	/^	void push(const T & x);$/;"	p	class:heap	access:public	signature:(const T & x)
 heap::resource	heap.h	/^	static vector<T> resource;  \/\/ resource collector$/;"	m	class:heap	access:public
 heap::resource	heap.h	/^vector<T> heap<T,Container,Compare>::resource=vector<T>();$/;"	m	class:heap
-heap::size	heap.h	/^	int size() const {return c.size();}$/;"	f	class:heap	access:public	signature:() const
-heap::sort	heap.h	/^	void sort(){$/;"	f	class:heap	access:public	signature:()
-heap::store	heap.h	/^	static void store(const T &x) {$/;"	f	class:heap	access:public	signature:(const T &x)
-heap::top	heap.h	/^	T top() const {return c.front();}$/;"	f	class:heap	access:public	signature:() const
+heap::size	heap.cpp	/^int heap<T,Container,Compare>::size() const{$/;"	f	class:heap	signature:() const
+heap::size	heap.h	/^	int size() const;$/;"	p	class:heap	access:public	signature:() const
+heap::sort	heap.cpp	/^void heap<T,Container,Compare>::sort(){$/;"	f	class:heap	signature:()
+heap::sort	heap.h	/^	void sort();$/;"	p	class:heap	access:public	signature:()
+heap::store	heap.cpp	/^void heap<T,Container,Compare>::store(const T &x) {$/;"	f	class:heap	signature:(const T &x)
+heap::store	heap.h	/^	static void store(const T &x); $/;"	p	class:heap	access:public	signature:(const T &x)
+heap::top	heap.cpp	/^T heap<T,Container,Compare>::top() const {$/;"	f	class:heap	signature:() const
+heap::top	heap.h	/^	T top() const;$/;"	p	class:heap	access:public	signature:() const
+heap::~heap	heap.cpp	/^heap<T,Container,Compare>::~heap(){}$/;"	f	class:heap	signature:()
+heap::~heap	heap.h	/^	~heap();$/;"	p	class:heap	access:public	signature:()
 inGrid	route.cpp	/^bool inGrid(const Point & pt){$/;"	f	signature:(const Point & pt)
 inGrid	route.h	/^bool inGrid(const Point & pt);$/;"	p	signature:(const Point & pt)
 in_grid	Router.cpp	/^bool Router::in_grid(const Point & pt){$/;"	f	class:Router	signature:(const Point & pt)
@@ -249,31 +283,44 @@ netorder	Router.h	/^	int netorder[MAXNET];$/;"	m	class:Router	access:public
 numPin	header.h	/^	int numPin;$/;"	m	struct:Net	access:public
 operator !=	header.h	/^	bool operator != (const Point & pt) const {return !operator==(pt);}$/;"	f	class:Point	access:public	signature:(const Point & pt) const
 operator ()	GridPoint.h	/^		bool operator()(const GridPoint *a, const GridPoint *b) const{$/;"	f	class:GridPoint::GPpointerCmp	access:public	signature:(const GridPoint *a, const GridPoint *b) const
-operator <	GridPoint.h	/^	bool operator < (const GridPoint& g) const{ $/;"	f	class:GridPoint	access:public	signature:(const GridPoint& g) const
-operator <<	header.cpp	/^ostream & operator <<(ostream & out,Point & pt){$/;"	f	signature:(ostream & out,Point & pt)
-operator <<	header.h	/^	friend ostream &operator <<(ostream&,Point&);$/;"	p	class:Point	access:friend	signature:(ostream&,Point&)
-operator ==	GridPoint.h	/^	bool operator == (const GridPoint &g) const{$/;"	f	class:GridPoint	access:public	signature:(const GridPoint &g) const
+operator <	GridPoint.cpp	/^bool GridPoint::operator < (const GridPoint& g) const{ $/;"	f	class:GridPoint	signature:(const GridPoint& g) const
+operator <	GridPoint.h	/^	bool operator < (const GridPoint& g) const;$/;"	p	class:GridPoint	access:public	signature:(const GridPoint& g) const
+operator <<	GridPoint.cpp	/^ostream & operator <<(ostream &out,const GridPoint & g){$/;"	f	signature:(ostream &out,const GridPoint & g)
+operator <<	GridPoint.h	/^	friend ostream & operator <<(ostream & out,const GridPoint & g);$/;"	p	class:GridPoint	access:friend	signature:(ostream & out,const GridPoint & g)
+operator <<	header.cpp	/^ostream & operator <<(ostream & out,const Point & pt){$/;"	f	signature:(ostream & out,const Point & pt)
+operator <<	header.h	/^	friend ostream &operator <<(ostream&,const Point&);$/;"	p	class:Point	access:friend	signature:(ostream&,const Point&)
+operator <<	heap.h	/^	friend ostream & operator <<(ostream & out,const heap<_T,_Container,_Compare> & h);$/;"	p	class:heap	access:friend	signature:(ostream & out,const heap<_T,_Container,_Compare> & h)
+operator <<	heap.h	/^ostream & operator <<(ostream & out,$/;"	f	signature:(ostream & out, const heap<_T,_Container,_Compare> & h)
+operator ==	GridPoint.cpp	/^bool GridPoint::operator == (const GridPoint &g) const{$/;"	f	class:GridPoint	signature:(const GridPoint &g) const
+operator ==	GridPoint.h	/^	bool operator == (const GridPoint &g) const;$/;"	p	class:GridPoint	access:public	signature:(const GridPoint &g) const
 operator ==	header.h	/^	bool operator == (const Point & pt) const {return x==pt.x && y==pt.y;}$/;"	f	class:Point	access:public	signature:(const Point & pt) const
 order	GridPoint.h	/^	int order;      \/\/ orde the GridPoint was generated$/;"	m	class:GridPoint	access:public
 order	heap.h	/^	static map<T,int> order; \/\/ mark the generated order$/;"	m	class:heap	access:public
 order	heap.h	/^map<T,int> heap<T,Container,Compare>::order=map<T,int>();$/;"	m	class:heap
+output_heap	Router.cpp	/^void Router::output_heap(const GP_HEAP & h){$/;"	f	class:Router	signature:(const GP_HEAP & h)
+output_heap	Router.h	/^	void output_heap(const GP_HEAP & h);$/;"	p	class:Router	access:public	signature:(const GP_HEAP & h)
+output_netinfo	Router.cpp	/^void Router::output_netinfo(Net *pNet){$/;"	f	class:Router	signature:(Net *pNet)
+output_netinfo	Router.h	/^	void output_netinfo(Net *pNet);$/;"	p	class:Router	access:private	signature:(Net *pNet)
 output_netorder	Router.cpp	/^void Router::output_netorder(int *netorder,int netcount){$/;"	f	class:Router	signature:(int *netorder,int netcount)
 output_netorder	Router.h	/^	void output_netorder(int *netorder,int netcount);$/;"	p	class:Router	access:private	signature:(int *netorder,int netcount)
-pProb	Router.h	/^	Subproblem * pProb;$/;"	m	class:Router	access:public
+pProb	Router.cpp	/^Subproblem * Router::pProb=NULL;$/;"	m	class:Router	file:
+pProb	Router.h	/^	static Subproblem * pProb;$/;"	m	class:Router	access:public
 parent	GridPoint.h	/^	GridPoint * parent;     \/\/ from which GridPoint it was propagated$/;"	m	class:GridPoint	access:public
 parse	parser.cpp	/^Chip * parse(FILE * f,Chip * chip){$/;"	f	signature:(FILE * f,Chip * chip)
 parse	parser.h	/^Chip *parse(FILE *f, Chip *chip);$/;"	p	signature:(FILE *f, Chip *chip)
 pin	header.h	/^	Pin pin[3];$/;"	m	struct:Net	access:public
-pop	heap.h	/^	void pop() {$/;"	f	class:heap	access:public	signature:()
+pop	heap.cpp	/^void heap<T,Container,Compare>::pop() {$/;"	f	class:heap	signature:()
+pop	heap.h	/^	void pop();$/;"	p	class:heap	access:public	signature:()
 prob	header.h	/^	Subproblem prob[MAXSUB];\/\/ note:prob starts from index 1$/;"	m	struct:Chip	access:public
 pt	GridPoint.h	/^	Point pt;		\/\/ its position$/;"	m	class:GridPoint	access:public
 pt	header.h	/^	Point pt;$/;"	m	struct:Pin	access:public
 pt	header.h	/^	Point pt[2]; \/\/ LL=0, UR=1$/;"	m	struct:Block	access:public
-ptInRect	header.cpp	/^bool ptInRect(const Block & bb, const Point & pt){$/;"	f	signature:(const Block & bb, const Point & pt)
-ptInRect	header.h	/^bool ptInRect(const Block & bb, const Point & pt);$/;"	p	signature:(const Block & bb, const Point & pt)
+pt_in_rect	header.cpp	/^bool pt_in_rect(const Block & bb, const Point & pt){$/;"	f	signature:(const Block & bb, const Point & pt)
+pt_in_rect	header.h	/^bool pt_in_rect(const Block & bb, const Point & pt);$/;"	p	signature:(const Block & bb, const Point & pt)
 pt_relative_pos	util.cpp	/^DIRECTION pt_relative_pos(const Point & l ,const Point & r){$/;"	f	signature:(const Point & l ,const Point & r)
 pt_relative_pos	util.h	/^DIRECTION pt_relative_pos(const Point & l ,const Point & r);$/;"	p	signature:(const Point & l ,const Point & r)
-push	heap.h	/^	void push(const T & x){$/;"	f	class:heap	access:public	signature:(const T & x)
+push	heap.cpp	/^void heap<T,Container,Compare>::push(const T & x){$/;"	f	class:heap	signature:(const T & x)
+push	heap.h	/^	void push(const T & x);$/;"	p	class:heap	access:public	signature:(const T & x)
 read	Router.h	/^	bool read;      \/\/ mark if configuration has been read$/;"	m	class:Router	access:public
 read_file	Router.cpp	/^void Router::read_file(int argc, char * argv[]){$/;"	f	class:Router	signature:(int argc, char * argv[])
 read_file	Router.h	/^	void read_file(int argc, char * argv[]);$/;"	p	class:Router	access:public	signature:(int argc, char * argv[])
@@ -285,26 +332,30 @@ resource	heap.h	/^vector<T> heap<T,Container,Compare>::resource=vector<T>();$/;"
 route_net	Router.cpp	/^void Router::route_net(int which){$/;"	f	class:Router	signature:(int which)
 route_net	Router.h	/^	void route_net(int which);$/;"	p	class:Router	access:public	signature:(int which)
 route_result	Router.h	/^	vector<RouteResult> route_result;$/;"	m	class:Router	access:public
-size	heap.h	/^	int size() const {return c.size();}$/;"	f	class:heap	access:public	signature:() const
+size	heap.cpp	/^int heap<T,Container,Compare>::size() const{$/;"	f	class:heap	signature:() const
+size	heap.h	/^	int size() const;$/;"	p	class:heap	access:public	signature:() const
 solve_all	Router.cpp	/^vector<RouteResult> Router::solve_all(){$/;"	f	class:Router	signature:()
 solve_all	Router.h	/^	vector<RouteResult> solve_all();$/;"	p	class:Router	access:public	signature:()
 solve_cmdline	Router.cpp	/^vector<RouteResult> Router::solve_cmdline(){$/;"	f	class:Router	signature:()
 solve_cmdline	Router.h	/^	vector<RouteResult> solve_cmdline();$/;"	p	class:Router	access:public	signature:()
 solve_subproblem	Router.cpp	/^RouteResult Router::solve_subproblem(int prob_idx){$/;"	f	class:Router	signature:(int prob_idx)
 solve_subproblem	Router.h	/^	RouteResult solve_subproblem(int prob_idx);$/;"	p	class:Router	access:public	signature:(int prob_idx)
-sort	heap.h	/^	void sort(){$/;"	f	class:heap	access:public	signature:()
+sort	heap.cpp	/^void heap<T,Container,Compare>::sort(){$/;"	f	class:heap	signature:()
+sort	heap.h	/^	void sort();$/;"	p	class:heap	access:public	signature:()
 sortNet	route.cpp	/^void sortNet(Subproblem * p, int * netorder){$/;"	f	signature:(Subproblem * p, int * netorder)
 sortNet	route.h	/^void sortNet(Subproblem * p, int * netorder);$/;"	p	signature:(Subproblem * p, int * netorder)
 sort_net	Router.cpp	/^void Router::sort_net(Subproblem *pProb, int * netorder){$/;"	f	class:Router	signature:(Subproblem *pProb, int * netorder)
 sort_net	Router.h	/^	void sort_net(Subproblem *pProb, int * netorder);$/;"	p	class:Router	access:private	signature:(Subproblem *pProb, int * netorder)
 stalling	GridPoint.h	/^	int stalling;$/;"	m	class:GridPoint	access:public
-store	heap.h	/^	static void store(const T &x) {$/;"	f	class:heap	access:public	signature:(const T &x)
+store	heap.cpp	/^void heap<T,Container,Compare>::store(const T &x) {$/;"	f	class:heap	signature:(const T &x)
+store	heap.h	/^	static void store(const T &x); $/;"	p	class:heap	access:public	signature:(const T &x)
 string_heap	test_heap.cpp	/^typedef heap<string*,vector<string*> > string_heap;$/;"	t	file:
 swap	header.cpp	/^void swap(int &a,int &b){$/;"	f	signature:(int &a,int &b)
 swap	header.h	/^void swap(int &a,int &b);$/;"	p	signature:(int &a,int &b)
 time	GridPoint.h	/^	int time;$/;"	m	class:GridPoint	access:public
 time	header.h	/^	int time;$/;"	m	struct:Chip	access:public
-top	heap.h	/^	T top() const {return c.front();}$/;"	f	class:heap	access:public	signature:() const
+top	heap.cpp	/^T heap<T,Container,Compare>::top() const {$/;"	f	class:heap	signature:() const
+top	heap.h	/^	T top() const;$/;"	p	class:heap	access:public	signature:() const
 tosolve	Router.h	/^	int tosolve;    \/\/ which subproblem to solve,given in cmd line$/;"	m	class:Router	access:public
 traceback	route.cpp	/^void traceback(int which, Point & current){$/;"	f	signature:(int which, Point & current)
 traceback	route.h	/^void traceback(int which, Point & current);$/;"	p	signature:(int which, Point & current)
@@ -313,8 +364,8 @@ traceback_line	route.h	/^Point traceback_line(int which, int t, const Point & cu
 updateWeight	GridPoint.cpp	/^int GridPoint::updateWeight(){$/;"	f	class:GridPoint	signature:()
 updateWeight	GridPoint.h	/^	int updateWeight();$/;"	p	class:GridPoint	access:public	signature:()
 weight	GridPoint.h	/^	int weight;$/;"	m	class:GridPoint	access:public
-wrapper	Router.cpp	/^int wrapper(const void *id1,const void *id2){$/;"	f	signature:(const void *id1,const void *id2)
-wrapper	Router.h	/^	friend int wrapper(const void *id1,const void * id2);$/;"	p	class:Router	access:friend	signature:(const void *id1,const void * id2)
 x	header.h	/^	int x,y;$/;"	m	class:Point	access:public
 y	header.h	/^	int x,y;$/;"	m	class:Point	access:public
 ~Router	Router.h	/^	~Router(){}$/;"	f	class:Router	access:public	signature:()
+~heap	heap.cpp	/^heap<T,Container,Compare>::~heap(){}$/;"	f	class:heap	signature:()
+~heap	heap.h	/^	~heap();$/;"	p	class:heap	access:public	signature:()

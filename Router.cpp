@@ -1,14 +1,18 @@
 #include <iostream>
+#include <iomanip>
 #include <stdlib.h>
+#include <algorithm>
 #include "header.h"
 #include "GridPoint.h"
+#include "util.h"
 #include "Router.h"
 #include "parser.h"
 #include "heap.h"
-#include "util.h"
 using std::cout;
 using std::cerr;
 using std::endl;
+using std::sort;
+using std::setw;
 
 int dx[]={-1,1,0,0,0};
 int dy[]={0,0,1,-1,0};
@@ -42,6 +46,8 @@ RouteResult Router::solve_subproblem(int prob_idx){
 	netcount = pProb->nNet;
 	sort_net(pProb,netorder);
 
+	output_netorder(netorder,netcount);
+
 	// generate blockage bitmap
 	init_block(pProb);
 
@@ -66,6 +72,8 @@ void Router::init_block(Subproblem *p){
 }
 
 vector<RouteResult> Router::solve_all(){
+	for(int i=0;i<chip.nSubProblem;i++)
+		solve_subproblem(i);
 	return route_result;
 }
 
@@ -73,6 +81,7 @@ void Router::route_net(int which){
 	cout<<"** Routing net["<<which<<"] **"<<endl;
 	GridPoint *current;
 	Net * pNet = &pProb->net[which];
+	output_netinfo(pNet);
 
 	// do Lee's propagation,handles 2-pin net only currently
 	int numPin = pNet->numPin;
@@ -80,9 +89,6 @@ void Router::route_net(int which){
 	//if( numPin == 3 ) {} // handle three pin net
 	Point S = pNet->pin[0].pt; // source
 	Point T = pNet->pin[1].pt; // sink
-
-	for(int i=0;i<numPin;i++)// output Net infor
-		cout<<"\t"<<"pin "<<i<<":"<<pNet->pin[i].pt<<endl;
 
 	// initialize the heap
 	GP_HEAP p;
@@ -96,28 +102,24 @@ void Router::route_net(int which){
 	bool success = false;  // mark whether this net is routed successfully
 	while( !p.empty() ){
 		// get wave_front and propagate its neighbour
+		//p.sort();
 #ifdef DEBUG
 		cout<<"------------------------------------------------------------"<<endl;
 		cout<<"[before pop]"<<endl;
-		//p.sort();
-		for(int i=0;i<p.size();i++)
-			cout<<i<<" "<<(p.c[i])->pt<<" t="<<p.c[i]->time<<" w="<<p.c[i]->weight<<",order="<<p.c[i]->order<<endl;
+		output_heap(p);
 #endif 
 		current = p.top();
 		p.pop();
 #ifdef DEBUG
 		cout<<"[after pop]"<<endl;
-		//p.sort();
-		for(int i=0;i<p.size();i++)
-			cout<<i<<" "<<(p.c[i])->pt<<" t="<<p.c[i]->time<<" w="<<p.c[i]->weight<<",order="<<p.c[i]->order<<endl;
+		output_heap(p);
 #endif 
 		cout<<"Pop "<<current->pt<<" at time "<<current->time<<", queue size="<<p.size()<<endl;
 		cout<<"t="<<t<<",Propagating"<<current->pt<<endl;
 
 		t = current->time+1;
 		if( t > MAXTIME+1 ){ // timing constraint violated
-			if( p.size() != 0 )
-				continue;
+			if( p.size() != 0 ) continue;
 			else{
 				cerr<<"Exceed route time!"<<endl;
 				// reroute();  // try rip-up and re-route?
@@ -200,7 +202,7 @@ void Router::route_net(int which){
 #ifdef DEBUG
 	else{ printf("Success - start to backtrack\n"); }
 #endif
-	//////////////////////////////////////////////////////////////////////////////////
+	//////////////////////////////////////////////////////////////////
 
 	// backtrack phase
 	while( current != NULL ){
@@ -211,27 +213,10 @@ void Router::route_net(int which){
 	p.free();
 }
 
-// compare which net should be routed first
-int Router::cmp_net(const void * id1, const void * id2){
-	int i1 = *(int*)id1;
-	int i2 = *(int*)id2;
-	//Net * n1 = &chip.prob[idx].net[i1];
-	//Net * n2 = &chip.prob[idx].net[i2];
-	Net * n1 = &pProb->net[i1];
-	Net * n2 = &pProb->net[i2];
-	Block b1,b2;
-	// get two bounding box
-	b1 = getBoundingBox(n1->pin[0],n1->pin[1]);
-	b2 = getBoundingBox(n2->pin[0],n2->pin[1]);
-	// pin1's source inside bounding box 2,should route 1 first
-	if( ptInRect(b2,n1->pin[0].pt) ) return -1;
-	// pin2's source inside bounding box 1,should route 2 first
-	else if( ptInRect(b1,n2->pin[0].pt) ) return 1;
-
-	// use manhattance to judge
-	int m1 = MHT(n1->pin[0].pt,n1->pin[1].pt);
-	int m2 = MHT(n2->pin[0].pt,n2->pin[1].pt);
-	return m1-m2;
+void Router::output_heap(const GP_HEAP & h){
+	for(int i=0;i<h.size();i++) {
+		cout<<i<<":"<<*(h.c[i])<<endl;
+	}
 }
 
 // test if a point is in the chip array
@@ -252,19 +237,48 @@ vector<Point> Router::get_neighbour(const Point & pt){
 	return s;
 }
 
-int wrapper(const void *id1,const void *id2){
-	//very nasty trick here... wrap the cmp_net in order to
-	//match the signature of qsort's last parameter
-	static Router tmp;
-	return tmp.cmp_net(id1,id2);
+Subproblem * Router::pProb=NULL;
+// compare which net should be routed first
+// RETURN: smaller value goes first
+int Router::cmp_net(const void* id1,const void* id2){
+	int i1 = *(int*)id1;
+	int i2 = *(int*)id2;
+	Net * n1 = &pProb->net[i1];
+	Net * n2 = &pProb->net[i2];
+	Block b1,b2;
+	// get two bounding box
+	b1 = get_bbox(n1->pin[0],n1->pin[1]);
+	b2 = get_bbox(n2->pin[0],n2->pin[1]);
+	// pin1's source inside bounding box 2,should route 1 first
+	if( pt_in_rect(b2,n1->pin[0].pt) ) return -1;
+	// pin2's source inside bounding box 1,should route 2 first
+	else if( pt_in_rect(b1,n2->pin[0].pt) ) return 1;
+
+	// use manhattance to judge
+	int m1 = MHT(n1->pin[0].pt,n1->pin[1].pt);
+	int m2 = MHT(n2->pin[0].pt,n2->pin[1].pt);
+	return m1-m2;
 }
 
 void Router::sort_net(Subproblem *pProb, int * netorder){
 	// do nothing here now, just initialize
 	int N=pProb->nNet;
-	qsort(netorder,N,sizeof(int), wrapper);
+	qsort(netorder,N,sizeof(int),cmp_net);
+	/*
+	for(int i=0;i<N-1;i++){
+		for(int j=i;j<N;j++){
+			if( cmp_net(j,j+1) > 0 ){
+				swap(netorder[j],netorder[j+1]);
+			}
+		}
+	}
+	*/
 }
 
+void Router::output_netinfo(Net *pNet){
+	for(int i=0;i<pNet->numPin;i++)// output Net info
+		cout<<"\t"<<"pin "<<i<<":"<<pNet->pin[i].pt<<endl;
+}
 
 void Router::output_netorder(int *netorder,int netcount){
 	cout<<"net order: [ ";

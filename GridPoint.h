@@ -7,23 +7,15 @@
 class GridPoint{
 public:
 	GridPoint(Point pt_=Point(0,0),GridPoint *par=NULL,
-		int t=0,int b=0,int f=0,int e=0,int s=0,int d=0):
-		pt(pt_),parent(par),time(t),bend(b),
-		fluidic(f),electro(e),stalling(s),distance(d){
-			order=counter++;
-			updateWeight();
-		}
+	int t=0,int b=0,int f=0,int e=0,int s=0,int d=0);
 
 	int updateWeight();
 
 	// TODO: how to determine there size if weights are equal?
-	// because we need a strictly weak ordering here for heap comparison...
-	bool operator < (const GridPoint& g) const{ 
-		return weight < g.weight; 
-	}
-	bool operator == (const GridPoint &g) const{
-		return weight == g.weight;
-	}
+	// because we need a strictly weak ordering here for heap comparison..
+	bool operator < (const GridPoint& g) const;
+	bool operator == (const GridPoint &g) const;
+	friend ostream & operator <<(ostream & out,const GridPoint & g);
 
 	/////////////////////////////////////////////////////////////////
 	Point pt;		// its position

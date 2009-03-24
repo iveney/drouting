@@ -14,7 +14,7 @@ public:
 class Router{
 public:
 	typedef heap<GridPoint*,vector<GridPoint*>,
-		     GridPoint::GPpointerCmp> GP_HEAP;
+		     GridPoint::GPpointerCmp > GP_HEAP;
 
 	// default constructor: mark the router's input be empty
 	Router():read(false){
@@ -26,6 +26,9 @@ public:
 
 	// read the file and subproblem number from cmd line argument
 	void read_file(int argc, char * argv[]);
+
+	// output all the members in current heap
+	void output_heap(const GP_HEAP & h);
 
 	// given a net index, route the net
 	void route_net(int which);
@@ -45,39 +48,40 @@ public:
 	// determines if there is electrode constraint violation
 	bool electrode_check(const Point & pt);
 
-	//////////////////////////////////////////////////////////////////////
-	// members
-	bool read;      // mark if configuration has been read
-	Chip chip;      // stores all the information
-	int tosolve;    // which subproblem to solve,given in cmd line
-	vector<RouteResult> route_result;
-
-	//////////////////////////////////////////////////////////////////////
-	// members for internal use of routing
-	BYTE blockage[MAXGRID][MAXGRID];
-	int netcount;
-	int N,M;
-	int netorder[MAXNET];
-	Subproblem * pProb;
-
 	// determine if given point pt is in valid position
 	bool in_grid(const Point & pt);
 
 	// gets the neighbour points of a point
 	vector<Point> get_neighbour(const Point & pt);
 
-	// nasty wrapper, in order for qsort to match the function signature
-	friend int wrapper(const void *id1,const void * id2);
+	///////////////////////////////////////////////////////////////////
+	// members
+	bool read;      // mark if configuration has been read
+	Chip chip;      // stores all the information
+	int tosolve;    // which subproblem to solve,given in cmd line
+	vector<RouteResult> route_result;
+
+	///////////////////////////////////////////////////////////////////
+	// members for internal use of routing
+	BYTE blockage[MAXGRID][MAXGRID];
+	int netcount;
+	int N,M;
+	int netorder[MAXNET];
+	static Subproblem * pProb;
 
 private:
 	// sort the net according to some criteria defined in cmp_net
 	void sort_net(Subproblem *pProb, int * netorder);
 
 	// be used for qsort to decide netorder
-	int cmp_net(const void * id1, const void * id2);
+	//int cmp_net(const int id1,const int id2);
+	static int cmp_net(const void* id1,const void* id2);
 
 	// output the current netorder
 	void output_netorder(int *netorder,int netcount);
+
+	// output information of pNet
+	void output_netinfo(Net *pNet);
 
 	// init blockage bitmap for use
 	void init_block(Subproblem *p);

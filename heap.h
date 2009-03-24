@@ -3,6 +3,7 @@
 #ifndef __HEAP_H__
 #define __HEAP_H__
 
+#include <iostream>
 #include <algorithm>
 #include <functional>
 #include <vector>
@@ -11,6 +12,8 @@ using std::vector;
 using std::sort_heap;
 using std::less;
 using std::map;
+using std::ostream;
+using std::endl;
 
 template <typename T,typename Container = vector<T>, 
 	 typename Compare = less<typename Container::value_type> >
@@ -21,6 +24,8 @@ public:
 
 	////////////////////////////////////////////////////////
 	// members
+	heap();
+	~heap();
 	// get the size of current heap
 	int size() const;
 
@@ -35,9 +40,16 @@ public:
 
 	// pop an element outside heap
 	void pop();
+	
+	// sort the heap using heap_sort
+	void sort();
+
+	template <typename _T,typename _Container, typename _Compare>
+	friend ostream & operator <<(ostream & out,const heap<_T,_Container,_Compare> & h);
+
+	// returns the begin/end iterator of Container
 	iterator begin();
 	iterator end(); 
-	void sort();
 
 	/////////////////////////////////////////////////////////////
 	// static members
@@ -68,5 +80,17 @@ map<T,int> heap<T,Container,Compare>::order=map<T,int>();
 
 template <typename T,typename Container, typename Compare>
 int heap<T,Container,Compare>::counter=0;
+
+template <typename _T,typename _Container, typename _Compare>
+ostream & operator <<(ostream & out,
+	const heap<_T,_Container,_Compare> & h){
+	for(int i=0;i<h.size();i++)
+		out<<i<<":"<<h.c[i]<<endl;
+	return out;
+}
+
+#define INCLUDE_SHEILD
+#include "heap.cpp"
+#undef INCLUDE_SHEILD
 
 #endif

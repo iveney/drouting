@@ -33,7 +33,7 @@ public:
 	Point(int xx,int yy):x(xx),y(yy){}
 	bool operator == (const Point & pt) const {return x==pt.x && y==pt.y;}
 	bool operator != (const Point & pt) const {return !operator==(pt);}
-	friend ostream &operator <<(ostream&,Point&);
+	friend ostream &operator <<(ostream&,const Point&);
 	int x,y;
 };
 
@@ -70,7 +70,7 @@ struct Chip{// a chip has an array, timing constraint and subproblems
 
 
 void swap(int &a,int &b);
-Block getBoundingBox(const Pin & p1, const Pin & p2);
-bool ptInRect(const Block & bb, const Point & pt);
+Block get_bbox(const Pin & p1, const Pin & p2);
+bool pt_in_rect(const Block & bb, const Point & pt);
 
 #endif
