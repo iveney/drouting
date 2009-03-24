@@ -4,6 +4,7 @@
 #include "GridPoint.h"
 #include "Router.h"
 #include "parser.h"
+#include "heap.h"
 #include "util.h"
 using std::cout;
 using std::cerr;
@@ -14,15 +15,15 @@ int dy[]={0,0,1,-1,0};
 
 void Router::read_file(int argc, char * argv[]){
 	FILE * f;
-	if(argc<3)
-		report_exit("Usage ./main filename subproblem\n");
+	if(argc<2)
+		report_exit("Usage ./main filename [subproblem]\n");
 
 	const char * filename = argv[1];
-	tosolve = atoi(argv[2]);
+	if( argc == 3 ) tosolve = atoi(argv[2]);
+	else            tosolve = -1;   // not given in cmdline, solve all
 	if( (f = fopen(filename,"r")) == NULL )
 		report_exit("open file error\n");
-
-	parse(f,&chip); // now `chip' has store subproblems
+	parse(f,&chip); // now `chip' stores subproblems
 	fclose(f);
 	read=true;
 }
@@ -62,6 +63,10 @@ void Router::init_block(Subproblem *p){
 			for(y=b.pt[0].y;y<=b.pt[1].y;y++)
 				blockage[x][y]=1;
 	}
+}
+
+vector<RouteResult> Router::solve_all(){
+	return route_result;
 }
 
 void Router::route_net(int which){
@@ -207,7 +212,7 @@ void Router::route_net(int which){
 }
 
 // compare which net should be routed first
-int Router::cmpNet(const void * id1, const void * id2){
+int Router::cmp_net(const void * id1, const void * id2){
 	int i1 = *(int*)id1;
 	int i2 = *(int*)id2;
 	//Net * n1 = &chip.prob[idx].net[i1];
@@ -248,17 +253,15 @@ vector<Point> Router::get_neighbour(const Point & pt){
 }
 
 int wrapper(const void *id1,const void *id2){
-	//very nasty trick here... wrap the cmpNet in order to
+	//very nasty trick here... wrap the cmp_net in order to
 	//match the signature of qsort's last parameter
 	static Router tmp;
-	return tmp.cmpNet(id1,id2);
+	return tmp.cmp_net(id1,id2);
 }
 
 void Router::sort_net(Subproblem *pProb, int * netorder){
 	// do nothing here now, just initialize
-	int i;
 	int N=pProb->nNet;
-	for(i=0;i<N;i++) netorder[i]=i;
 	qsort(netorder,N,sizeof(int), wrapper);
 }
 
@@ -303,3 +306,11 @@ int Router::fluidic_check(int which, const Point & pt,int t){
 	return 0;
 }
 
+
+vector<RouteResult> Router::solve_cmdline(){
+	if( tosolve == -1 )// not given in cmdline
+		route_result = solve_all();
+	else
+		route_result.push_back(solve_subproblem(tosolve));
+	return route_result;
+}

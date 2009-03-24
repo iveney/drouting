@@ -10,45 +10,77 @@ class RouteResult{
 public:
 };
 
+// main class for routing the droplets net
 class Router{
 public:
-	typedef heap<GridPoint*,vector<GridPoint*>,GridPoint::GPpointerCmp> GP_HEAP;
+	typedef heap<GridPoint*,vector<GridPoint*>,
+		     GridPoint::GPpointerCmp> GP_HEAP;
 
-	Router():read(false){}
-	~Router(){
-	//	for(size_t i=0;i<resource.size();i++) delete resource[i];
+	// default constructor: mark the router's input be empty
+	Router():read(false){
+		for(int i=0;i<MAXNET;i++) netorder[i]=i;
 	}
+
+	// free the resources allocated
+	~Router(){}
+
+	// read the file and subproblem number from cmd line argument
 	void read_file(int argc, char * argv[]);
+
+	// given a net index, route the net
 	void route_net(int which);
-	void init_block(Subproblem *p);
+
+	// solve all the subproblems
+	vector<RouteResult> solve_all();
+
+	// solve a subproblem with index=prob_idx
 	RouteResult solve_subproblem(int prob_idx);
+
+	// solve the problem given in cmd line
+	vector<RouteResult> solve_cmdline();
+
+	// determines if there is fluidic constraint violation
 	int fluidic_check(int which, const Point & pt,int t);
+
+	// determines if there is electrode constraint violation
 	bool electrode_check(const Point & pt);
 
-	//int size() const{ return resource.size(); }
-	//vector<GridPoint*> resource;      // a pointer collection 
-	// gp_heap;
-	
-	/////////////////////////////////////////////////
+	//////////////////////////////////////////////////////////////////////
 	// members
 	bool read;      // mark if configuration has been read
 	Chip chip;      // stores all the information
-	int tosolve;    // indicates which subproblem to solve
+	int tosolve;    // which subproblem to solve,given in cmd line
+	vector<RouteResult> route_result;
 
+	//////////////////////////////////////////////////////////////////////
 	// members for internal use of routing
 	BYTE blockage[MAXGRID][MAXGRID];
 	int netcount;
 	int N,M;
 	int netorder[MAXNET];
 	Subproblem * pProb;
-	friend int wrapper(const void *id1,const void * id2);
+
+	// determine if given point pt is in valid position
 	bool in_grid(const Point & pt);
+
+	// gets the neighbour points of a point
 	vector<Point> get_neighbour(const Point & pt);
 
+	// nasty wrapper, in order for qsort to match the function signature
+	friend int wrapper(const void *id1,const void * id2);
+
 private:
+	// sort the net according to some criteria defined in cmp_net
 	void sort_net(Subproblem *pProb, int * netorder);
-	int cmpNet(const void * id1, const void * id2);
+
+	// be used for qsort to decide netorder
+	int cmp_net(const void * id1, const void * id2);
+
+	// output the current netorder
 	void output_netorder(int *netorder,int netcount);
+
+	// init blockage bitmap for use
+	void init_block(Subproblem *p);
 };
 
 #endif

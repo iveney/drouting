@@ -1,5 +1,5 @@
 CC=/usr/bin/g++
-SRC=parser.cpp header.cpp GridPoint.cpp Router.cpp util.cpp
+SRC=parser.cpp heap.cpp header.cpp GridPoint.cpp Router.cpp util.cpp 
 OBJ=$(SRC:.cpp=.o)
 BIN=main
 DBG=debug

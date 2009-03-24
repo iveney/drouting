@@ -16,45 +16,41 @@ template <typename T,typename Container = vector<T>,
 	 typename Compare = less<typename Container::value_type> >
 class heap{
 public:
+	// define the heap's container's iterator(a class)
 	typedef class Container::iterator iterator;
 
 	////////////////////////////////////////////////////////
 	// members
-	int size() const {return c.size();}
-	bool empty() const{return c.size() == 0; }
-	T top() const {return c.front();}
-	void push(const T & x){
-		store(x);
-		c.push_back(x);
-		push_heap(c.begin(),c.end(),comp);
-	}
-	void pop() {
-		pop_heap(c.begin(), c.end(),comp);
-		c.pop_back();
-	}
-	iterator begin() { return c.begin(); }
-	iterator end() { return c.end(); }
-	void sort(){
-		sort_heap(c.begin(),c.end(),comp);
-	}
+	// get the size of current heap
+	int size() const;
 
-	////////////////////////////////////////////////////////
+	// check if the heap is empty
+	bool empty() const;
+
+	// return the top of the heap
+	T top() const;
+
+	// push an element into heap
+	void push(const T & x);
+
+	// pop an element outside heap
+	void pop();
+	iterator begin();
+	iterator end(); 
+	void sort();
+
+	/////////////////////////////////////////////////////////////
 	// static members
-	static void store(const T &x) {
-		resource.push_back(x);
-		order[x]=counter++;
-	}
-	static void free(){
-		for(size_t i=0;i<resource.size();i++)
-			delete resource[i];
-		resource.clear();
-		order.clear();
-	}
-	static void get_order(const T &x){
-		return order[x];
-	}
+	// put the value type x into resource,and save its mapping
+	static void store(const T &x); 
 
-	/////////////////////////////////////////////////////////
+	// clean up the resources
+	static void free();
+
+	// get the push order of value_type x
+	static void get_order(const T &x);
+
+	/////////////////////////////////////////////////////////////
 	// data members
 	
 	Container c;   // the container to store elements
