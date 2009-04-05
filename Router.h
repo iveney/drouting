@@ -17,6 +17,7 @@ public:
 		     GridPoint::GPpointerCmp > GP_HEAP;
 
 	// default constructor: mark the router's input be empty
+	// initialize the netorder vector(default order:1,2,...)
 	Router():read(false){
 		for(int i=0;i<MAXNET;i++) netorder[i]=i;
 	}
@@ -37,9 +38,11 @@ public:
 	vector<RouteResult> solve_all();
 
 	// solve a subproblem with index=prob_idx
+	// returns the routing result
 	RouteResult solve_subproblem(int prob_idx);
 
 	// solve the problem given in cmd line
+	// returns the routing result of all problems
 	vector<RouteResult> solve_cmdline();
 
 	// determines if there is fluidic constraint violation

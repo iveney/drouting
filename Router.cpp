@@ -118,10 +118,10 @@ void Router::route_net(int which){
 #ifdef DEBUG
 		cout<<"[after pop]"<<endl;
 		output_heap(p);
-#endif 
 		cout<<"Pop "         <<current->pt
 		    <<" at time "    <<current->time
 		    <<", queue size="<<p.size()<<endl;
+#endif 
 
 		// find the sink!
 		if( current->pt == T ) {
@@ -215,10 +215,18 @@ void Router::route_net(int which){
 	else{ cout<<"Success - start to backtrack"<<endl; }
 #endif
 	//////////////////////////////////////////////////////////////////
+	// output format:(e.g.)
+	// net[0]:20
+	//     0: (1,3)
+	//     1: (2,3)
+	//     2: ...
+	//     20:(21,3)
+	//
+	cout<<"net["<<which<<"]:"<<this->T<<endl;
 
 	// backtrack phase
 	while( current != NULL ){
-		cout<<"t="<<current->time<<", pos="<<current->pt<<endl;
+		cout<<"\t"<<current->time<<":"<<current->pt<<endl;
 		current = current->parent;
 	}
 
@@ -331,9 +339,9 @@ int Router::fluidic_check(int which, const Point & pt,int t){
 	return 0;
 }
 
-
 vector<RouteResult> Router::solve_cmdline(){
-	if( tosolve == -1 )// not given in cmdline
+	// tosolve is not given in cmdline
+	if( this->tosolve == -1 ) 
 		route_result = solve_all();
 	else
 		route_result.push_back(solve_subproblem(tosolve));

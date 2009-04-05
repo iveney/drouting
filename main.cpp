@@ -1,5 +1,5 @@
 // Filename : main.cpp
-// start point ot the program
+// main entrance of the program
 //
 // Author : Xiao Zigang
 // Modifed: < Tue Mar 17 10:39:54 HKT 2009 >

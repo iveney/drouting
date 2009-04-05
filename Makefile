@@ -6,7 +6,7 @@ DBG=debug
 parser=parser
 OPT=-Wall -g
 
-all: $(OBJ) parser debug release
+all: $(OBJ) parser release debug
 	cp ./main ./util/
 	ctags -R *.cpp *.h
 

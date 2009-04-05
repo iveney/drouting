@@ -3,12 +3,18 @@
 # 1. use `main' to route the droplet in $FILE
 # 2. use `parser' to parse the result
 # 3. use pdflatex to generate the result
+# 4. use droute_draw to convert routing result to tex file
 #
 # NOTE: should have two arguments 
 # $1=file name 
 # $2=sub problem number
 # 
 # <iveney@gmail.com>
+
+if [ "$#" -lt "2" ];then
+	echo "Usage: ./visualize.sh filename subproblem_num"
+	exit 1
+fi
 
 FILE=$1
 SUBPROB=$2
@@ -18,7 +24,11 @@ PARSER=./parser   # use to grep the conrresponding problem and translate to tex 
 echo "Start to visualize..."
 cat droute_draw_header.tex > "${FILE}.tex"
 echo "  solving..."
-$MAIN $FILE $SUBPROB |grep -v "Exceed" | ./droute_draw >> "${FILE}.tex"
+# get the route result first
+ROUTERESULT=`$MAIN $FILE $SUBPROB`
+# extract information needed by drawing util
+ROUTE=`echo "$ROUTERESULT" | tail -n +6 | grep -v -e "Exceed" -e "pin" -e "\*" -e "Find"`
+echo "$ROUTE" | ./droute_draw >> "${FILE}.tex"
 echo "  parsing..."
 $PARSER $FILE $SUBPROB
 echo "  greping..."
