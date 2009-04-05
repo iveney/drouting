@@ -9,6 +9,15 @@
 # $1=file name 
 # $2=sub problem number
 # 
+# bug(solved):
+#	  It's strange that pdflatex can not generate the file
+#	  But CTeX can (also uses pdflatex)
+# solution:
+#	  ubuntu 8.04(hardy) has pgf 1.x while the custom style specified in 
+#	  tikz environment only available in 2.x
+#	  download deb package and install solves the problem
+#
+# Last modified : 2009年 04月 05日 星期日 17:28:48 CST
 # <iveney@gmail.com>
 
 if [ "$#" -lt "2" ];then
