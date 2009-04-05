@@ -65,7 +65,7 @@ public:
 	// members for internal use of routing
 	BYTE blockage[MAXGRID][MAXGRID];
 	int netcount;
-	int N,M;
+	int N,M,T;
 	int netorder[MAXNET];
 	static Subproblem * pProb;
 

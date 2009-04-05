@@ -11,13 +11,11 @@ all: $(OBJ) parser debug release
 	ctags -R *.cpp *.h
 
 release: $(OBJ)
-	$(CC) $(OPT) -c $(SRC)
 	$(CC) $(OPT) -c main.cpp
 	$(CC) $(OPT) -o $(BIN) $(OBJ) main.o
 
 debug: $(OBJ)
-	$(CC) $(OPT) -DDEBUG -c $(SRC)
-	$(CC) $(OPT) -DDEBUG -c main.cpp
+	$(CC) -c -DDEBUG $(SRC) main.cpp
 	$(CC) $(OPT) -o $(DBG) $(OBJ) main.o
 
 parser: $(OBJ)

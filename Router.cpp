@@ -17,6 +17,8 @@ using std::setw;
 int dx[]={-1,1,0,0,0};
 int dy[]={0,0,1,-1,0};
 
+Subproblem * Router::pProb=NULL;
+
 void Router::read_file(int argc, char * argv[]){
 	FILE * f;
 	if(argc<2)
@@ -45,6 +47,9 @@ RouteResult Router::solve_subproblem(int prob_idx){
 	// sort : decide net order
 	netcount = pProb->nNet;
 	sort_net(pProb,netorder);
+	N=chip.N;
+	M=chip.M;
+	T=chip.T;
 
 	output_netorder(netorder,netcount);
 
@@ -114,12 +119,23 @@ void Router::route_net(int which){
 		cout<<"[after pop]"<<endl;
 		output_heap(p);
 #endif 
-		cout<<"Pop "<<current->pt<<" at time "<<current->time<<", queue size="<<p.size()<<endl;
-		cout<<"t="<<t<<",Propagating"<<current->pt<<endl;
+		cout<<"Pop "         <<current->pt
+		    <<" at time "    <<current->time
+		    <<", queue size="<<p.size()<<endl;
 
+		// find the sink!
+		if( current->pt == T ) {
+			cout<<"Find "<<T<<"!"<<endl;
+			success = true;
+			break;
+		}
+		
 		t = current->time+1;
 		if( t > MAXTIME+1 ){ // timing constraint violated
-			if( p.size() != 0 ) continue;
+			// just drop this node
+			if( p.size() != 0 ) 
+				continue;
+			// error, can not find route
 			else{
 				cerr<<"Exceed route time!"<<endl;
 				// reroute();  // try rip-up and re-route?
@@ -128,22 +144,16 @@ void Router::route_net(int which){
 			}
 		}
 
-		// find the sink, horray!
-		if( current->pt == T ) {
-			cout<<"Find "<<T<<"!\n";
-			success = true;
-			break;
-		}
-
 		// stall at the same position, stall for 1 time step
 		GridPoint *same = new GridPoint( current->pt,current,
-				t,current->bend,  current->fluidic,
-				current->electro, current->stalling+STALL_PENALTY,
+				t,current->bend,  
+				current->fluidic,
+				current->electro, 
+				current->stalling+STALL_PENALTY,
 				current->distance );
 		p.push(same);
 #ifdef DEBUG
-		cout<<"\tStalling Point "<<same->pt<<" pushed. w="<<same->weight<<
-			", parent = "<<same->parent->pt<<endl;
+		cout<<"\tAdd:"<<*same<<endl;
 #endif
 
 		// get its neighbours( PROBLEM: can it be back? )
@@ -151,6 +161,7 @@ void Router::route_net(int which){
 		vector<Point>::iterator iter;
 
 		// enqueue neighbours
+		GridPoint * par_par = current->parent;
 		for(iter = nbr.begin();iter!=nbr.end();iter++){
 			int x=(*iter).x,y=(*iter).y;
 			// 0.current pt should be avoided
@@ -158,16 +169,17 @@ void Router::route_net(int which){
 			// 2.check if there is blockage 
 			// 3.forbid circular move (1->2...->1)
 			if( !blockage[x][y] &&
-					(*iter) != current->pt ){ 
-				if(current->parent != NULL && 
-						(*iter) == current->parent->pt) 
+		             (*iter) != current->pt ){ 
+				if(par_par != NULL && 
+				  (*iter) == par_par->pt) 
 					continue;
 				// calculate its weight
 				Point tmp(x,y);
 				int f_pen=0,e_pen=0,bending=current->bend;
-				int fluidic_result = fluidic_check( which,tmp,t );
-				bool electro_result = electrode_check( tmp );
+				int fluidic_result=fluidic_check(which,tmp,t);
+				bool electro_result=electrode_check( tmp );
 
+				//TODO: do not add this, but just drop it
 				// fluidic constraint
 				if( fluidic_result != 0 )
 					f_pen = FLUID_PENALTY;
@@ -177,8 +189,8 @@ void Router::route_net(int which){
 					e_pen = ELECT_PENALTY;
 
 				// check bending
-				if( current->parent != NULL &&
-						check_bending(tmp,current->parent->pt) == true )
+				if( par_par != NULL &&
+				    check_bending(tmp,par_par->pt) == true )
 					bending++;
 
 				GridPoint *nbpt = new GridPoint(
@@ -189,18 +201,18 @@ void Router::route_net(int which){
 						MHT(tmp,T));
 				p.push(nbpt);
 #ifdef DEBUG
-				cout<<"\tPoint "<<tmp<<" pushed. w="<<nbpt->weight<<", parent = "<<current->pt<<endl;
+				cout<<"\tAdd:"<<*nbpt<<endl;
 #endif
 			}
 		}// end of enqueue neighbours
 	}// end of propagate
-
-	if( success == false ){// failed to find path
-		fprintf(stderr,"Error: failed to find path\n");
-		exit(1);
+	
+	// failed to find path, TODO: reroute?
+	if( success == false ){
+		report_exit("Error: failed to find path");
 	}
 #ifdef DEBUG
-	else{ printf("Success - start to backtrack\n"); }
+	else{ cout<<"Success - start to backtrack"<<endl; }
 #endif
 	//////////////////////////////////////////////////////////////////
 
@@ -237,7 +249,6 @@ vector<Point> Router::get_neighbour(const Point & pt){
 	return s;
 }
 
-Subproblem * Router::pProb=NULL;
 // compare which net should be routed first
 // RETURN: smaller value goes first
 int Router::cmp_net(const void* id1,const void* id2){

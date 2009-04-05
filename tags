@@ -59,7 +59,7 @@ INF	header.h	/^const Grid INF=2<<7-1;$/;"	v
 LEFT	route.h	/^enum DIRECTION{LEFT,RIGHT,UP,DOWN,STAY}; \/\/ LEFT, RIGHT, UP, DOWN$/;"	e	enum:DIRECTION
 LEFT	util.h	/^enum DIRECTION{LEFT,RIGHT,UP,DOWN,STAY}; \/\/ LEFT, RIGHT, UP, DOWN$/;"	e	enum:DIRECTION
 LL	header.h	/^enum CORNER{LL,UR};$/;"	e	enum:CORNER
-M	Router.h	/^	int N,M;$/;"	m	class:Router	access:public
+M	Router.h	/^	int N,M,T;$/;"	m	class:Router	access:public
 M	header.h	/^	int N,M,T;	\/\/ array size,timing constraint$/;"	m	struct:Chip	access:public
 MAX	header.h	12;"	d
 MAXBLK	header.h	/^const int MAXBLK=10;$/;"	v
@@ -71,7 +71,7 @@ MAXSUB	header.h	/^const int MAXSUB=100;$/;"	v
 MAXTIME	header.h	/^const int MAXTIME=20;$/;"	v
 MHT	header.h	11;"	d
 MIN	header.h	13;"	d
-N	Router.h	/^	int N,M;$/;"	m	class:Router	access:public
+N	Router.h	/^	int N,M,T;$/;"	m	class:Router	access:public
 N	header.h	/^	int N,M,T;	\/\/ array size,timing constraint$/;"	m	struct:Chip	access:public
 Net	header.h	/^struct Net{\/\/ a net has a name and at most 3 pins$/;"	s
 Net::name	header.h	/^	char name[MAXSTR];$/;"	m	struct:Net	access:public
@@ -98,9 +98,10 @@ RouteResult	Router.h	/^class RouteResult{$/;"	c
 Router	Router.h	/^	Router():read(false){$/;"	f	class:Router	access:public	signature:()
 Router	Router.h	/^class Router{$/;"	c
 Router::GP_HEAP	Router.h	/^		     GridPoint::GPpointerCmp > GP_HEAP;$/;"	t	class:Router	access:public
-Router::M	Router.h	/^	int N,M;$/;"	m	class:Router	access:public
-Router::N	Router.h	/^	int N,M;$/;"	m	class:Router	access:public
+Router::M	Router.h	/^	int N,M,T;$/;"	m	class:Router	access:public
+Router::N	Router.h	/^	int N,M,T;$/;"	m	class:Router	access:public
 Router::Router	Router.h	/^	Router():read(false){$/;"	f	class:Router	access:public	signature:()
+Router::T	Router.h	/^	int N,M,T;$/;"	m	class:Router	access:public
 Router::blockage	Router.h	/^	BYTE blockage[MAXGRID][MAXGRID];$/;"	m	class:Router	access:public
 Router::chip	Router.h	/^	Chip chip;      \/\/ stores all the information$/;"	m	class:Router	access:public
 Router::cmp_net	Router.cpp	/^int Router::cmp_net(const void* id1,const void* id2){$/;"	f	class:Router	signature:(const void* id1,const void* id2)
@@ -150,6 +151,7 @@ Subproblem::block	header.h	/^	Block block[MAXBLK];$/;"	m	struct:Subproblem	acces
 Subproblem::nBlock	header.h	/^	int nBlock;$/;"	m	struct:Subproblem	access:public
 Subproblem::nNet	header.h	/^	int nNet;$/;"	m	struct:Subproblem	access:public
 Subproblem::net	header.h	/^	Net net[MAXNET];$/;"	m	struct:Subproblem	access:public
+T	Router.h	/^	int N,M,T;$/;"	m	class:Router	access:public
 T	header.h	/^	int N,M,T;	\/\/ array size,timing constraint$/;"	m	struct:Chip	access:public
 TOSTRING	util.h	7;"	d
 UP	route.h	/^enum DIRECTION{LEFT,RIGHT,UP,DOWN,STAY}; \/\/ LEFT, RIGHT, UP, DOWN$/;"	e	enum:DIRECTION
