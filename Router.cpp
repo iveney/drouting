@@ -132,7 +132,7 @@ void Router::route_net(int which,RouteResult & result){
 		}
 		
 		t = current->time+1;
-		if( t > this->T+1 ){ // timing constraint violated
+		if( t > this->T ){ // timing constraint violated
 			// just drop this node
 			if( p.size() != 0 ) 
 				continue;
@@ -334,8 +334,10 @@ int Router::fluidic_check(int which, const Point & pt,int t,
 	// check if the current routing net(which) violate fluidic rule
 	// we have known the previous routed net 
 	// from netorder[0] to netorder[i]!=which
-	// t's range: [1..T]
-	assert( t <= this-> T && t >= 1 );
+	// t's range: [0..T]
+	if(t > this->T || t < 0)
+		cout<<"which="<<which<<" Point="<<pt<<" t="<<t<<endl;
+	assert( (t <= this->T) && (t >= 0) );
 	for(int i=0;i<netcount && netorder[i] != which;i++){
 		int checking_idx = netorder[i];
 		const vector<Point> & path = result.path[checking_idx];

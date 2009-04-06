@@ -32,8 +32,8 @@
 %#1= pin1 name #2,#3=pin1 location
 %#4= pin1 name #5,#6=pin2 location
 %#7= color
-    \node[pins,#7]  (#1) at (#2 + \half, #3 + \half) {}; % pin-1
-    \node[pins,#7]  (#4) at (#5  + \half, #6 + \half) {}  % pin-2
+    \node[pinsnofill,#7]  (#1) at (#2 + \half, #3 + \half) {}; % pin-1
+    \node[pinsnofill,#7]  (#4) at (#5  + \half, #6 + \half) {}  % pin-2
         edge[arrow] (#1);            % arrow
     %\node[above] at (#1) {$#1$}; % label
     %\node[above] at (#4) {$#4$}; % label
@@ -59,6 +59,7 @@
 	minimum size=1cm*\scale,
 	>=latex,
 	pins/.style={rectangle,draw,fill=brown,font=\scriptsize},
+	pinsnofill/.style={rectangle,draw,font=\scriptsize},
 	arrow/.style={->,very thick},
 	block/.style={gray}]
 	% define the row and column number

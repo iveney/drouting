@@ -6,3 +6,25 @@ but in this case, seems that stall one step at that position will be better
 since it saves cell used
 
 idea: maybe add a ``cell used'' into cost function can solve?
+
+
+----------------------------------------------------------------------------
+DAC05 19
+if left net(net 1) is routed first, it will stay in the dst, the blocked another 
+net's path(net 0)path. net 0 then become no way to go(although there is other way, 
+it will violate timing constraint)
+
+Idea:
+1.the routing order is 1,0 but it seems that two nets do not overlap with each other
+ if we route net 0 first, the problem solves
+ maybe we should route far net first?
+ or maybe check whether there is blockage in a net's bounding box to determine the ``congestion''?
+2. rip up & reroute net 1 solves the problem , hence we need some scheme to determine when to stop propagating net 0
+(the searching space is large and it take exp time to reach the end)
+
+----------------------------------------------------------------------------
+DAC05 37
+two nets go to the same position!!!
+----------------------------------------------------------------------------
+----------------------------------------------------------------------------
+----------------------------------------------------------------------------

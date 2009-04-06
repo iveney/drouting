@@ -1,0 +1,3 @@
+#!/bin/bash
+rm -rf *.log *.aux *.bak *.out
+chmod -x *.pdf *.tex
