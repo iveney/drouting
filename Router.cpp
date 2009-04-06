@@ -91,8 +91,7 @@ void Router::route_net(int which,RouteResult & result){
 
 	// do Lee's propagation,handles 2-pin net only currently
 	int numPin = pNet->numPin;
-
-	//if( numPin == 3 ) {} // handle three pin net
+	if( numPin == 3 ) {}       // handle three pin net
 	Point S = pNet->pin[0].pt; // source
 	Point T = pNet->pin[1].pt; // sink
 
@@ -124,7 +123,7 @@ void Router::route_net(int which,RouteResult & result){
 		    <<", queue size="<<p.size()<<endl;
 #endif 
 
-		// find the sink!
+		// sink reached!
 		if( current->pt == T ) {
 			cout<<"Find "<<T<<" at time "<<current->time<<"!"<<endl;
 			success = true;
@@ -132,12 +131,15 @@ void Router::route_net(int which,RouteResult & result){
 		}
 		
 		t = current->time+1;
-		if( t > this->T ){ // timing constraint violated
-			// just drop this node
-			if( p.size() != 0 ) 
-				continue;
-			// error, can not find route
+		// do pruning:
+		// 1. MHT>time left(impossbile to reach dest)
+		// 2. time exceed
+		int time_left = this->T - current->time;
+		int remain_dist = MHT(current->pt,T);
+		if( (remain_dist > time_left) || (t > this->T) ){
+			if( p.size() != 0 ) continue;
 			else{
+				// error, can not find route
 				cerr<<"Exceed route time!"<<endl;
 				// reroute();  // try rip-up and re-route?
 				success = false;
@@ -162,7 +164,7 @@ void Router::route_net(int which,RouteResult & result){
 		vector<Point>::iterator iter;
 
 		// enqueue neighbours
-		GridPoint * par_par = current->parent;
+		GridPoint * par_par = current->parent; 
 		for(iter = nbr.begin();iter!=nbr.end();iter++){
 			int x=(*iter).x,y=(*iter).y;
 			// 0.current pt should be avoided
@@ -171,8 +173,8 @@ void Router::route_net(int which,RouteResult & result){
 			// 3.forbid circular move (1->2...->1)
 			if( !blockage[x][y] &&
 		             (*iter) != current->pt ){ 
-				if(par_par != NULL && 
-				  (*iter) == par_par->pt) 
+				if( (par_par != NULL) && 
+				    (*iter == par_par->pt) )
 					continue;
 				// calculate its weight
 				Point tmp(x,y);
@@ -180,14 +182,13 @@ void Router::route_net(int which,RouteResult & result){
 				int fluidic_result=fluidic_check(which,tmp,t,result);
 				bool electro_result=electrode_check( tmp );
 
-				//TODO: do not add this, but just drop it
-				// fluidic constraint
+				// fluidic constraint check
 				if( fluidic_result != -1 ){
 					continue;
 					//f_pen = FLUID_PENALTY;
 				}
 
-				// electro constraint
+				// electro constraint check
 				if( !electro_result ){
 					continue;
 					//e_pen = ELECT_PENALTY;

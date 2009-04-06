@@ -7,6 +7,8 @@ since it saves cell used
 
 idea: maybe add a ``cell used'' into cost function can solve?
 
+NOW solved with: do not use STALLING penalty, actually the time has
+already act as penalty
 
 ----------------------------------------------------------------------------
 DAC05 19

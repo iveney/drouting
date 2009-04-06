@@ -153,7 +153,7 @@ Router::sort_net	Router.cpp	/^void Router::sort_net(Subproblem *pProb, int * net
 Router::sort_net	Router.h	/^	void sort_net(Subproblem *pProb, int * netorder);$/;"	p	class:Router	access:private	signature:(Subproblem *pProb, int * netorder)
 Router::tosolve	Router.h	/^	int tosolve;    \/\/ which subproblem to solve,given in cmd line$/;"	m	class:Router	access:public
 Router::~Router	Router.h	/^	~Router(){}$/;"	f	class:Router	access:public	signature:()
-STALL_PENALTY	header.h	/^const int STALL_PENALTY=20;$/;"	v
+STALL_PENALTY	header.h	/^const int STALL_PENALTY=0;$/;"	v
 STAY	route.h	/^enum DIRECTION{LEFT,RIGHT,UP,DOWN,STAY}; \/\/ LEFT, RIGHT, UP, DOWN$/;"	e	enum:DIRECTION
 STAY	util.h	/^enum DIRECTION{LEFT,RIGHT,UP,DOWN,STAY}; \/\/ LEFT, RIGHT, UP, DOWN$/;"	e	enum:DIRECTION
 STRINGIFY	util.h	6;"	d

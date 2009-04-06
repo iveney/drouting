@@ -58,10 +58,8 @@ egrep -e "[\]draw.*pin" -e "[\]blockage" "$INTERMEDIATE" >> "${OUTPUT}"
 
 echo "  finishing..."
 cat droute_draw_tail.tex >> "${OUTPUT}"
-exit 1
 
 pdflatex "${OUTPUT}"
-
 
 # do some clean up stuff
 # remove the intermediate result
@@ -76,4 +74,4 @@ done
 echo "${OTHER}.pdf" > log
 
 # just see it
-#./see
+./see

@@ -4,3 +4,5 @@
 debug
 parser
 main
+util/*.tex
+util/*.pdf

@@ -25,7 +25,8 @@ const int MAXTIME=20;
 const Grid INF=2<<7-1;
 const int FLUID_PENALTY=20;
 const int ELECT_PENALTY=20;
-const int STALL_PENALTY=20;
+//const int STALL_PENALTY=20;
+const int STALL_PENALTY=0;
 
 class Point{// a point denote by (row,col)
 public:
