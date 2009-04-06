@@ -1,0 +1,10 @@
+#!/bin/bash
+# just a wrapper for acroreader to see the visualized result
+NAME=DAC05_r
+if [ $# -lt 1 ];then
+	NAME=`cat log`
+else
+	NAME=${NAME}$1.pdf
+fi
+echo $NAME
+acroread $NAME

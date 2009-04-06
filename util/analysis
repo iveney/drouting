@@ -1,0 +1,8 @@
+for DAC05 15
+the upper net uses a detour path
+otherwise if it uses a right then down path
+fluidic violation will happen
+but in this case, seems that stall one step at that position will be better
+since it saves cell used
+
+idea: maybe add a ``cell used'' into cost function can solve?

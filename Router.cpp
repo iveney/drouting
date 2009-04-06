@@ -126,7 +126,7 @@ void Router::route_net(int which,RouteResult & result){
 
 		// find the sink!
 		if( current->pt == T ) {
-			cout<<"Find "<<T<<"!"<<endl;
+			cout<<"Find "<<T<<" at time "<<current->time<<"!"<<endl;
 			success = true;
 			break;
 		}
@@ -182,7 +182,7 @@ void Router::route_net(int which,RouteResult & result){
 
 				//TODO: do not add this, but just drop it
 				// fluidic constraint
-				if( fluidic_result != 0 ){
+				if( fluidic_result != -1 ){
 					continue;
 					//f_pen = FLUID_PENALTY;
 				}
@@ -330,14 +330,13 @@ bool Router::electrode_check(const Point & pt){
 // else return the conflicting net
 int Router::fluidic_check(int which, const Point & pt,int t,
 		const RouteResult & result){
-	int i;
 	// for each routed net, 
 	// check if the current routing net(which) violate fluidic rule
 	// we have known the previous routed net 
 	// from netorder[0] to netorder[i]!=which
 	// t's range: [1..T]
 	assert( t <= this-> T && t >= 1 );
-	for(i=0;i<netcount && netorder[i] != which;i++){
+	for(int i=0;i<netcount && netorder[i] != which;i++){
 		int checking_idx = netorder[i];
 		const vector<Point> & path = result.path[checking_idx];
 		// static fluidic check
@@ -349,7 +348,7 @@ int Router::fluidic_check(int which, const Point & pt,int t,
 		       abs(pt.y - path[t-1].y) >=2) )
 			return i;
 	}
-	return 0;
+	return -1;
 }
 
 vector<RouteResult> Router::solve_cmdline(){

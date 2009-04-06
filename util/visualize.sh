@@ -9,7 +9,13 @@
 # $1=file name 
 # $2=sub problem number
 # 
-# bug(solved):
+# bugs:
+# (color) :
+#	  netorder is specified in program but the parse result do not consider the route order
+#         hence in the output pdf file, some net's src and dst do not have the same color
+#	  as their route
+#
+# (solved):
 #	  It's strange that pdflatex can not generate the file
 #	  But CTeX can (also uses pdflatex)
 # solution:
@@ -55,6 +61,7 @@ cat droute_draw_tail.tex >> "${OUTPUT}"
 
 pdflatex "${OUTPUT}"
 
+
 # do some clean up stuff
 # remove the intermediate result
 rm $INTERMEDIATE
@@ -63,3 +70,9 @@ for x in  log out aux
 do
 	rm ${OTHER}.$x
 done
+
+# output file name to a log file so that we can check it fast
+echo "${OTHER}.pdf" > log
+
+# just see it
+./see
