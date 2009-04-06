@@ -27,22 +27,39 @@ fi
 
 FILE=$1
 SUBPROB=$2
+OUTPUT="${FILE}_r${SUBPROB}.tex"
 MAIN=./main       # use to get the routing result
-PARSER=./parser   # use to grep the conrresponding problem and translate to tex file
+PARSER=./parser   # use to parse the conrresponding problem and convert to tex
 
+###########################################################################
 echo "Start to visualize..."
-cat droute_draw_header.tex > "${FILE}.tex"
-echo "  solving..."
-# get the route result first
-ROUTERESULT=`$MAIN $FILE $SUBPROB`
-# extract information needed by drawing util
-ROUTE=`echo "$ROUTERESULT" | tail -n +6 | grep -v -e "Exceed" -e "pin" -e "\*" -e "Find"`
-echo "$ROUTE" | ./droute_draw >> "${FILE}.tex"
-echo "  parsing..."
-$PARSER $FILE $SUBPROB
-echo "  greping..."
-egrep -e "[\]draw.*pin" -e "[\]blockage" "${FILE}_p${SUBPROB}.tex" >> "${FILE}.tex" 
-echo "  finishing..."
-cat droute_draw_tail.tex >> "${FILE}.tex"
+cat droute_draw_header.tex > "${OUTPUT}"
 
-pdflatex "${FILE}.tex"
+# get the route result first
+echo "  solving..."
+ROUTERESULT=`$MAIN $FILE $SUBPROB`
+
+# extract information needed by drawing util
+echo "  parsing..."
+ROUTE=`echo "$ROUTERESULT" | tail -n +6 | \
+	grep -v -e "Exceed" -e "pin" -e "\*" -e "Find"`
+echo "$ROUTE" | ./droute_draw >> ${OUTPUT} 
+$PARSER $FILE $SUBPROB
+
+echo "  greping..."
+INTERMEDIATE=${FILE}_p${SUBPROB}.tex
+egrep -e "[\]draw.*pin" -e "[\]blockage" "$INTERMEDIATE" >> "${OUTPUT}" 
+
+echo "  finishing..."
+cat droute_draw_tail.tex >> "${OUTPUT}"
+
+pdflatex "${OUTPUT}"
+
+# do some clean up stuff
+# remove the intermediate result
+rm $INTERMEDIATE
+OTHER=${OUTPUT%.tex}
+for x in  log out aux
+do
+	rm ${OTHER}.$x
+done

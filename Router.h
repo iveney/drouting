@@ -6,8 +6,34 @@
 #include "heap.h"
 #include "util.h"
 
+// the class to stores the final routing result
 class RouteResult{
 public:
+	// constructor, must use T and prob to initialize
+	RouteResult(int T_,int N_,int M_,Subproblem & subprob):
+		T(T_),N(N_),M(M_),prob(subprob) {
+			path = vector< vector<Point> >(prob.nNet);
+	}
+
+	// data members
+	// timing constraint, should be the same as the chip->T
+	int T,N,M;
+
+	// the corresponding subproblem
+	// This includes all the information we need
+	Subproblem prob;  
+
+	// routing path for each net,size = prob->nNet
+	// i.e. given net index and time, we get the position
+	// 1st dimension = net, 2nd dimension = time
+	vector< vector<Point> > path;
+	
+	// voltage assignment for each time step from 1 up to T
+	// at each t, there is a list of H and a list of L, those not
+	// in these two lists are assume to be G(ground)
+	// 1st diemstion = time, 2nd dimenstion = some voltage
+	vector< vector<int> > tHigh;
+	vector< vector<int> > tLow;
 };
 
 // main class for routing the droplets net
@@ -32,7 +58,7 @@ public:
 	void output_heap(const GP_HEAP & h);
 
 	// given a net index, route the net
-	void route_net(int which);
+	void route_net(int which,RouteResult & result);
 
 	// solve all the subproblems
 	vector<RouteResult> solve_all();
@@ -46,7 +72,8 @@ public:
 	vector<RouteResult> solve_cmdline();
 
 	// determines if there is fluidic constraint violation
-	int fluidic_check(int which, const Point & pt,int t);
+	int fluidic_check(int which, const Point & pt,int t,
+			const RouteResult & result);
 
 	// determines if there is electrode constraint violation
 	bool electrode_check(const Point & pt);

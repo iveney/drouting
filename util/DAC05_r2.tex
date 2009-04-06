@@ -1,0 +1,118 @@
+\documentclass[a4paper,12pt]{article}
+\usepackage[colorlinks=false,pdfborder=000]{hyperref}
+\usepackage[top=1.2in, bottom=1.2in, left=1.2in, right=1.2in]{geometry}
+\usepackage[dvips]{graphicx,color}
+\usepackage{times}
+\usepackage{tikz}
+\usepackage{fp}
+\usetikzlibrary {snakes,arrows}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\def\scale{0.7}
+\def\half{0.5}
+\providecommand{\blockage}[4]{%
+    \fill[block] (#1,#2) rectangle (#3+1,#4+1);
+}
+\providecommand{\drawrowcol}[2]{
+    % enumerate the row and column
+    \FPset{\row}{#1}
+    \FPadd{\row}{\row}{-1}
+    \foreach \r in {0,...,\row}
+        \node at (0-\half,\r+\half) {\r} ;
+    \FPset{\col}{#2}
+    \FPadd{\col}{\col}{-1}
+    \foreach \c in {0,...,\col}
+        \node at (\c+\half,0-\half) {\c} ;
+}
+\providecommand{\drawgrid}[2]{
+    \draw (0,0) grid (#1,#2);
+    \drawrowcol{#1}{#2}
+}
+\providecommand{\drawtwopin}[7]{
+%#1= pin1 name #2,#3=pin1 location
+%#4= pin1 name #5,#6=pin2 location
+%#7= color
+    \node[pins,#7]  (#1) at (#2 + \half, #3 + \half) {}; % pin-1
+    \node[pins,#7]  (#4) at (#5  + \half, #6 + \half) {}  % pin-2
+        edge[arrow] (#1);            % arrow
+    %\node[above] at (#1) {$#1$}; % label
+    %\node[above] at (#4) {$#4$}; % label
+}
+\providecommand{\drawthreepin}[9]{
+%#1= pin1 name #2,#3=pin1 location
+%#4= pin1 name #5,#6=pin2 location
+%#7= pin1 name #8,#9=pin3 location
+    \node[pins]  (#1) at (#2 + \half, #3 + \half) {}; % pin-1
+    \node[pins]  (#4) at (#5  + \half, #6 + \half) {}  % pin-2
+        edge[arrow] (#1);            % arrow
+    \node[pins]  (#7) at (#8  + \half, #9 + \half) {}  % pin-2
+        edge[arrow] (#1);            % arrow
+}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{document}
+
+\begin{figure}
+\centering
+\begin{tikzpicture}[scale=\scale,
+	%inner sep=1cm*\scale*\half,
+	inner sep=0,
+	minimum size=1cm*\scale,
+	>=latex,
+	pins/.style={rectangle,draw,fill=brown,font=\scriptsize},
+	arrow/.style={->,very thick},
+	block/.style={gray}]
+	% define the row and column number
+	\def \N{21}\def \M{21}
+	% blockages
+	% nets
+	
+\node[pins,blue] (net_0_0_3) at (0+\half,3+\half) {};
+\node[pins,blue] (net_0_0_2) at (0+\half,2+\half) {};
+\node[pins,blue] (net_0_0_1) at (0+\half,1+\half) {};
+\node[pins,blue] (net_0_0_0) at (0+\half,0+\half) {};
+\node[pins,blue] (net_0_1_0) at (1+\half,0+\half) {};
+\node[pins,blue] (net_0_2_0) at (2+\half,0+\half) {};
+\node[pins,blue] (net_0_2_0) at (2+\half,0+\half) {};
+\node[pins,blue] (net_0_2_0) at (2+\half,0+\half) {};
+\node[pins,blue] (net_0_2_0) at (2+\half,0+\half) {};
+\node[pins,blue] (net_0_2_0) at (2+\half,0+\half) {};
+\node[pins,blue] (net_0_2_0) at (2+\half,0+\half) {};
+\node[pins,blue] (net_0_2_0) at (2+\half,0+\half) {};
+\node[pins,blue] (net_0_2_0) at (2+\half,0+\half) {};
+\node[pins,blue] (net_0_2_0) at (2+\half,0+\half) {};
+\node[pins,blue] (net_0_2_0) at (2+\half,0+\half) {};
+\node[pins,blue] (net_0_2_0) at (2+\half,0+\half) {};
+\node[pins,blue] (net_0_2_0) at (2+\half,0+\half) {};
+\node[pins,blue] (net_0_2_0) at (2+\half,0+\half) {};
+\node[pins,blue] (net_0_2_0) at (2+\half,0+\half) {};
+\node[pins,blue] (net_0_2_0) at (2+\half,0+\half) {};
+\node[pins,blue] (net_0_2_0) at (2+\half,0+\half) {};
+
+\node[pins,green] (net_1_2_5) at (2+\half,5+\half) {};
+\node[pins,green] (net_1_2_4) at (2+\half,4+\half) {};
+\node[pins,green] (net_1_2_3) at (2+\half,3+\half) {};
+\node[pins,green] (net_1_2_2) at (2+\half,2+\half) {};
+\node[pins,green] (net_1_2_1) at (2+\half,1+\half) {};
+\node[pins,green] (net_1_2_0) at (2+\half,0+\half) {};
+\node[pins,green] (net_1_3_0) at (3+\half,0+\half) {};
+\node[pins,green] (net_1_4_0) at (4+\half,0+\half) {};
+\node[pins,green] (net_1_5_0) at (5+\half,0+\half) {};
+\node[pins,green] (net_1_6_0) at (6+\half,0+\half) {};
+\node[pins,green] (net_1_6_0) at (6+\half,0+\half) {};
+\node[pins,green] (net_1_6_0) at (6+\half,0+\half) {};
+\node[pins,green] (net_1_6_0) at (6+\half,0+\half) {};
+\node[pins,green] (net_1_6_0) at (6+\half,0+\half) {};
+\node[pins,green] (net_1_6_0) at (6+\half,0+\half) {};
+\node[pins,green] (net_1_6_0) at (6+\half,0+\half) {};
+\node[pins,green] (net_1_6_0) at (6+\half,0+\half) {};
+\node[pins,green] (net_1_6_0) at (6+\half,0+\half) {};
+\node[pins,green] (net_1_6_0) at (6+\half,0+\half) {};
+\node[pins,green] (net_1_6_0) at (6+\half,0+\half) {};
+\node[pins,green] (net_1_6_0) at (6+\half,0+\half) {};
+
+\drawtwopin{Dlt01_to_Dlt02}{2}{0}{Dlt01}{0}{3}{blue!70}
+\drawtwopin{Dlt01_to_Dlt03}{6}{0}{Dlt01}{2}{5}{green!70}
+\drawgrid{\N}{\M}
+	\end{tikzpicture}
+      \end{figure}
+      \end{document}

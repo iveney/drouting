@@ -2,6 +2,7 @@
 #include <iomanip>
 #include <stdlib.h>
 #include <algorithm>
+#include <assert.h>
 #include "header.h"
 #include "GridPoint.h"
 #include "util.h"
@@ -38,12 +39,12 @@ RouteResult Router::solve_subproblem(int prob_idx){
 	if( read == false ) report_exit("Must read input first!");
 	cout<<"--- Solving subproblem ["<<prob_idx<<"] ---"<<endl;
 	
-	// the result to return
-	RouteResult result;
-
 	// solve subproblem `idx'
 	pProb = &chip.prob[prob_idx];
 	
+	// the result to return
+	RouteResult result(this->T,this->M,this->N,*(this->pProb));
+
 	// sort : decide net order
 	netcount = pProb->nNet;
 	sort_net(pProb,netorder);
@@ -59,7 +60,7 @@ RouteResult Router::solve_subproblem(int prob_idx){
 	// start to route each net according to sorted order
 	for(int i=0;i<netcount;i++){
 		int which = netorder[i];
-		route_net(which);
+		route_net(which,result);
 	}
 
 	return result ;
@@ -82,7 +83,7 @@ vector<RouteResult> Router::solve_all(){
 	return route_result;
 }
 
-void Router::route_net(int which){
+void Router::route_net(int which,RouteResult & result){
 	cout<<"** Routing net["<<which<<"] **"<<endl;
 	GridPoint *current;
 	Net * pNet = &pProb->net[which];
@@ -131,7 +132,7 @@ void Router::route_net(int which){
 		}
 		
 		t = current->time+1;
-		if( t > MAXTIME+1 ){ // timing constraint violated
+		if( t > this->T+1 ){ // timing constraint violated
 			// just drop this node
 			if( p.size() != 0 ) 
 				continue;
@@ -176,17 +177,21 @@ void Router::route_net(int which){
 				// calculate its weight
 				Point tmp(x,y);
 				int f_pen=0,e_pen=0,bending=current->bend;
-				int fluidic_result=fluidic_check(which,tmp,t);
+				int fluidic_result=fluidic_check(which,tmp,t,result);
 				bool electro_result=electrode_check( tmp );
 
 				//TODO: do not add this, but just drop it
 				// fluidic constraint
-				if( fluidic_result != 0 )
-					f_pen = FLUID_PENALTY;
+				if( fluidic_result != 0 ){
+					continue;
+					//f_pen = FLUID_PENALTY;
+				}
 
 				// electro constraint
-				if( !electro_result )
-					e_pen = ELECT_PENALTY;
+				if( !electro_result ){
+					continue;
+					//e_pen = ELECT_PENALTY;
+				}
 
 				// check bending
 				if( par_par != NULL &&
@@ -215,6 +220,7 @@ void Router::route_net(int which){
 	else{ cout<<"Success - start to backtrack"<<endl; }
 #endif
 	//////////////////////////////////////////////////////////////////
+	// backtrack phase, stores results to RoutingResult
 	// output format:(e.g.)
 	// net[0]:20
 	//     0: (1,3)
@@ -223,16 +229,29 @@ void Router::route_net(int which){
 	//     20:(21,3)
 	//
 	cout<<"net["<<which<<"]:"<<this->T<<endl;
-
-	// backtrack phase
+	vector<Point> & net_path = result.path[which];
 	while( current != NULL ){
-		cout<<"\t"<<current->time<<":"<<current->pt<<endl;
+		//cout<<"\t"<<current->time<<":"<<current->pt<<endl;
+		net_path.insert(net_path.begin(),current->pt);
 		current = current->parent;
+	}
+
+	// note that some droplet may reach the destination early than the
+	// timing constraint. fill all later time with its final position
+	for(int i=net_path.size();i<=this->T;i++){
+		net_path.push_back(T); // T is destination pt here
+	}
+
+	// output result
+	for(size_t i=0;i<net_path.size();i++){
+		cout<<"\t"<<i<<":"
+		    <<net_path[i]<<endl;
 	}
 
 	p.free();
 }
 
+// just print out what is in the heap
 void Router::output_heap(const GP_HEAP & h){
 	for(int i=0;i<h.size();i++) {
 		cout<<i<<":"<<*(h.c[i])<<endl;
@@ -257,8 +276,11 @@ vector<Point> Router::get_neighbour(const Point & pt){
 	return s;
 }
 
-// compare which net should be routed first
-// RETURN: smaller value goes first
+// Compare which net should be routed first
+// note: this is a static function 
+// otherwise the signature makes qsort unusable
+// also the member `pProb' is set to static in order to be accessed
+// RESULT: smaller value goes first
 int Router::cmp_net(const void* id1,const void* id2){
 	int i1 = *(int*)id1;
 	int i2 = *(int*)id2;
@@ -280,18 +302,8 @@ int Router::cmp_net(const void* id1,const void* id2){
 }
 
 void Router::sort_net(Subproblem *pProb, int * netorder){
-	// do nothing here now, just initialize
 	int N=pProb->nNet;
 	qsort(netorder,N,sizeof(int),cmp_net);
-	/*
-	for(int i=0;i<N-1;i++){
-		for(int j=i;j<N;j++){
-			if( cmp_net(j,j+1) > 0 ){
-				swap(netorder[j],netorder[j+1]);
-			}
-		}
-	}
-	*/
 }
 
 void Router::output_netinfo(Net *pNet){
@@ -316,25 +328,26 @@ bool Router::electrode_check(const Point & pt){
 // perform fluidic constraint check
 // if successful return 0 
 // else return the conflicting net
-int Router::fluidic_check(int which, const Point & pt,int t){
+int Router::fluidic_check(int which, const Point & pt,int t,
+		const RouteResult & result){
 	int i;
 	// for each routed net, 
 	// check if the current routing net(which) violate fluidic rule
 	// we have known the previous routed net 
 	// from netorder[0] to netorder[i]!=which
 	// t's range: [1..T]
+	assert( t <= this-> T && t >= 1 );
 	for(i=0;i<netcount && netorder[i] != which;i++){
-		int checking = netorder[i];
+		int checking_idx = netorder[i];
+		const vector<Point> & path = result.path[checking_idx];
 		// static fluidic check
-		/*
-		if( !(abs(pt.x - path[checking][t].x) >=2 ||
-		      abs(pt.y - path[checking][t].y) >=2) )
+		if( !(abs(pt.x - path[t].x) >=2 ||
+		      abs(pt.y - path[t].y) >=2) )
 			return i;
 		// dynamic fluidic check
-		if ( !(abs(pt.x - path[checking][t-1].x) >=2 ||
-		       abs(pt.y - path[checking][t-1].y) >=2) )
+		if ( !(abs(pt.x - path[t-1].x) >=2 ||
+		       abs(pt.y - path[t-1].y) >=2) )
 			return i;
-			*/
 	}
 	return 0;
 }
