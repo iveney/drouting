@@ -84,6 +84,14 @@ public:
 	// gets the neighbour points of a point
 	vector<Point> get_neighbour(const Point & pt);
 
+	// backtrack phase, store the result
+	void backtrack(int which,GridPoint *current,RouteResult &result);
+
+	// given a point `current',propagate it.
+	void propagate_nbrs(int which,GridPoint * current,
+			Point & dst,RouteResult & result,GP_HEAP & p);
+	
+
 	///////////////////////////////////////////////////////////////////
 	// members
 	bool read;      // mark if configuration has been read
@@ -98,6 +106,7 @@ public:
 	int N,M,T;
 	int netorder[MAXNET];
 	static Subproblem * pProb;
+
 
 private:
 	// sort the net according to some criteria defined in cmp_net

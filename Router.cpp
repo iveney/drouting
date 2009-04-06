@@ -92,24 +92,24 @@ void Router::route_net(int which,RouteResult & result){
 	// do Lee's propagation,handles 2-pin net only currently
 	int numPin = pNet->numPin;
 	if( numPin == 3 ) {}       // handle three pin net
-	Point S = pNet->pin[0].pt; // source
-	Point T = pNet->pin[1].pt; // sink
+	Point src = pNet->pin[0].pt; // source
+	Point dst = pNet->pin[1].pt; // sink
 
 	// initialize the heap
 	GP_HEAP p;
 
-	// start time = 0, source point = S, no parent
-	GridPoint *src = new GridPoint(S,NULL); 
-	src->distance = MHT(S,T);
-	p.push(src); // put the source point into heap
+	// start time = 0, source point = src, no parent
+	GridPoint *gp_src = new GridPoint(src,NULL); 
+	gp_src->distance = MHT(src,dst);
+	p.push(gp_src); // put the source point into heap
 
 	int t=0;               // current time step
-	bool success = false;  // mark whether this net is routed successfully
+	bool success = false;  // mark if this net is routed successfully
 	while( !p.empty() ){
 		// get wave_front and propagate its neighbour
 		//p.sort();
 #ifdef DEBUG
-		cout<<"------------------------------------------------------------"<<endl;
+		cout<<"------------------------------------------------"<<endl;
 		cout<<"[before pop]"<<endl;
 		output_heap(p);
 #endif 
@@ -124,8 +124,9 @@ void Router::route_net(int which,RouteResult & result){
 #endif 
 
 		// sink reached!
-		if( current->pt == T ) {
-			cout<<"Find "<<T<<" at time "<<current->time<<"!"<<endl;
+		if( current->pt == dst ) {
+			cout<<"Find "<<dst
+			    <<" at time "<<current->time<<"!"<<endl;
 			success = true;
 			break;
 		}
@@ -135,13 +136,12 @@ void Router::route_net(int which,RouteResult & result){
 		// 1. MHT>time left(impossbile to reach dest)
 		// 2. time exceed
 		int time_left = this->T - current->time;
-		int remain_dist = MHT(current->pt,T);
+		int remain_dist = MHT(current->pt,dst);
 		if( (remain_dist > time_left) || (t > this->T) ){
 			if( p.size() != 0 ) continue;
 			else{
-				// error, can not find route
 				cerr<<"Exceed route time!"<<endl;
-				// reroute();  // try rip-up and re-route?
+				// try rip-up and re-route?
 				success = false;
 				break;
 			}
@@ -158,59 +158,8 @@ void Router::route_net(int which,RouteResult & result){
 #ifdef DEBUG
 		cout<<"\tAdd:"<<*same<<endl;
 #endif
-
-		// get its neighbours( PROBLEM: can it be back? )
-		vector<Point> nbr = get_neighbour(current->pt);
-		vector<Point>::iterator iter;
-
-		// enqueue neighbours
-		GridPoint * par_par = current->parent; 
-		for(iter = nbr.begin();iter!=nbr.end();iter++){
-			int x=(*iter).x,y=(*iter).y;
-			// 0.current pt should be avoided
-			// 1.parent should not be propagated again
-			// 2.check if there is blockage 
-			// 3.forbid circular move (1->2...->1)
-			if( !blockage[x][y] &&
-		             (*iter) != current->pt ){ 
-				if( (par_par != NULL) && 
-				    (*iter == par_par->pt) )
-					continue;
-				// calculate its weight
-				Point tmp(x,y);
-				int f_pen=0,e_pen=0,bending=current->bend;
-				int fluidic_result=fluidic_check(which,tmp,t,result);
-				bool electro_result=electrode_check( tmp );
-
-				// fluidic constraint check
-				if( fluidic_result != -1 ){
-					continue;
-					//f_pen = FLUID_PENALTY;
-				}
-
-				// electro constraint check
-				if( !electro_result ){
-					continue;
-					//e_pen = ELECT_PENALTY;
-				}
-
-				// check bending
-				if( par_par != NULL &&
-				    check_bending(tmp,par_par->pt) == true )
-					bending++;
-
-				GridPoint *nbpt = new GridPoint(
-						tmp,current,
-						t, bending,
-						f_pen, e_pen,
-						current->stalling,
-						MHT(tmp,T));
-				p.push(nbpt);
-#ifdef DEBUG
-				cout<<"\tAdd:"<<*nbpt<<endl;
-#endif
-			}
-		}// end of enqueue neighbours
+		// propagate current point
+		propagate_nbrs(which,current,dst,result,p);
 	}// end of propagate
 	
 	// failed to find path, TODO: reroute?
@@ -221,7 +170,79 @@ void Router::route_net(int which,RouteResult & result){
 	else{ cout<<"Success - start to backtrack"<<endl; }
 #endif
 	//////////////////////////////////////////////////////////////////
-	// backtrack phase, stores results to RoutingResult
+	// backtrack phase, stores results to RouteResult
+	backtrack(which,current,result);
+
+	p.free();
+}
+
+// given a point `current' during propagation stage of routing net `which',
+// generate its neighbours push into heap if satisfies constraint.
+// dst : the sink point, 
+// result: store the routing result
+// p: heap
+void Router::propagate_nbrs(int which,GridPoint * current,
+			Point & dst,RouteResult & result,GP_HEAP & p){
+		// get its neighbours( PROBLEM: can it be back? )
+		vector<Point> nbr = get_neighbour(current->pt);
+		vector<Point>::iterator iter;
+		int t = current->time + 1;
+
+		// enqueue neighbours
+		GridPoint * par_par = current->parent; 
+		for(iter = nbr.begin();iter!=nbr.end();iter++){
+			int x=(*iter).x,y=(*iter).y;
+			// 0.current pt should be avoided
+			// 1.parent should not be propagated again
+			// 2.check if there is blockage 
+			// 3.forbid circular move (1->2...->1)
+			if( (*iter) == current->pt ) continue;
+			if( blockage[x][y] ) continue;
+			if( (par_par != NULL) && 
+			    (*iter == par_par->pt) )
+				continue;
+			// calculate its weight
+			Point tmp(x,y);
+			int f_pen=0,e_pen=0,bending=current->bend;
+			int fluid_violate=fluidic_check(which,tmp,t,result);
+			bool elect_violate=electrode_check( tmp );
+
+			// fluidic constraint check
+			if( fluid_violate != -1 ){
+				continue;
+				//f_pen = FLUID_PENALTY;
+			}
+
+			// electro constraint check
+			if( !elect_violate ){
+				continue;
+				//e_pen = ELECT_PENALTY;
+			}
+
+			// check bending
+			if( par_par != NULL &&
+			    check_bending(tmp,par_par->pt) == true )
+				bending++;
+
+			GridPoint *nbpt = new GridPoint(
+					tmp,current,
+					t, bending,
+					f_pen, e_pen,
+					current->stalling,
+					MHT(tmp,dst));
+			p.push(nbpt);
+#ifdef DEBUG
+			cout<<"\tAdd:"<<*nbpt<<endl;
+#endif
+		}// end of enqueue neighbours
+
+	}
+
+// do backtrack for net `which', 
+// from desination point `current',
+// store the path into `result'
+void Router::backtrack(int which,GridPoint *current,
+		RouteResult & result){
 	// output format:(e.g.)
 	// net[0]:20
 	//     0: (1,3)
@@ -231,6 +252,7 @@ void Router::route_net(int which,RouteResult & result){
 	//
 	cout<<"net["<<which<<"]:"<<this->T<<endl;
 	vector<Point> & net_path = result.path[which];
+	Point dst = current->pt;
 	while( current != NULL ){
 		//cout<<"\t"<<current->time<<":"<<current->pt<<endl;
 		net_path.insert(net_path.begin(),current->pt);
@@ -240,16 +262,15 @@ void Router::route_net(int which,RouteResult & result){
 	// note that some droplet may reach the destination early than the
 	// timing constraint. fill all later time with its final position
 	for(int i=net_path.size();i<=this->T;i++){
-		net_path.push_back(T); // T is destination pt here
+		net_path.push_back(dst); // dst is destination pt here
 	}
 
 	// output result
 	for(size_t i=0;i<net_path.size();i++){
 		cout<<"\t"<<i<<":"
-		    <<net_path[i]<<endl;
+			<<net_path[i]<<endl;
 	}
 
-	p.free();
 }
 
 // just print out what is in the heap

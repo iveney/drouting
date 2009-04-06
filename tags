@@ -113,6 +113,8 @@ Router::M	Router.h	/^	int N,M,T;$/;"	m	class:Router	access:public
 Router::N	Router.h	/^	int N,M,T;$/;"	m	class:Router	access:public
 Router::Router	Router.h	/^	Router():read(false){$/;"	f	class:Router	access:public	signature:()
 Router::T	Router.h	/^	int N,M,T;$/;"	m	class:Router	access:public
+Router::backtrack	Router.cpp	/^void Router::backtrack(int which,GridPoint *current,$/;"	f	class:Router	signature:(int which,GridPoint *current, RouteResult & result)
+Router::backtrack	Router.h	/^	void backtrack(int which,GridPoint *current,RouteResult &result);$/;"	p	class:Router	access:public	signature:(int which,GridPoint *current,RouteResult &result)
 Router::blockage	Router.h	/^	BYTE blockage[MAXGRID][MAXGRID];$/;"	m	class:Router	access:public
 Router::chip	Router.h	/^	Chip chip;      \/\/ stores all the information$/;"	m	class:Router	access:public
 Router::cmp_net	Router.cpp	/^int Router::cmp_net(const void* id1,const void* id2){$/;"	f	class:Router	signature:(const void* id1,const void* id2)
@@ -137,6 +139,8 @@ Router::output_netorder	Router.cpp	/^void Router::output_netorder(int *netorder,
 Router::output_netorder	Router.h	/^	void output_netorder(int *netorder,int netcount);$/;"	p	class:Router	access:private	signature:(int *netorder,int netcount)
 Router::pProb	Router.cpp	/^Subproblem * Router::pProb=NULL;$/;"	m	class:Router	file:
 Router::pProb	Router.h	/^	static Subproblem * pProb;$/;"	m	class:Router	access:public
+Router::propagate_nbrs	Router.cpp	/^void Router::propagate_nbrs(int which,GridPoint * current,$/;"	f	class:Router	signature:(int which,GridPoint * current, Point & dst,RouteResult & result,GP_HEAP & p)
+Router::propagate_nbrs	Router.h	/^	void propagate_nbrs(int which,GridPoint * current,$/;"	p	class:Router	access:public	signature:(int which,GridPoint * current, Point & dst,RouteResult & result,GP_HEAP & p)
 Router::read	Router.h	/^	bool read;      \/\/ mark if configuration has been read$/;"	m	class:Router	access:public
 Router::read_file	Router.cpp	/^void Router::read_file(int argc, char * argv[]){$/;"	f	class:Router	signature:(int argc, char * argv[])
 Router::read_file	Router.h	/^	void read_file(int argc, char * argv[]);$/;"	p	class:Router	access:public	signature:(int argc, char * argv[])
@@ -179,6 +183,8 @@ __ROUTE_H__	route.h	2;"	d
 __UTIL_H__	util.h	2;"	d
 _report_exit	util.cpp	/^void _report_exit(const char *location, const char *msg){$/;"	f	signature:(const char *location, const char *msg)
 _report_exit	util.h	/^void _report_exit(const char *location, const char *msg);$/;"	p	signature:(const char *location, const char *msg)
+backtrack	Router.cpp	/^void Router::backtrack(int which,GridPoint *current,$/;"	f	class:Router	signature:(int which,GridPoint *current, RouteResult & result)
+backtrack	Router.h	/^	void backtrack(int which,GridPoint *current,RouteResult &result);$/;"	p	class:Router	access:public	signature:(int which,GridPoint *current,RouteResult &result)
 begin	heap.cpp	/^class Container::iterator heap<T,Container,Compare>::begin(){ return c.begin(); }$/;"	f	class:heap	signature:()
 begin	heap.h	/^	iterator begin();$/;"	p	class:heap	access:public	signature:()
 bend	GridPoint.h	/^	int bend;$/;"	m	class:GridPoint	access:public
@@ -328,6 +334,8 @@ pop	heap.cpp	/^void heap<T,Container,Compare>::pop() {$/;"	f	class:heap	signatur
 pop	heap.h	/^	void pop();$/;"	p	class:heap	access:public	signature:()
 prob	Router.h	/^	Subproblem prob;  $/;"	m	class:RouteResult	access:public
 prob	header.h	/^	Subproblem prob[MAXSUB];\/\/ note:prob starts from index 1$/;"	m	struct:Chip	access:public
+propagate_nbrs	Router.cpp	/^void Router::propagate_nbrs(int which,GridPoint * current,$/;"	f	class:Router	signature:(int which,GridPoint * current, Point & dst,RouteResult & result,GP_HEAP & p)
+propagate_nbrs	Router.h	/^	void propagate_nbrs(int which,GridPoint * current,$/;"	p	class:Router	access:public	signature:(int which,GridPoint * current, Point & dst,RouteResult & result,GP_HEAP & p)
 pt	GridPoint.h	/^	Point pt;		\/\/ its position$/;"	m	class:GridPoint	access:public
 pt	header.h	/^	Point pt;$/;"	m	struct:Pin	access:public
 pt	header.h	/^	Point pt[2]; \/\/ LL=0, UR=1$/;"	m	struct:Block	access:public
