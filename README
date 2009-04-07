@@ -1,6 +1,9 @@
 Tue Apr  7 13:51:16 HKT 2009
 * 3-pin net
-* rip-up reroute
+* rip-up reroute --> 
+  when there is more than 1 net blocking it, how do we know which net to choose to rip-up?
+  is there any good heuristic? or just rip-up all net?
+  is it possible that two net block each other?
 * implement Evan's Idea 4 : 2-coloring
 -----------------------------------------------------------------------------------------------
 3-24

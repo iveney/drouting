@@ -17,5 +17,6 @@ int main(int argc, char * argv[]){
 	Router router;
 	router.read_file(argc,argv);
 	vector<RouteResult> result = router.solve_cmdline();
+
 	return 0;
 }

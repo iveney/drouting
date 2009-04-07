@@ -48,7 +48,7 @@ ROUTERESULT=`$MAIN $FILE $SUBPROB`
 # extract information needed by drawing util
 echo "  parsing..."
 ROUTE=`echo "$ROUTERESULT" | tail -n +6 | \
-	grep -v -e "Exceed" -e "pin" -e "\*" -e "Find"`
+	grep -v -e "Exceed" -e "pin" -e "\*" -e "Find" -e "Error" -e "order"`
 echo "$ROUTE" | ./droute_draw >> ${OUTPUT} 
 $PARSER $FILE $SUBPROB
 
