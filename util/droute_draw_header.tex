@@ -37,8 +37,8 @@
     \node[pinsnofill,#7]  (#4) at (#5  + \half, #6 + \half) {};  % pin-2
     \node[pinsnofill,#7]  (#1) at (#2 + \half, #3 + \half) {}    % pin-1
         edge[arrow] (#4);            % arrow
-    \node at (#1) {\tt s\arabic{netcount}}; % label
-    \node at (#4) {\tt t\arabic{netcount}}; % label
+    \node[srcpin] at (#1) {}; % label
+    \node[dstpin] at (#4) {}; % label
     \stepcounter{netcount}
     %\node[above] at (#1) {$#1$}; % label
     %\node[above] at (#4) {$#4$}; % label
@@ -67,6 +67,9 @@
 	inner sep=0,
 	minimum size=1cm*\scale,
 	>=latex,
+	pin distance = 1.2cm*\scale,
+	srcpin/.style={pin={[pin edge={<-,shorten <=1pt}]75: \tt s\arabic{netcount}}},
+	dstpin/.style={pin={[pin edge={<-,shorten <=1pt}]75: \tt t\arabic{netcount}}},
 	pins/.style={rectangle,draw,fill=brown,font=\scriptsize},
 	pinsnofill/.style={rectangle,draw,font=\scriptsize},
 	arrow/.style={->,very thick},
