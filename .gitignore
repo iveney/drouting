@@ -6,3 +6,7 @@ parser
 main
 util/*.tex
 util/*.pdf
+util/*.out
+util/*.bak
+util/*.log
+util/*.aux

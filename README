@@ -1,6 +1,11 @@
-3-24 TODO:
-* implement Evan's Idea 1,4
-* write class about routing result
+Tue Apr  7 13:51:16 HKT 2009
+* 3-pin net
+* rip-up reroute
+* implement Evan's Idea 4 : 2-coloring
+-----------------------------------------------------------------------------------------------
+3-24
+* implement Evan's Idea 1 -- DONE
+* write class about routing result -- DONE
 * How to terminate a net-routing if it take too long a time?
 
 Evan's Idea:

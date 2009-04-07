@@ -58,6 +58,7 @@ egrep -e "[\]draw.*pin" -e "[\]blockage" "$INTERMEDIATE" >> "${OUTPUT}"
 
 echo "  finishing..."
 cat droute_draw_tail.tex >> "${OUTPUT}"
+exit 1
 
 pdflatex "${OUTPUT}"
 

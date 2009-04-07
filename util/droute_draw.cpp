@@ -33,8 +33,8 @@ int main(){
 		const char * p = getColor();
 		for(int i=0;i<=total_time;i++){
 			scanf("%d : (%d,%d)\n",&t,&x,&y);
-			printf("\\node[pins,%s] (net_%d_%d_%d) at (%d+\\half,%d+\\half) {};\n",
-					p,neti,x,y,x,y);
+			printf("\\node[pins,fill=%s] (net_%d_%d_%d) at (%d+\\half,%d+\\half) {\\tt %d};\n",
+					p,neti,x,y,x,y,i);
 		}
 		printf("\n");
 	}
