@@ -1,3 +1,10 @@
+2009年 04月 08日 星期三 10:27:50 CST
+* important problem:
+  now found out that can not simply fill up the destination point till timing constraint,
+  when a droplet reach there(e.g. T=20, droplet 1 reach dest at t=13,then for t=14 to 20, 
+  I just simply fill the route with same dest) but other droplet may pass by later,
+  and it might blocks the way!
+
 Tue Apr  7 13:51:16 HKT 2009
 * 3-pin net
 * rip-up reroute --> 

@@ -214,10 +214,10 @@ int Router::ripup_reroute(int which,RouteResult & result,
 
 	// re-order route order
 	IntVector temp(netorder,netorder+netcount);
-	temp.erase(temp.begin()+last_idx);
-	temp.insert(temp.begin()+which_idx,last);
+	temp.erase(temp.begin()+last_idx);  // remove net=last
+	temp.insert(temp.begin()+which_idx,last);// insert it after which
 	copy(temp.begin(),temp.end(),netorder);
-	return which_idx-1;
+	return which_idx-1;// net=which moved one place before in netorder
 }
 
 // given a point `current' during propagation stage of routing net `which',
@@ -405,12 +405,13 @@ FLUIDIC_RESULT Router::fluidic_check(int which, const Point & pt,int t,
 	// we have known the previous routed net 
 	// from netorder[0] to netorder[i]!=which
 	// t's range: [0..T]
-	if(t > this->T || t < 0)
-		cout<<"which="<<which<<" Point="<<pt<<" t="<<t<<endl;
+	//if(t > this->T || t < 0)
+	//	cout<<"which="<<which<<" Point="<<pt<<" t="<<t<<endl;
 	assert( (t <= this->T) && (t >= 0) );
 	for(int i=0;i<netcount && netorder[i] != which;i++){
 		int checking_idx = netorder[i];
 		const PtVector & path = result.path[checking_idx];
+		// TODO: detect 3-pin net merge
 		// static fluidic check
 		if( !(abs(pt.x - path[t].x) >=2 ||
 		      abs(pt.y - path[t].y) >=2) ){
