@@ -1,4 +1,15 @@
-for DAC05 15
+----------------------------------------------------------------------------
+DAC05 33
+DAC05 35
+DAC05 37
+DAC05 55
+DAC05 58
+DAC05 60
+DAC05 62
+two nets go to the same position!!!
+----------------------------------------------------------------------------
+(solved)
+for DAC06 15
 the upper net uses a detour path
 otherwise if it uses a right then down path
 fluidic violation will happen
@@ -11,6 +22,7 @@ NOW solved with: do not use STALLING penalty, actually the time has
 already act as penalty
 
 ----------------------------------------------------------------------------
+(solved)
 DAC05 19
 if left net(net 1) is routed first, it will stay in the dst, the blocked another 
 net's path(net 0)path. net 0 then become no way to go(although there is other way, 
@@ -24,9 +36,10 @@ Idea:
 2. rip up & reroute net 1 solves the problem , hence we need some scheme to determine when to stop propagating net 0
 (the searching space is large and it take exp time to reach the end)
 
+NEW:
+After adding the rip-up reroute and correct the fluidic constraint checking
+the result is correct but runtime slows down
+
 ----------------------------------------------------------------------------
-DAC05 37
-two nets go to the same position!!!
-----------------------------------------------------------------------------
-----------------------------------------------------------------------------
+---------------------------------------------------------------------------
 ----------------------------------------------------------------------------

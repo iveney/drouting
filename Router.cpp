@@ -74,7 +74,8 @@ RouteResult Router::solve_subproblem(int prob_idx){
 		}
 	}
 
-	// output result
+	// finally, output result
+	cout<<"Subproblem "<<prob_idx<<" solved!"<<endl;
 	for (int i = 0; i < netcount; i++) {
 		cout<<"net["<<i<<"]:"<<this->T<<endl;
 		PtVector & net_path = result.path[i];
@@ -111,10 +112,12 @@ bool Router::route_net(int which,RouteResult &result,ConflictSet &conflict_net){
 	output_netinfo(pNet);
 
 	// do Lee's propagation,handles 2-pin net only currently
-	int numPin = pNet->numPin;
-	if( numPin == 3 ) {}       // handle three pin net
 	Point src = pNet->pin[0].pt; // source
 	Point dst = pNet->pin[1].pt; // sink
+	int numPin = pNet->numPin;
+	if( numPin == 3 ) {// handle three pin net
+		dst = pNet->pin[2].pt; // sink
+	}       
 
 	// initialize the heap
 	GP_HEAP p;
@@ -126,6 +129,7 @@ bool Router::route_net(int which,RouteResult &result,ConflictSet &conflict_net){
 
 	int t=0;               // current time step
 	bool success = false;  // mark if this net is routed successfully
+	FLUIDIC_RESULT fluid_result;
 	while( !p.empty() ){
 		// get wave_front and propagate its neighbour
 		//p.sort();
@@ -144,12 +148,25 @@ bool Router::route_net(int which,RouteResult &result,ConflictSet &conflict_net){
 		    <<", queue size="<<p.size()<<endl;
 #endif 
 
-		// sink reached!
+		// sink reached, but need to check whether it stays
+		// there will block others
 		if( current->pt == dst ) {
-			cout<<"Find "<<dst
-			    <<" at time "<<current->time<<"!"<<endl;
-			success = true;
-			break;
+			int reach_t = current->time;
+			bool fail = false;
+			for (int i = reach_t+1; i <= T; i++) {
+				fluid_result = fluidic_check(which,
+				current->pt,i,result,conflict_net);
+				if( fluid_result == VIOLATE ){
+					fail = true;
+					break;
+				}
+			}
+			if( !fail ){
+				cout<<"Find "<<dst
+				    <<" at time "<<current->time<<"!"<<endl;
+				success = true;
+				break;
+			}// otherwise, continue to search
 		}
 		
 		// we do not reach sink...propagate this gridpoint
@@ -169,15 +186,24 @@ bool Router::route_net(int which,RouteResult &result,ConflictSet &conflict_net){
 		}
 
 		// stall at the same position, stall for 1 time step
+		// NOTE: also need to check fluidic constraint here
+		// may block routed net's path
 		GridPoint *same = new GridPoint( current->pt,
 				current, t,current->bend,  
 				current->fluidic, current->electro, 
 				current->stalling+STALL_PENALTY,
 				current->distance );
-		p.push(same);
+		fluid_result=fluidic_check(which,
+			same->pt,same->time,result,conflict_net);
+		if( fluid_result == SAMENET ){
+			// multipin net
+		}else if( fluid_result != VIOLATE){
+			p.push(same);
 #ifdef DEBUG
-		cout<<"\tAdd:"<<*same<<endl;
+			cout<<"\tAdd:"<<*same<<endl;
 #endif
+		}
+
 		// propagate current point
 		propagate_nbrs(which,current,dst,result,p,conflict_net);
 	}// end of propagate
@@ -232,7 +258,7 @@ void Router::propagate_nbrs(int which,GridPoint * current,
 	// get its neighbours( PROBLEM: can it be back? )
 	PtVector nbr = get_neighbour(current->pt);
 	PtVector::iterator iter;
-	int t = current->time + 1;
+	const int t = (current->time + 1);
 
 	// enqueue neighbours
 	GridPoint * par_par = current->parent; 
@@ -257,8 +283,7 @@ void Router::propagate_nbrs(int which,GridPoint * current,
 		// fluidic constraint check
 		if( fluid_result == SAMENET ){
 			// multipin net
-		}
-		else if( fluid_result == VIOLATE ){
+		} else if( fluid_result == VIOLATE ){
 			continue;
 		}
 
@@ -280,7 +305,7 @@ void Router::propagate_nbrs(int which,GridPoint * current,
 				MHT(tmp,dst));
 		p.push(nbpt);
 #ifdef DEBUG
-		cout<<"\tAdd:"<<*nbpt<<endl;
+		cout<<"\tAdd t="<<t<<":"<<*nbpt<<endl;
 #endif
 	}// end of enqueue neighbours
 }
@@ -415,12 +440,14 @@ FLUIDIC_RESULT Router::fluidic_check(int which, const Point & pt,int t,
 		// static fluidic check
 		if( !(abs(pt.x - path[t].x) >=2 ||
 		      abs(pt.y - path[t].y) >=2) ){
+			//cout<<"static:net "<<checking_idx<<"at " <<path[t]<<endl;
 			conflict_net.insert(checking_idx);
 			return VIOLATE;
 		}
 		// dynamic fluidic check
 		if ( !(abs(pt.x - path[t-1].x) >=2 ||
 		       abs(pt.y - path[t-1].y) >=2) ){
+			//cout<<"dynamic:net "<<checking_idx<<"at " <<path[t]<<endl;
 			conflict_net.insert(checking_idx);
 			return VIOLATE;
 		}

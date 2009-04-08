@@ -7,7 +7,7 @@
 #include "util.h"
 
 // return value of fluidic constraint check
-enum FLUIDIC_RESULT{SAFE,VIOLATE,SAMENET};
+enum FLUIDIC_RESULT{SAFE,VIOLATE,SAMENET,SAMEDEST};
 
 // implements simple set function
 // keeps the ORDER of element insertion

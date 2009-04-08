@@ -5,12 +5,16 @@
   I just simply fill the route with same dest) but other droplet may pass by later,
   and it might blocks the way!
 
+-> proposed solution: add fluidic Check in EVERY time step till timing constraint reached.
+   NOTE: even for the step STALLING, this check needs.
+
 Tue Apr  7 13:51:16 HKT 2009
 * 3-pin net
 * rip-up reroute --> 
   when there is more than 1 net blocking it, how do we know which net to choose to rip-up?
   is there any good heuristic? or just rip-up all net?
   is it possible that two net block each other?
+
 * implement Evan's Idea 4 : 2-coloring
 -----------------------------------------------------------------------------------------------
 3-24
