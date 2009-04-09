@@ -47,14 +47,17 @@
 %#1= pin1 name #2,#3=pin1 location
 %#4= pin2 name #5,#6=pin2 location
 %#7= pin3 name #8,#9=pin3 location
-    \node[pins]  (#7) at (#8  + \half, #9 + \half) {};  % pin-3(dest)
-    \node[pins]  (#1) at (#2 + \half, #3 + \half) {} % pin-1(src1)
+    \node[pinsnofill]  (#7) at (#8  + \half, #9 + \half) {};  % pin-3(dest)
+    \node[pinsnofill]  (#1) at (#2 + \half, #3 + \half) {} % pin-1(src1)
         edge[arrow] (#7);            % arrow
-    \node[pins]  (#4) at (#5  + \half, #6 + \half) {}  % pin-2(src2)
+    \node[pinsnofill]  (#4) at (#5  + \half, #6 + \half) {}  % pin-2(src2)
         edge[arrow] (#7);            % arrow
-    \node at (#1) {\tt s\arabic{netcount}}; % label
-    \node at (#4) {\tt s\arabic{netcount}}; % label
-    \node at (#7) {\tt t\arabic{netcount}}; % label
+    \node[srcpin] at (#1) {}; % pin0(src)
+    \node[srcpin] at (#4) {}; % pin1(src)
+    \node[dstpin] at (#7) {}; % pin2(dst)
+    %\node at (#1) {\tt s\arabic{netcount}}; % label
+    %\node at (#4) {\tt s\arabic{netcount}}; % label
+    %\node at (#7) {\tt t\arabic{netcount}}; % label
     \stepcounter{netcount}
 }
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

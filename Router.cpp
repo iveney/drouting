@@ -43,7 +43,7 @@ RouteResult Router::solve_subproblem(int prob_idx){
 	pProb = &chip.prob[prob_idx];
 	
 	// the result to return
-	RouteResult result(this->T,this->M,this->N,*(this->pProb));
+	RouteResult result(this->T,this->M,this->N,this->pProb);
 
 	// sort : decide net order
 	netcount = pProb->nNet;
@@ -58,34 +58,57 @@ RouteResult Router::solve_subproblem(int prob_idx){
 	init_block(pProb);
 
 	// start to route each net according to sorted order
-	for(int i=0;i<netcount;i++){
-		ConflictSet conflict_net(netcount);
-		int which = netorder[i];
-		bool success = route_net(which,result,conflict_net);
+	// TODO:  should use a queue/list to iteratively route all nets
+	nets.clear();
+	nets.insert(nets.begin(),netorder,netorder+netcount);
+	//for(int i=0;i<netcount;i++){
+	int routed_count=0;
+	while( !nets.empty() ){
+		//int which = netorder[i];
+		int which = nets.front();
+		nets.pop_front();
+		//ConflictSet conflict_net(netcount);
+		bool success = route_net(which,result);//,conflict_net);
+		// IMPORTANT: should change the return value
+		// of route_net here.(now always return true)
+		// how to model the return ?
 		if( success == false ){
-			if( i == 0 ){
-				// first net can not be routed...
+			if( routed_count == 0 ){
+				// first net can not be routed means fail
 				report_exit("Error: route failed!");
 			}
+			routed_count++;
+			/*
 			cerr<<"Error: route net "<<which
 			    <<" failed ,try ripup-reroute!"<<endl;
 			i=ripup_reroute(which,result,conflict_net)-1;
 			output_netorder(netorder,netcount);
+			*/
 		}
 	}
 
 	// finally, output result
 	cout<<"Subproblem "<<prob_idx<<" solved!"<<endl;
-	for (int i = 0; i < netcount; i++) {
-		cout<<"net["<<i<<"]:"<<this->T<<endl;
-		PtVector & net_path = result.path[i];
-		for(size_t j=0;j<net_path.size();j++){
-			cout<<"\t"<<j<<":"
-				<<net_path[j]<<endl;
-		}
-	}
+	output_result(result);
 
 	return result ;
+}
+
+void Router::output_result(const RouteResult & result){
+	// for each net
+	for (int i = 0; i < netcount; i++) {
+		const NetRoute & net_path = result.path[i];
+		// for each subnet in a net
+		for (int j = 0; j < net_path.num_pin-1; j++) {
+			cout<<"net["<<i<<"]:"<<this->T<<endl;
+			const PtVector & route = net_path.pin_route[j];
+			// output each time step
+			for(size_t k=0;k<route.size();k++){
+				cout<<"\t"<<k<<":"
+				<<route[k]<<endl;
+			}
+		}
+	}
 }
 
 void Router::init_block(Subproblem *p){
@@ -105,17 +128,15 @@ ResultVector Router::solve_all(){
 	return route_result;
 }
 
-bool Router::route_net(int which,RouteResult &result,
-		ConflictSet &conflict_net){
-	cout<<"** Routing net["<<which<<"] **"<<endl;
-	GridPoint *current;
-	Net * pNet = &pProb->net[which];
-	output_netinfo(pNet);
-
+bool Router::route_subnet(Point src,Point dst,
+			int which,int pin_idx,
+			RouteResult & result,
+			ConflictSet & conflict_net){
 	// do Lee's propagation,handles 2-pin net only currently
-	Point src = pNet->pin[0].pt; // source
-	Point dst = get_netdst_pt(which);
-	int numPin = pNet->numPin;
+	GridPoint *current;
+	//Point src = pNet->pin[0].pt; // source
+	//Point dst = get_netdst_pt(which);
+	//int numPin = pNet->numPin;
 	/*
 	if( numPin == 3 ) {// handle three pin net
 		dst = pNet->pin[2].pt; // sink
@@ -155,15 +176,17 @@ bool Router::route_net(int which,RouteResult &result,
 		if( current->pt == dst ) {
 			int reach_t = current->time;
 			bool fail = false;
+			// see whether it can stay in destination
 			for (int i = reach_t+1; i <= T; i++) {
 				fluid_result = fluidic_check(which,
-				current->pt,i,result,conflict_net);
+						pin_idx, current->pt,
+						i,result,conflict_net);
 				if( fluid_result == VIOLATE ){
 					fail = true;
 					break;
 				}
 			}
-			if( !fail ){
+			if( !fail ){// safely enter destination and stay
 				cout<<"Find "<<dst
 				    <<" at time "<<current->time<<"!"<<endl;
 				success = true;
@@ -195,19 +218,30 @@ bool Router::route_net(int which,RouteResult &result,
 				current->fluidic, current->electro, 
 				current->stalling+STALL_PENALTY,
 				current->distance );
-		fluid_result=fluidic_check(which,
+		fluid_result=fluidic_check(which,pin_idx,
 			same->pt,same->time,result,conflict_net);
-		if( fluid_result == SAMENET ){
-			// multipin net
-		}else if( fluid_result != VIOLATE){
+
+		// handle fluidic check result
+		switch( fluid_result ){
+		case SAMENET:// multipin net merge
+		case SAMEDEST:
+			success = true;
+			// need to know which net it met and use
+			// the existing route
+			break;
+		case VIOLATE:// ignore this GridPoint
+			break;
+		case SAFE:
 			p.push(same);
 #ifdef DEBUG
 			cout<<"\tAdd:"<<*same<<endl;
 #endif
+			break;
 		}
 
 		// propagate current point
-		propagate_nbrs(which,current,dst,result,p,conflict_net);
+		propagate_nbrs(which,pin_idx,
+				current,dst,result,p,conflict_net);
 	}// end of propagate
 	
 	// failed to find path
@@ -220,8 +254,34 @@ bool Router::route_net(int which,RouteResult &result,
 #endif
 	//////////////////////////////////////////////////////////////////
 	// backtrack phase, stores results to RouteResult
-	backtrack(which,current,result);
+	// TODO: change backtrack
+	backtrack(which,pin_idx,current,result);
 	p.free();
+	return true;
+
+}
+
+bool Router::route_net(int which,RouteResult &result)//, ConflictSet &conflict_net)
+{
+	cout<<"** Routing net["<<which<<"] **"<<endl;
+	Net * pNet = &pProb->net[which];
+	output_netinfo(pNet);
+	Point src;
+	Point dst = get_netdst_pt(which);
+	// decompose to (numPin-1) subnet
+	for (int i = 0; i < pNet->numPin; i++) {
+		src=pNet->pin[i].pt; // route pin-i
+		ConflictSet conflict_net(netcount);
+		bool success = route_subnet(src,dst,which,i,
+			result,conflict_net);
+		if( success == false ){
+			cerr<<"Error: route subnet "<<which<<"-"<<i
+			    <<" failed ,try ripup-reroute!"<<endl;
+			ripup_reroute(which,result,conflict_net);//-1;
+			output_netorder(netorder,netcount);
+			i--; // re-route this one
+		}
+	}
 	return true;
 }
 
@@ -238,7 +298,11 @@ int Router::ripup_reroute(int which,RouteResult & result,
 		if( netorder[i] == last ) last_idx = i;
 		if( netorder[i] == which) which_idx = i;
 	}
-	result.path[last].clear();
+	result.path[last].clear(); // cancel the routed path
+
+	// re-push into queue: route `which' first then `last'
+	nets.push_front(last);
+	nets.push_front(which);
 
 	// re-order route order
 	IntVector temp(netorder,netorder+netcount);
@@ -254,7 +318,7 @@ int Router::ripup_reroute(int which,RouteResult & result,
 // result: store the routing result
 // p: heap
 // conflict_net : keep info. of the conflicting net
-void Router::propagate_nbrs(int which,GridPoint * current,
+void Router::propagate_nbrs(int which, int pin_idx,GridPoint * current,
 			    Point & dst,RouteResult & result,
 			    GP_HEAP & p,ConflictSet &conflict_net){
 	// get its neighbours( PROBLEM: can it be back? )
@@ -278,7 +342,7 @@ void Router::propagate_nbrs(int which,GridPoint * current,
 		// calculate its weight
 		Point tmp(x,y);
 		int f_pen=0,e_pen=0,bending=current->bend;
-		FLUIDIC_RESULT fluid_result=fluidic_check(which,
+		FLUIDIC_RESULT fluid_result=fluidic_check(which,pin_idx,
 				tmp,t,result,conflict_net);
 		bool elect_violate=electrode_check( tmp );
 
@@ -315,7 +379,7 @@ void Router::propagate_nbrs(int which,GridPoint * current,
 // do backtrack for net `which', 
 // from desination point `current',
 // store the path into `result'
-void Router::backtrack(int which,GridPoint *current,
+void Router::backtrack(int which,int pin_idx,GridPoint *current,
 		RouteResult & result){
 	// output format:(e.g.)
 	// net[0]:20
@@ -324,26 +388,26 @@ void Router::backtrack(int which,GridPoint *current,
 	//     2: ...
 	//     20:(21,3)
 	//
-	PtVector & net_path = result.path[which];
+	PtVector & pin_path = result.path[which].pin_route[pin_idx];
 	Point dst = current->pt;
 	while( current != NULL ){
 		//cout<<"\t"<<current->time<<":"<<current->pt<<endl;
-		net_path.insert(net_path.begin(),current->pt);
+		pin_path.insert(pin_path.begin(),current->pt);
 		current = current->parent;
 	}
 
 	// note that some droplet may reach the destination early than the
 	// timing constraint. fill all later time with its final position
-	for(int i=net_path.size();i<=this->T;i++){
-		net_path.push_back(dst); // dst is destination pt here
+	for(int i=pin_path.size();i<=this->T;i++){
+		pin_path.push_back(dst); // dst is destination pt here
 	}
 
 	// output result
 	/*
 	cout<<"net["<<which<<"]:"<<this->T<<endl;
-	for(size_t i=0;i<net_path.size();i++){
+	for(size_t i=0;i<pin_path.size();i++){
 		cout<<"\t"<<i<<":"
-			<<net_path[i]<<endl;
+			<<pin_path[i]<<endl;
 	}
 	*/
 }
@@ -425,47 +489,52 @@ bool Router::electrode_check(const Point & pt){
 // perform fluidic constraint check
 // if successful return 0 
 // else return the conflicting net
-FLUIDIC_RESULT Router::fluidic_check(int which, const Point & pt,int t,
+FLUIDIC_RESULT Router::fluidic_check(int which,int pin_idx,
+	       	const Point & pt,int t,
 		const RouteResult & result,ConflictSet & conflict_net){
-	// for each routed net, 
+	// for each routed net(including partial), 
 	// check if the current routing net(which) violate fluidic rule
 	// we have known the previous routed net 
 	// from netorder[0] to netorder[i]!=which
 	// t's range: [0..T]
-	//if(t > this->T || t < 0)
-	//	cout<<"which="<<which<<" Point="<<pt<<" t="<<t<<endl;
-	/*
-	Point which_dst,checking_dst;
-	Net * pWhich = &pProb->net[which];
-	which_dst = pWhich->pin[1].pt;
-	if( pWhich->numPin == 3 ) which_dst = pWhich->pin[2].pt;
-	*/
 	assert( (t <= this->T) && (t >= 0) );
-	for(int i=0;i<netcount && netorder[i] != which;i++){
+	bool finish = false;
+	for(int i=0;i<netcount && !finish;i++){
 		int checking_idx = netorder[i];
-		/*
-		Net * pChecking = &pProb->net[checking_idx];
-		checking_dst = pChecking->pin[1].pt;
-		if( pWhich->numPin == 3 )
-			checking_dst = pChecking->pin[2].pt;
-		if( which_dst == checking_dst ) continue;
-		*/
-		if( net_same_dest(which,checking_idx) ) return SAMEDEST;
-		const PtVector & path = result.path[checking_idx];
-		// TODO: detect 3-pin net merge
-		// static fluidic check
-		if( !(abs(pt.x - path[t].x) >=2 ||
-		      abs(pt.y - path[t].y) >=2) ){
-			conflict_net.insert(checking_idx);
-			return VIOLATE;
-		}
-		// dynamic fluidic check
-		if ( !(abs(pt.x - path[t-1].x) >=2 ||
-		       abs(pt.y - path[t-1].y) >=2) ){
-			conflict_net.insert(checking_idx);
-			return VIOLATE;
-		}
-	}
+		if( checking_idx == which ) // after this should stop
+			finish = true;
+		if( net_same_dest(which,checking_idx) ) 
+			return SAMEDEST;
+		const NetRoute & route = result.path[checking_idx];
+		// for each subnet
+		for (int j = 0; j < route.num_pin-1; j++) {
+			// multipin net's same pin(itself)
+			if( checking_idx == which && pin_idx == j)
+				break;
+			const PtVector & path = route.pin_route[j];
+			// static fluidic check
+			if( !(abs(pt.x - path[t].x) >=2 ||
+			      abs(pt.y - path[t].y) >=2) ){
+				if( checking_idx == which )
+					return SAMENET;
+				conflict_net.insert(checking_idx);
+				return VIOLATE;
+			}
+			// dynamic fluidic check
+			// IMPORTANT!!
+			// how to treat this case? 1=t,2=t+1 position
+			// 1 2 1 2
+			// the second 1 will have two direction to go
+			// but both 1 belong to the same net!!
+			if ( !(abs(pt.x - path[t-1].x) >=2 ||
+			       abs(pt.y - path[t-1].y) >=2) ){
+				if( checking_idx == which )
+					return SAMENET;
+				conflict_net.insert(checking_idx);
+				return VIOLATE;
+			}
+		} // end of for j
+	} // end of for i
 	return SAFE;
 }
 

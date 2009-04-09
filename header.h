@@ -15,6 +15,7 @@ using std::vector;
 typedef unsigned char BYTE ;
 typedef BYTE Grid ;
 
+const int MAXPIN=3;
 const int MAXBUF=256;
 const int MAXSTR=30;
 const int MAXBLK=10;

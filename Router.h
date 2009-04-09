@@ -1,10 +1,12 @@
 #ifndef __ROUTER_H__
 #define __ROUTER_H__
 
+#include <deque>
 #include "header.h"
 #include "GridPoint.h"
 #include "heap.h"
 #include "util.h"
+using std::deque;
 
 // return value of fluidic constraint check
 enum FLUIDIC_RESULT{SAFE,VIOLATE,SAMENET,SAMEDEST};
@@ -27,6 +29,29 @@ public:
 	IntVector order;
 };
 
+// struct tracks the routing information of a net
+struct NetRoute{
+	NetRoute(int netidx,int pin_num,int timing_):idx(netidx),
+	num_pin(pin_num),timing(timing_) {
+		for (int i = 0; i < num_pin-1; i++) {
+			pin_route[i]=PtVector(timing+1);
+		}
+	}
+	void clear(){
+		for (int i = 0; i < num_pin-1; i++) {
+			pin_route[i].clear();
+		}
+	}
+	int idx;
+	int num_pin;
+	int timing;
+	int merge_time;
+	// important: for a net with N pins
+	// there will be N-1 routes, since it was decomposed
+	// into N-1 2-pin nets
+	PtVector pin_route[MAXPIN-1]; 
+};
+
 // the class to stores the final routing result
 #define get_pinnum(net_id) pProb->net[(net_id)].numPin
 #define get_pinpt(net_id,pin_id) pProb->net[(net_id)].pin[(pin_id)].pt
@@ -36,9 +61,13 @@ public:
 class RouteResult{
 public:
 	// constructor, must use T and prob to initialize
-	RouteResult(int T_,int N_,int M_,Subproblem & subprob):
-		T(T_),N(N_),M(M_),prob(subprob) {
-			path = vector< PtVector >(prob.nNet);
+	RouteResult(int T_,int N_,int M_,Subproblem * subprob):
+		T(T_),N(N_),M(M_),pProb(subprob) {
+			// allocate route solution space for each net
+			for (int i = 0; i < subprob->nNet; i++) {
+				path.push_back(NetRoute(i,get_pinnum(i),T));
+			}
+			
 	}
 
 	// data members
@@ -47,12 +76,12 @@ public:
 
 	// the corresponding subproblem
 	// This includes all the information we need
-	Subproblem prob;  
+	Subproblem *pProb;  
 
 	// routing path for each net,size = prob->nNet
 	// i.e. given net index and time, we get the position
 	// 1st dimension = net, 2nd dimension = time
-	vector< PtVector > path;
+	vector< NetRoute > path;
 	
 	// voltage assignment for each time step from 1 up to T
 	// at each t, there is a list of H and a list of L, those not
@@ -77,6 +106,8 @@ public:
 	// free the resources allocated
 	~Router(){}
 
+	void output_result(const RouteResult & result);
+
 	// do rip up and re route for a net
 	int ripup_reroute(int which,RouteResult & result,
 			ConflictSet &conflict_net);
@@ -88,7 +119,7 @@ public:
 	void output_heap(const GP_HEAP & h);
 
 	// given a net index, route the net
-	bool route_net(int which,RouteResult &result,ConflictSet &conflict_net);
+	bool route_net(int which,RouteResult &result);//,ConflictSet &conflict_net);
 
 	// solve all the subproblems
 	ResultVector solve_all();
@@ -102,8 +133,10 @@ public:
 	ResultVector solve_cmdline();
 
 	// determines if there is fluidic constraint violation
-	FLUIDIC_RESULT fluidic_check(int which, const Point & pt,int t,
-		const RouteResult & result,ConflictSet & conflict_net);
+	FLUIDIC_RESULT fluidic_check(int which, int pin_idx,
+			const Point & pt,int t,
+			const RouteResult & result,
+			ConflictSet & conflict_net);
 
 	// determines if there is electrode constraint violation
 	bool electrode_check(const Point & pt);
@@ -115,12 +148,18 @@ public:
 	PtVector get_neighbour(const Point & pt);
 
 	// backtrack phase, store the result
-	void backtrack(int which,GridPoint *current,RouteResult &result);
+	void backtrack(int which,int pin_idx,
+			GridPoint *current,RouteResult &result);
 
 	// given a point `current',propagate it.
-	void propagate_nbrs(int which,GridPoint * current,
+	void propagate_nbrs(int which, int pin_idx,GridPoint * current,
 			Point & dst,RouteResult & result,
 			GP_HEAP & p,ConflictSet & conflict_net);
+
+	bool route_subnet(Point src,Point dst,
+			int which,int pin_idx,
+			RouteResult & result,
+			ConflictSet & conflict_net);
 	
 
 	///////////////////////////////////////////////////////////////////
@@ -137,6 +176,7 @@ public:
 	int N,M,T;
 	int netorder[MAXNET];
 	static Subproblem * pProb;
+	deque<int> nets;
 
 
 private:
