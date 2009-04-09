@@ -105,7 +105,8 @@ ResultVector Router::solve_all(){
 	return route_result;
 }
 
-bool Router::route_net(int which,RouteResult &result,ConflictSet &conflict_net){
+bool Router::route_net(int which,RouteResult &result,
+		ConflictSet &conflict_net){
 	cout<<"** Routing net["<<which<<"] **"<<endl;
 	GridPoint *current;
 	Net * pNet = &pProb->net[which];
@@ -113,11 +114,12 @@ bool Router::route_net(int which,RouteResult &result,ConflictSet &conflict_net){
 
 	// do Lee's propagation,handles 2-pin net only currently
 	Point src = pNet->pin[0].pt; // source
-	Point dst = pNet->pin[1].pt; // sink
+	Point dst = get_netdst_pt(which);
 	int numPin = pNet->numPin;
+	/*
 	if( numPin == 3 ) {// handle three pin net
 		dst = pNet->pin[2].pt; // sink
-	}       
+	}*/       
 
 	// initialize the heap
 	GP_HEAP p;
@@ -432,31 +434,34 @@ FLUIDIC_RESULT Router::fluidic_check(int which, const Point & pt,int t,
 	// t's range: [0..T]
 	//if(t > this->T || t < 0)
 	//	cout<<"which="<<which<<" Point="<<pt<<" t="<<t<<endl;
+	/*
 	Point which_dst,checking_dst;
 	Net * pWhich = &pProb->net[which];
 	which_dst = pWhich->pin[1].pt;
 	if( pWhich->numPin == 3 ) which_dst = pWhich->pin[2].pt;
+	*/
 	assert( (t <= this->T) && (t >= 0) );
 	for(int i=0;i<netcount && netorder[i] != which;i++){
 		int checking_idx = netorder[i];
+		/*
 		Net * pChecking = &pProb->net[checking_idx];
 		checking_dst = pChecking->pin[1].pt;
 		if( pWhich->numPin == 3 )
 			checking_dst = pChecking->pin[2].pt;
 		if( which_dst == checking_dst ) continue;
+		*/
+		if( net_same_dest(which,checking_idx) ) return SAMEDEST;
 		const PtVector & path = result.path[checking_idx];
 		// TODO: detect 3-pin net merge
 		// static fluidic check
 		if( !(abs(pt.x - path[t].x) >=2 ||
 		      abs(pt.y - path[t].y) >=2) ){
-			//cout<<"static:net "<<checking_idx<<"at " <<path[t]<<endl;
 			conflict_net.insert(checking_idx);
 			return VIOLATE;
 		}
 		// dynamic fluidic check
 		if ( !(abs(pt.x - path[t-1].x) >=2 ||
 		       abs(pt.y - path[t-1].y) >=2) ){
-			//cout<<"dynamic:net "<<checking_idx<<"at " <<path[t]<<endl;
 			conflict_net.insert(checking_idx);
 			return VIOLATE;
 		}

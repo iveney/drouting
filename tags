@@ -158,7 +158,7 @@ Router::read_file	Router.cpp	/^void Router::read_file(int argc, char * argv[]){$
 Router::read_file	Router.h	/^	void read_file(int argc, char * argv[]);$/;"	p	class:Router	access:public	signature:(int argc, char * argv[])
 Router::ripup_reroute	Router.cpp	/^int Router::ripup_reroute(int which,RouteResult & result,$/;"	f	class:Router	signature:(int which,RouteResult & result, ConflictSet &conflict_net)
 Router::ripup_reroute	Router.h	/^	int ripup_reroute(int which,RouteResult & result,$/;"	p	class:Router	access:public	signature:(int which,RouteResult & result, ConflictSet &conflict_net)
-Router::route_net	Router.cpp	/^bool Router::route_net(int which,RouteResult &result,ConflictSet &conflict_net){$/;"	f	class:Router	signature:(int which,RouteResult &result,ConflictSet &conflict_net)
+Router::route_net	Router.cpp	/^bool Router::route_net(int which,RouteResult &result,$/;"	f	class:Router	signature:(int which,RouteResult &result, ConflictSet &conflict_net)
 Router::route_net	Router.h	/^	bool route_net(int which,RouteResult &result,ConflictSet &conflict_net);$/;"	p	class:Router	access:public	signature:(int which,RouteResult &result,ConflictSet &conflict_net)
 Router::route_result	Router.h	/^	ResultVector route_result;$/;"	m	class:Router	access:public
 Router::solve_all	Router.cpp	/^ResultVector Router::solve_all(){$/;"	f	class:Router	signature:()
@@ -255,8 +255,11 @@ get_last	Router.h	/^	int get_last(){return order.back();}$/;"	f	class:ConflictSe
 get_neighbour	Router.cpp	/^PtVector Router::get_neighbour(const Point & pt){$/;"	f	class:Router	signature:(const Point & pt)
 get_neighbour	Router.h	/^	PtVector get_neighbour(const Point & pt);$/;"	p	class:Router	access:public	signature:(const Point & pt)
 get_neighbour	util.h	/^PtVector get_neighbour(const Point & pt);$/;"	p	signature:(const Point & pt)
+get_netdst_pt	Router.h	33;"	d
 get_order	heap.cpp	/^void heap<T,Container,Compare>::get_order(const T &x){$/;"	f	class:heap	signature:(const T &x)
 get_order	heap.h	/^	static void get_order(const T &x);$/;"	p	class:heap	access:public	signature:(const T &x)
+get_pinnum	Router.h	31;"	d
+get_pinpt	Router.h	32;"	d
 heap	heap.cpp	/^heap<T,Container,Compare>::heap(){}$/;"	f	class:heap	signature:()
 heap	heap.h	/^	heap();$/;"	p	class:heap	access:public	signature:()
 heap	heap.h	/^class heap{$/;"	c
@@ -320,6 +323,7 @@ name	header.h	/^	char name[MAXSTR];$/;"	m	struct:Net	access:public
 name	header.h	/^	char name[MAXSTR];$/;"	m	struct:Pin	access:public
 net	header.h	/^	Net net[MAXNET];$/;"	m	struct:Subproblem	access:public
 net_num	Router.h	/^	int net_num;$/;"	m	class:ConflictSet	access:public
+net_same_dest	Router.h	35;"	d
 netcount	Router.h	/^	int netcount;$/;"	m	class:Router	access:public
 netorder	Router.h	/^	int netorder[MAXNET];$/;"	m	class:Router	access:public
 numPin	header.h	/^	int numPin;$/;"	m	struct:Net	access:public
@@ -378,7 +382,7 @@ resource	heap.h	/^	static vector<T> resource;  \/\/ resource collector$/;"	m	cla
 resource	heap.h	/^vector<T> heap<T,Container,Compare>::resource=vector<T>();$/;"	m	class:heap
 ripup_reroute	Router.cpp	/^int Router::ripup_reroute(int which,RouteResult & result,$/;"	f	class:Router	signature:(int which,RouteResult & result, ConflictSet &conflict_net)
 ripup_reroute	Router.h	/^	int ripup_reroute(int which,RouteResult & result,$/;"	p	class:Router	access:public	signature:(int which,RouteResult & result, ConflictSet &conflict_net)
-route_net	Router.cpp	/^bool Router::route_net(int which,RouteResult &result,ConflictSet &conflict_net){$/;"	f	class:Router	signature:(int which,RouteResult &result,ConflictSet &conflict_net)
+route_net	Router.cpp	/^bool Router::route_net(int which,RouteResult &result,$/;"	f	class:Router	signature:(int which,RouteResult &result, ConflictSet &conflict_net)
 route_net	Router.h	/^	bool route_net(int which,RouteResult &result,ConflictSet &conflict_net);$/;"	p	class:Router	access:public	signature:(int which,RouteResult &result,ConflictSet &conflict_net)
 route_result	Router.h	/^	ResultVector route_result;$/;"	m	class:Router	access:public
 size	heap.cpp	/^int heap<T,Container,Compare>::size() const{$/;"	f	class:heap	signature:() const

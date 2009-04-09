@@ -28,6 +28,11 @@ public:
 };
 
 // the class to stores the final routing result
+#define get_pinnum(net_id) pProb->net[(net_id)].numPin
+#define get_pinpt(net_id,pin_id) pProb->net[(net_id)].pin[(pin_id)].pt
+#define get_netdst_pt(net_id) ((get_pinnum(net_id)==2)?\
+		get_pinpt((net_id),1):get_pinpt((net_id),2))
+#define net_same_dest(id1,id2) (get_netdst_pt(id1)==get_netdst_pt(id2))
 class RouteResult{
 public:
 	// constructor, must use T and prob to initialize
@@ -150,6 +155,7 @@ private:
 
 	// init blockage bitmap for use
 	void init_block(Subproblem *p);
+
 };
 
 #endif

@@ -1,7 +1,7 @@
 #!/bin/bash
 # try to run the `main' program and see if any exception happens
 
-for i in `seq 38 54`
+for i in `seq 1 64`
 do
 	echo -n "$i : "
 	result=`./main DAC05 $i 2>&1 | grep "solved"`
