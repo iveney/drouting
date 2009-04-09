@@ -31,7 +31,7 @@ DIRECTION	util.h	/^enum DIRECTION{LEFT,RIGHT,UP,DOWN,STAY}; \/\/ LEFT, RIGHT, UP
 DOWN	route.h	/^enum DIRECTION{LEFT,RIGHT,UP,DOWN,STAY}; \/\/ LEFT, RIGHT, UP, DOWN$/;"	e	enum:DIRECTION
 DOWN	util.h	/^enum DIRECTION{LEFT,RIGHT,UP,DOWN,STAY}; \/\/ LEFT, RIGHT, UP, DOWN$/;"	e	enum:DIRECTION
 ELECT_PENALTY	header.h	/^const int ELECT_PENALTY=20;$/;"	v
-FLUIDIC_RESULT	Router.h	/^enum FLUIDIC_RESULT{SAFE,VIOLATE,SAMENET};$/;"	g
+FLUIDIC_RESULT	Router.h	/^enum FLUIDIC_RESULT{SAFE,VIOLATE,SAMENET,SAMEDEST};$/;"	g
 FLUID_PENALTY	header.h	/^const int FLUID_PENALTY=20;$/;"	v
 GP_HEAP	Router.h	/^		     GridPoint::GPpointerCmp > GP_HEAP;$/;"	t	class:Router	access:public
 GPpointerCmp	GridPoint.h	/^	class GPpointerCmp{$/;"	c	class:GridPoint	access:public
@@ -171,8 +171,9 @@ Router::sort_net	Router.cpp	/^void Router::sort_net(Subproblem *pProb, int * net
 Router::sort_net	Router.h	/^	void sort_net(Subproblem *pProb, int * netorder);$/;"	p	class:Router	access:private	signature:(Subproblem *pProb, int * netorder)
 Router::tosolve	Router.h	/^	int tosolve;    \/\/ which subproblem to solve,given in cmd line$/;"	m	class:Router	access:public
 Router::~Router	Router.h	/^	~Router(){}$/;"	f	class:Router	access:public	signature:()
-SAFE	Router.h	/^enum FLUIDIC_RESULT{SAFE,VIOLATE,SAMENET};$/;"	e	enum:FLUIDIC_RESULT
-SAMENET	Router.h	/^enum FLUIDIC_RESULT{SAFE,VIOLATE,SAMENET};$/;"	e	enum:FLUIDIC_RESULT
+SAFE	Router.h	/^enum FLUIDIC_RESULT{SAFE,VIOLATE,SAMENET,SAMEDEST};$/;"	e	enum:FLUIDIC_RESULT
+SAMEDEST	Router.h	/^enum FLUIDIC_RESULT{SAFE,VIOLATE,SAMENET,SAMEDEST};$/;"	e	enum:FLUIDIC_RESULT
+SAMENET	Router.h	/^enum FLUIDIC_RESULT{SAFE,VIOLATE,SAMENET,SAMEDEST};$/;"	e	enum:FLUIDIC_RESULT
 STALL_PENALTY	header.h	/^const int STALL_PENALTY=0;$/;"	v
 STAY	route.h	/^enum DIRECTION{LEFT,RIGHT,UP,DOWN,STAY}; \/\/ LEFT, RIGHT, UP, DOWN$/;"	e	enum:DIRECTION
 STAY	util.h	/^enum DIRECTION{LEFT,RIGHT,UP,DOWN,STAY}; \/\/ LEFT, RIGHT, UP, DOWN$/;"	e	enum:DIRECTION
@@ -189,7 +190,7 @@ TOSTRING	util.h	7;"	d
 UP	route.h	/^enum DIRECTION{LEFT,RIGHT,UP,DOWN,STAY}; \/\/ LEFT, RIGHT, UP, DOWN$/;"	e	enum:DIRECTION
 UP	util.h	/^enum DIRECTION{LEFT,RIGHT,UP,DOWN,STAY}; \/\/ LEFT, RIGHT, UP, DOWN$/;"	e	enum:DIRECTION
 UR	header.h	/^enum CORNER{LL,UR};$/;"	e	enum:CORNER
-VIOLATE	Router.h	/^enum FLUIDIC_RESULT{SAFE,VIOLATE,SAMENET};$/;"	e	enum:FLUIDIC_RESULT
+VIOLATE	Router.h	/^enum FLUIDIC_RESULT{SAFE,VIOLATE,SAMENET,SAMEDEST};$/;"	e	enum:FLUIDIC_RESULT
 __GRIDPOINT_H__	GridPoint.h	2;"	d
 __HEADER_H__	header.h	2;"	d
 __HEAP_H__	heap.h	4;"	d

@@ -432,9 +432,18 @@ FLUIDIC_RESULT Router::fluidic_check(int which, const Point & pt,int t,
 	// t's range: [0..T]
 	//if(t > this->T || t < 0)
 	//	cout<<"which="<<which<<" Point="<<pt<<" t="<<t<<endl;
+	Point which_dst,checking_dst;
+	Net * pWhich = &pProb->net[which];
+	which_dst = pWhich->pin[1].pt;
+	if( pWhich->numPin == 3 ) which_dst = pWhich->pin[2].pt;
 	assert( (t <= this->T) && (t >= 0) );
 	for(int i=0;i<netcount && netorder[i] != which;i++){
 		int checking_idx = netorder[i];
+		Net * pChecking = &pProb->net[checking_idx];
+		checking_dst = pChecking->pin[1].pt;
+		if( pWhich->numPin == 3 )
+			checking_dst = pChecking->pin[2].pt;
+		if( which_dst == checking_dst ) continue;
 		const PtVector & path = result.path[checking_idx];
 		// TODO: detect 3-pin net merge
 		// static fluidic check
