@@ -42,9 +42,6 @@ RouteResult Router::solve_subproblem(int prob_idx){
 	// solve subproblem `idx'
 	pProb = &chip.prob[prob_idx];
 	
-	// the result to return
-	RouteResult result(this->T,this->M,this->N,this->pProb);
-
 	// sort : decide net order
 	netcount = pProb->nNet;
 	sort_net(pProb,netorder);
@@ -56,6 +53,9 @@ RouteResult Router::solve_subproblem(int prob_idx){
 
 	// generate blockage bitmap
 	init_block(pProb);
+
+	// the result to return
+	RouteResult result(this->T,this->M,this->N,this->pProb);
 
 	// start to route each net according to sorted order
 	// TODO:  should use a queue/list to iteratively route all nets
@@ -261,6 +261,7 @@ bool Router::route_subnet(Point src,Point dst,
 
 }
 
+// given a net with index `which' in netorder, route all its subnets
 bool Router::route_net(int which,RouteResult &result)//, ConflictSet &conflict_net)
 {
 	cout<<"** Routing net["<<which<<"] **"<<endl;
@@ -269,7 +270,7 @@ bool Router::route_net(int which,RouteResult &result)//, ConflictSet &conflict_n
 	Point src;
 	Point dst = get_netdst_pt(which);
 	// decompose to (numPin-1) subnet
-	for (int i = 0; i < pNet->numPin; i++) {
+	for (int i = 0; i < pNet->numPin-1; i++) {
 		src=pNet->pin[i].pt; // route pin-i
 		ConflictSet conflict_net(netcount);
 		bool success = route_subnet(src,dst,which,i,
@@ -300,9 +301,10 @@ int Router::ripup_reroute(int which,RouteResult & result,
 	}
 	result.path[last].clear(); // cancel the routed path
 
-	// re-push into queue: route `which' first then `last'
+	// re-push into queue: re route `last'
+	// IMPORTANT: since we are routing `which', do not push again!
 	nets.push_front(last);
-	nets.push_front(which);
+	//nets.push_front(which);
 
 	// re-order route order
 	IntVector temp(netorder,netorder+netcount);
@@ -486,9 +488,15 @@ bool Router::electrode_check(const Point & pt){
 }
 
 // for a net `which' at location `pt' at time `t', 
-// perform fluidic constraint check
-// if successful return 0 
-// else return the conflicting net
+// perform fluidic constraint check.if successful return 0 
+// else return the conflicting ne
+#define violate(pt,t,ep) \
+	(!(abs((pt).x - path[(t)-(ep)].x) >=2 || \
+	   abs((pt).y - path[(t)-(ep)].y) >=2))
+#define static_violate(pt,t) \
+	violate(pt,t,0)
+#define dynamic_violate(pt,t) \
+	violate(pt,t,1)
 FLUIDIC_RESULT Router::fluidic_check(int which,int pin_idx,
 	       	const Point & pt,int t,
 		const RouteResult & result,ConflictSet & conflict_net){
@@ -498,25 +506,19 @@ FLUIDIC_RESULT Router::fluidic_check(int which,int pin_idx,
 	// from netorder[0] to netorder[i]!=which
 	// t's range: [0..T]
 	assert( (t <= this->T) && (t >= 0) );
-	bool finish = false;
-	for(int i=0;i<netcount && !finish;i++){
+	// for all the net routed before which
+	for(int i=0;i<netcount && netorder[i]!=which;i++){
 		int checking_idx = netorder[i];
-		if( checking_idx == which ) // after this should stop
-			finish = true;
 		if( net_same_dest(which,checking_idx) ) 
 			return SAMEDEST;
 		const NetRoute & route = result.path[checking_idx];
 		// for each subnet
 		for (int j = 0; j < route.num_pin-1; j++) {
-			// multipin net's same pin(itself)
-			if( checking_idx == which && pin_idx == j)
-				break;
 			const PtVector & path = route.pin_route[j];
 			// static fluidic check
-			if( !(abs(pt.x - path[t].x) >=2 ||
-			      abs(pt.y - path[t].y) >=2) ){
-				if( checking_idx == which )
-					return SAMENET;
+			//if ( !(abs(pt.x - path[t].x) >=2 || abs(pt.y - path[t].y) >=2) ){
+			if( static_violate(pt,t) || 
+		            dynamic_violate(pt,t) ){
 				conflict_net.insert(checking_idx);
 				return VIOLATE;
 			}
@@ -526,15 +528,24 @@ FLUIDIC_RESULT Router::fluidic_check(int which,int pin_idx,
 			// 1 2 1 2
 			// the second 1 will have two direction to go
 			// but both 1 belong to the same net!!
-			if ( !(abs(pt.x - path[t-1].x) >=2 ||
-			       abs(pt.y - path[t-1].y) >=2) ){
-				if( checking_idx == which )
-					return SAMENET;
+			//if ( !(abs(pt.x - path[t-1].x) >=2 || abs(pt.y - path[t-1].y) >=2) ){
+			/*
+			if(){
 				conflict_net.insert(checking_idx);
 				return VIOLATE;
 			}
+			*/
 		} // end of for j
 	} // end of for i
+	// check whether it hit into inself
+	// for all the subnet routed before this pin
+	const NetRoute & route = result.path[which];
+	for (int j = 0; j < route.num_pin-1 && j!= pin_idx; j++) {
+		const PtVector & path = route.pin_route[j];
+		if( static_violate(pt,t) || dynamic_violate(pt,t) ){
+			return SAMENET;
+		}
+	}
 	return SAFE;
 }
 

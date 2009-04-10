@@ -33,9 +33,12 @@ public:
 struct NetRoute{
 	NetRoute(int netidx,int pin_num,int timing_):idx(netidx),
 	num_pin(pin_num),timing(timing_) {
+		// for this net, generate num_pin-1 subnet
+		/*
 		for (int i = 0; i < num_pin-1; i++) {
 			pin_route[i]=PtVector(timing+1);
 		}
+		*/
 	}
 	void clear(){
 		for (int i = 0; i < num_pin-1; i++) {

@@ -14,6 +14,8 @@
 // ----------------------------------------------------------------//
 
 #include <stdio.h>
+#include <map>
+using std::map;
 const char * getColor(){
 	static int counter=0;
 	const static char * colors[]={
@@ -25,12 +27,17 @@ const char * getColor(){
 	counter=(counter+1)%size;
 	return p;
 }
-
+typedef map<int,const char *> ColorMap;
 int main(){
 	int neti,total_time;
 	int t,x,y;
+	ColorMap net_color;
+	ColorMap::iterator it;
 	while( scanf("net[%d]:%d\n",&neti,&total_time) != EOF ){
-		const char * p = getColor();
+		const char * p=net_color[neti];
+		if(p == NULL){
+			p=net_color[neti]=getColor();
+		}
 		for(int i=0;i<=total_time;i++){
 			scanf("%d : (%d,%d)\n",&t,&x,&y);
 			printf("\\node[pins,fill=%s] (net_%d_%d_%d) at (%d+\\half,%d+\\half) {\\tt %d};\n",
