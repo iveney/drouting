@@ -45,15 +45,17 @@ cat droute_draw_header.tex > "${OUTPUT}"
 echo "  solving..."
 ROUTERESULT=`$MAIN $FILE $SUBPROB 2>&1`
 
+echo "  greping..."
+$PARSER $FILE $SUBPROB
+INTERMEDIATE=${FILE}_p${SUBPROB}.tex
+egrep -e "\\def " "$INTERMEDIATE" >> "${OUTPUT}"
+
 # extract information needed by drawing util
 echo "  parsing..."
 ROUTE=`echo "$ROUTERESULT" | tail -n +6 | \
 	grep -v -e "Exceed" -e "pin" -e "\*" -e "Find" -e "Error" -e "order" -e "solved"`
 echo "$ROUTE" | ./droute_draw >> ${OUTPUT} 
-$PARSER $FILE $SUBPROB
 
-echo "  greping..."
-INTERMEDIATE=${FILE}_p${SUBPROB}.tex
 egrep -e "[\]draw.*pin" -e "[\]blockage" "$INTERMEDIATE" >> "${OUTPUT}" 
 
 echo "  finishing..."

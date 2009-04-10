@@ -1,4 +1,13 @@
 Fri Apr 10 10:59:58 HKT 2009
+IMPORTANT:
+for multipin net/same dest net
+if they can merge earlier, than it can potentially decreases conflict(since droplet number
+is decreased)
+
+how to do?
+my idea: build MRST, calculate merge point, then route to there, and do post processing 
+to finalize the route
+
 problem:
 if we do it like now.i.e. hierachically route net,
   for each net
@@ -11,6 +20,7 @@ there is sth. we might miss
 1. can not specify the routing order of multi-pin's subnet -- is it important?
    the order would be pin-0,pin-1...(althought only 3 pin here)
 
+-----------------------------------------------------------------------------------------------
 2009年 04月 08日 星期三 10:27:50 CST
 * important problem:
   now found out that can not simply fill up the destination point till timing constraint,

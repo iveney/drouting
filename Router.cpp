@@ -40,15 +40,12 @@ RouteResult Router::solve_subproblem(int prob_idx){
 	cout<<"--- Solving subproblem ["<<prob_idx<<"] ---"<<endl;
 	
 	// solve subproblem `idx'
-	pProb = &chip.prob[prob_idx];
-	
-	// sort : decide net order
-	netcount = pProb->nNet;
-	sort_net(pProb,netorder);
 	N=chip.N;
 	M=chip.M;
 	T=chip.T;
-
+	pProb = &chip.prob[prob_idx];
+	netcount = pProb->nNet;
+	sort_net(pProb,netorder);// sort : decide net order
 	output_netorder(netorder,netcount);
 
 	// generate blockage bitmap
@@ -58,33 +55,20 @@ RouteResult Router::solve_subproblem(int prob_idx){
 	RouteResult result(this->T,this->M,this->N,this->pProb);
 
 	// start to route each net according to sorted order
-	// TODO:  should use a queue/list to iteratively route all nets
 	nets.clear();
 	nets.insert(nets.begin(),netorder,netorder+netcount);
-	//for(int i=0;i<netcount;i++){
 	int routed_count=0;
 	while( !nets.empty() ){
-		//int which = netorder[i];
 		int which = nets.front();
 		nets.pop_front();
-		//ConflictSet conflict_net(netcount);
-		bool success = route_net(which,result);//,conflict_net);
-		// IMPORTANT: should change the return value
-		// of route_net here.(now always return true)
+		bool success = route_net(which,result);
+		// IMPORTANT: the return value of route_net here.
 		// how to model the return ?
 		if( success == false ){
-			if( routed_count == 0 ){
-				// first net can not be routed means fail
-				report_exit("Error: route failed!");
-			}
-			routed_count++;
-			/*
-			cerr<<"Error: route net "<<which
-			    <<" failed ,try ripup-reroute!"<<endl;
-			i=ripup_reroute(which,result,conflict_net)-1;
-			output_netorder(netorder,netcount);
-			*/
+			// first net can not be routed means fail
+			report_exit("Error: route failed!");
 		}
+		routed_count++;
 	}
 
 	// finally, output result
@@ -226,8 +210,9 @@ bool Router::route_subnet(Point src,Point dst,
 		case SAMENET:// multipin net merge
 		case SAMEDEST:
 			success = true;
-			// need to know which net it met and use
-			// the existing route
+			// need to know which net it met and utilize
+			// the existing route, now just route as normal
+			p.push(same);
 			break;
 		case VIOLATE:// ignore this GridPoint
 			break;
@@ -254,14 +239,13 @@ bool Router::route_subnet(Point src,Point dst,
 #endif
 	//////////////////////////////////////////////////////////////////
 	// backtrack phase, stores results to RouteResult
-	// TODO: change backtrack
 	backtrack(which,pin_idx,current,result);
 	p.free();
 	return true;
 
 }
 
-// given a net with index `which' in netorder, route all its subnets
+// given a net with index `which' , route all its subnets
 bool Router::route_net(int which,RouteResult &result)//, ConflictSet &conflict_net)
 {
 	cout<<"** Routing net["<<which<<"] **"<<endl;
@@ -276,6 +260,8 @@ bool Router::route_net(int which,RouteResult &result)//, ConflictSet &conflict_n
 		bool success = route_subnet(src,dst,which,i,
 			result,conflict_net);
 		if( success == false ){
+			if(netorder[0]==which) // first net can not be route!
+				return false;
 			cerr<<"Error: route subnet "<<which<<"-"<<i
 			    <<" failed ,try ripup-reroute!"<<endl;
 			ripup_reroute(which,result,conflict_net);//-1;
@@ -537,9 +523,10 @@ FLUIDIC_RESULT Router::fluidic_check(int which,int pin_idx,
 			*/
 		} // end of for j
 	} // end of for i
+
 	// check whether it hit into inself
-	// for all the subnet routed before this pin
 	const NetRoute & route = result.path[which];
+	// for all the subnet routed before this pin
 	for (int j = 0; j < route.num_pin-1 && j!= pin_idx; j++) {
 		const PtVector & path = route.pin_route[j];
 		if( static_violate(pt,t) || dynamic_violate(pt,t) ){

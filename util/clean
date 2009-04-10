@@ -1,3 +1,4 @@
 #!/bin/bash
 rm -rf *.log *.aux *.bak *.out
+rm DAC05_p*
 chmod -x *.pdf *.tex
