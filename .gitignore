@@ -10,3 +10,4 @@ util/*.out
 util/*.bak
 util/*.log
 util/*.aux
+cscope.files

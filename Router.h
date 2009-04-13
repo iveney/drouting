@@ -142,7 +142,10 @@ public:
 			ConflictSet & conflict_net);
 
 	// determines if there is electrode constraint violation
-	bool electrode_check(const Point & pt);
+	bool electrode_check(int which, int pin_idx,
+			const Point & pt,int t,
+			const RouteResult & result,
+			ConflictSet & conflict_net);
 
 	// determine if given point pt is in valid position
 	bool in_grid(const Point & pt);

@@ -96,6 +96,7 @@ void Router::output_result(const RouteResult & result){
 }
 
 void Router::init_block(Subproblem *p){
+	assert( p != NULL );
 	memset(blockage,0,sizeof(blockage));
 	int i,x,y;
 	for(i=0;i<p->nBlock;i++) {
@@ -116,6 +117,7 @@ bool Router::route_subnet(Point src,Point dst,
 			int which,int pin_idx,
 			RouteResult & result,
 			ConflictSet & conflict_net){
+	assert( in_grid(src) && in_grid(dst) );
 	// do Lee's propagation,handles 2-pin net only currently
 	GridPoint *current;
 	//Point src = pNet->pin[0].pt; // source
@@ -311,28 +313,28 @@ void Router::propagate_nbrs(int which, int pin_idx,GridPoint * current,
 			    GP_HEAP & p,ConflictSet &conflict_net){
 	// get its neighbours( PROBLEM: can it be back? )
 	PtVector nbr = get_neighbour(current->pt);
-	PtVector::iterator iter;
 	const int t = (current->time + 1);
 
 	// enqueue neighbours
 	GridPoint * par_par = current->parent; 
-	for(iter = nbr.begin();iter!=nbr.end();iter++){
-		int x=(*iter).x,y=(*iter).y;
+	for(size_t i=0;i<nbr.size();i++){
+		int x=nbr[i].x,y=nbr[i].y;
 		// 0.current pt should be avoided
 		// 1.parent should not be propagated again
 		// 2.check if there is blockage 
 		// 3.forbid circular move (1->2...->1)
-		if( (*iter) == current->pt ) continue;
+		if( nbr[i] == current->pt ) continue;
 		if( blockage[x][y] ) continue;
 		if( (par_par != NULL) && 
-		    (*iter == par_par->pt) )
+		    (nbr[i] == par_par->pt) )
 			continue;
 		// calculate its weight
 		Point tmp(x,y);
 		int f_pen=0,e_pen=0,bending=current->bend;
 		FLUIDIC_RESULT fluid_result=fluidic_check(which,pin_idx,
 				tmp,t,result,conflict_net);
-		bool elect_violate=electrode_check( tmp );
+		bool elect_violate=electrode_check(which,pin_idx,
+			       	tmp,t,result,conflict_net);
 
 		// fluidic constraint check
 		if( fluid_result == SAMENET ){
@@ -391,13 +393,7 @@ void Router::backtrack(int which,int pin_idx,GridPoint *current,
 	}
 
 	// output result
-	/*
-	cout<<"net["<<which<<"]:"<<this->T<<endl;
-	for(size_t i=0;i<pin_path.size();i++){
-		cout<<"\t"<<i<<":"
-			<<pin_path[i]<<endl;
-	}
-	*/
+	output_result(result);
 }
 
 // just print out what is in the heap
@@ -467,7 +463,10 @@ void Router::output_netorder(int *netorder,int netcount){
 }
 
 // perform electrode constraint check
-bool Router::electrode_check(const Point & pt){
+bool Router::electrode_check(int which, int pin_idx,
+		const Point & pt,int t,
+		const RouteResult & result,
+		ConflictSet & conflict_net){
 	// use DFS to check : 2-color
 	
 	return true;
