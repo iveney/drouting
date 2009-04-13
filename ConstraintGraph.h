@@ -3,15 +3,18 @@
 
 #include <vector>
 #include <set>
-//#include <cassert>
 using std::set;
 using std::vector;
 
 enum GType{ROW,COL};
+enum COLOR{H,L,G};
+enum ADD_EDGE_RESULT{FAIL,SUCCESS,EXIST};
 
 class GNode{
 public:
 	friend bool operator <(GNode u,GNode v);
+	GNode(){}
+	GNode(GType t,int index):type(t),idx(index){}
 	void set(GType t,int index){
 		type = t;
 		idx = index;
@@ -26,29 +29,32 @@ bool operator <(GNode u,GNode v){
 		(u.type == v.type && u.idx < v.idx);
 }
 
+typedef set<GNode> GNodeSet;
 class ConstraintGraph{ 
 public:
+	// given row number and column number, initialize the graph
 	ConstraintGraph(int r,int c):row(r),col(c),
 	r_list(vector< set<GNode> >(row)),
-	c_list(vector< set<GNode> >(col))
-	{}
-
-	bool addEdge(GNode u,GNode v){
-		set<GNode> & lu = 
-			(u.type==ROW?r_list:c_list)[u.idx];
-		set<GNode> & lv = 
-			(v.type==ROW?r_list:c_list)[v.idx];
-		// avoid duplicate edge
-		if( lu.find(v) != lu.end() )
-			return false;
-		lu.insert(v);
-		lv.insert(u);
-		return true;
+	c_list(vector< set<GNode> >(col)),
+	r_color(vector<COLOR>(row,G)),
+	c_color(vector<COLOR>(col,G)){
+		// initialize all color to G
 	}
 
-	int row,col;  // col_index = row_index + col
-	vector< set<GNode> > r_list;
-	vector< set<GNode> > c_list;
+	bool add_edge(const GNode &u,const GNode &v);
+	ADD_EDGE_RESULT add_edge_color(const GNode &u,const GNode &v);
+	bool remove_edge(const GNode & u,const GNode & v);
+	bool has_edge(const GNode &u,const GNode &v);
+	GNodeSet::iterator find_edge(const GNode &u,const GNode &v);
+	bool try_coloring();
+	bool recur_color(const GNode & node,COLOR assign);
+	COLOR erase_color(const GNode & node);
+
+	int row,col;  
+	vector< GNodeSet > r_list;
+	vector< GNodeSet > c_list;
+	vector< COLOR > r_color;
+	vector< COLOR > c_color;
 };
 
 #endif

@@ -8,7 +8,7 @@ parser=parser
 OPT=-Wall -g
 
 release: $(OBJ) tags
-	echo "Making release..."
+	@echo "Making release..."
 #$(CC) $(OPT) -c $(SRC) main.cpp
 	$(CC) $(OPT) -o $(BIN) $(OBJ) main.o
 
@@ -16,12 +16,12 @@ all: parser release debug
 	cp ./main ./util/
 
 debug: $(HDR) $(SRC)
-	echo "Making debug..."
+	@echo "Making debug..."
 	$(CC) -c -DDEBUG $(SRC) main.cpp
 	$(CC) $(OPT) -o $(DBG) $(OBJ) main.o
 
 parser: parser_main.cpp
-	echo "Making parser..."
+	@echo "Making parser..."
 #$(CC) $(OPT) -c parser_main.cpp
 	$(CC) $(OPT) -o $(parser) $(OBJ) parser_main.o
 
@@ -29,8 +29,10 @@ parser: parser_main.cpp
 	$(CC) -c $< $(OPT) -o $@
 
 tags: $(SRC) $(HDR)
+	@echo "Making tags..."
 	cscopegen
 
 .PHONY : clean
 clean:
+	@echo "Cleaning all..."
 	rm -rf $(OBJ) $(DBG) $(BIN) $(parser)
