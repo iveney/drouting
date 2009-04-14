@@ -28,15 +28,10 @@ public:
 	int idx;
 };
 
-bool operator <(GNode u,GNode v){
-	return (u.type == ROW && v.type == COL) ||
-		(u.type == v.type && u.idx < v.idx);
-}
-
 class ConstraintGraph{ 
 public:
 	// given row number and column number, initialize the graph
-	ConstraintGraph(int r,int c):row(r),col(c),
+	ConstraintGraph(int r=0,int c=0):row(r),col(c),
 	r_list(vector< set<GNode> >(row)),
 	c_list(vector< set<GNode> >(col)),
 	r_color(vector<COLOR>(row,G)),

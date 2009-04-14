@@ -206,3 +206,8 @@ bool ConstraintGraph::try_coloring(){
 	// safely colored all connected component
 	return true;
 }
+
+bool operator <(GNode u,GNode v){
+	return (u.type == ROW && v.type == COL) ||
+		(u.type == v.type && u.idx < v.idx);
+}

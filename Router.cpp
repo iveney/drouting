@@ -32,17 +32,25 @@ void Router::read_file(int argc, char * argv[]){
 		report_exit("open file error\n");
 	parse(f,&chip); // now `chip' stores subproblems
 	fclose(f);
-	read=true;
+	init();
 }
 
-RouteResult Router::solve_subproblem(int prob_idx){
-	if( read == false ) report_exit("Must read input first!");
-	cout<<"--- Solving subproblem ["<<prob_idx<<"] ---"<<endl;
-	
-	// solve subproblem `idx'
+// do initialization for global variables N M T
+void Router::init(){
+	read=true;
 	N=chip.N;
 	M=chip.M;
 	T=chip.T;
+}
+
+// solve subproblem `idx'
+RouteResult Router::solve_subproblem(int prob_idx){
+	if( read == false ) report_exit("Must read input first!");
+	cout<<"--- Solving subproblem ["<<prob_idx<<"] ---"<<endl;
+
+	// initialize constraint graph
+	graph = ConstraintGraph(N,M);
+	
 	pProb = &chip.prob[prob_idx];
 	netcount = pProb->nNet;
 	sort_net(pProb,netorder);// sort : decide net order
@@ -331,17 +339,21 @@ void Router::propagate_nbrs(int which, int pin_idx,GridPoint * current,
 		// calculate its weight
 		Point tmp(x,y);
 		int f_pen=0,e_pen=0,bending=current->bend;
+		/*
 		FLUIDIC_RESULT fluid_result=fluidic_check(which,pin_idx,
 				tmp,t,result,conflict_net);
+				*/
 		bool elect_violate=electrode_check(which,pin_idx,
 			       	tmp,t,result,conflict_net);
 
 		// fluidic constraint check
+		/*
 		if( fluid_result == SAMENET ){
 			// multipin net
 		} else if( fluid_result == VIOLATE ){
 			continue;
 		}
+		*/
 
 		// electro constraint check
 		if( !elect_violate ){
@@ -463,25 +475,109 @@ void Router::output_netorder(int *netorder,int netcount){
 }
 
 // perform electrode constraint check
+// note that this will implies dynamic fluidic check
+// if we constrain no cell be activated at x+2
+// suppose droplet moving from x to x+1
+// then electrode check always implies dynamic+static check!!
 bool Router::electrode_check(int which, int pin_idx,
 		const Point & pt,int t,
 		const RouteResult & result,
 		ConflictSet & conflict_net){
-	// use DFS to check : 2-color
+	// IMPORTANT: what if the droplet STAYs at time=t?
 	
+	// construct the graph from the current configuration
+	GNode add_x,add_y;
+	add_x.set(COL,pt.x); // x is column
+	add_y.set(ROW,pt.y); // y is row
+	ADD_EDGE_RESULT add_result = graph.add_edge_color(add_x,add_y);
+	if( add_result == FAIL )
+		return false;
+
+	// let current checking droplet be `d',location be (x,y)
+	for (int i = 0; i<netcount && netorder[i]!=which; i++) {
+		int checking_idx = netorder[i];
+		const NetRoute & route = result.path[checking_idx];
+		// for each subnet
+		for (int j = 0; j<route.num_pin-1; j++) {
+			const PtVector & pin = route.pin_route[j];
+			// pin[t] is the location at time t(activated at t-1)
+		
+			// check for moving direction, add one more constraint
+			DIRECTION dir = pt_relative_pos(pin[t-1],pin[t]);
+			// note that if the droplet stays, pin[t] will not be 
+			// activated at time=t, NO need to add constraint
+			// if(dir == STAY) continue;
+			// IMPORTANT: what if the droplet STAYs at time=t?
+			GNode ndx,ndy;
+			switch(dir){
+			case LEFT:
+				if( pt.x-2 == pin[t].x ) {
+					ndx.set(COL,pt.x-2);
+					if( graph.add_edge_color(add_x,ndx) == FAIL ) 
+						return false;
+				}
+				break;
+			case RIGHT:
+				if( pt.x+2 == pin[t].x ) {
+					ndx.set(COL,pt.x-2);
+					if( graph.add_edge_color(add_x,ndx) == FAIL ) 
+						return false;
+				}
+				break;
+			case DOWN:
+				if( pt.y-2 == pin[t].y ) {
+					ndy.set(COL,pt.y-2);
+					if( graph.add_edge_color(add_y,ndy) == FAIL ) 
+						return false;
+				}
+				break;
+			case UP:
+				if( pt.y+2 == pin[t].y ) {
+					ndy.set(COL,pt.y+2);
+					if( graph.add_edge_color(add_y,ndy) == FAIL ) 
+						return false;
+				}
+				break;
+			case STAY:break; // impossible to reach here
+			}
+			// check for y-1,y+1
+			if( pt.y-1 == pin[t].y ) {
+				ndy.set(ROW,pt.y-1);
+				if( graph.add_edge_color(add_y,ndy) == FAIL ) 
+					return false;
+			}
+			else if( pt.y+1 == pin[t].y ){
+				ndy.set(ROW,pt.y+1);
+				if( graph.add_edge_color(add_y,ndy) == FAIL ) 
+					return false;
+			}
+			// check for x-1,x+1
+			if( pt.x-1 == pin[t].x ){
+				ndx.set(COL,pt.x-1);
+				if( graph.add_edge_color(add_x,ndx) == FAIL ) 
+					return false;
+			}
+			else if( pt.x+1 == pin[t].x ){
+				ndx.set(COL,pt.x+1);
+				if( graph.add_edge_color(add_x,ndx) == FAIL ) 
+					return false;
+			}
+			
+		}
+	}
 	return true;
 }
 
 // for a net `which' at location `pt' at time `t', 
 // perform fluidic constraint check.if successful return 0 
-// else return the conflicting ne
-#define violate(pt,t,ep) \
+// else return the conflicting net
+#define fluidic_violate(pt,t,ep) \
 	(!(abs((pt).x - path[(t)-(ep)].x) >=2 || \
 	   abs((pt).y - path[(t)-(ep)].y) >=2))
 #define static_violate(pt,t) \
-	violate(pt,t,0)
+	fluidic_violate(pt,t,0)
 #define dynamic_violate(pt,t) \
-	violate(pt,t,1)
+	fluidic_violate(pt,t,1)
 FLUIDIC_RESULT Router::fluidic_check(int which,int pin_idx,
 	       	const Point & pt,int t,
 		const RouteResult & result,ConflictSet & conflict_net){

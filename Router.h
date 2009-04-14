@@ -6,6 +6,7 @@
 #include "GridPoint.h"
 #include "heap.h"
 #include "util.h"
+#include "ConstraintGraph.h"
 using std::deque;
 
 // return value of fluidic constraint check
@@ -109,6 +110,8 @@ public:
 	// free the resources allocated
 	~Router(){}
 
+	void init();
+
 	void output_result(const RouteResult & result);
 
 	// do rip up and re route for a net
@@ -179,11 +182,11 @@ public:
 	// members for internal use of routing
 	BYTE blockage[MAXGRID][MAXGRID];
 	int netcount;
-	int N,M,T;
+	int N,M,T; // N is , M is
 	int netorder[MAXNET];
 	static Subproblem * pProb;
 	deque<int> nets;
-
+	ConstraintGraph graph;
 
 private:
 	// sort the net according to some criteria defined in cmp_net

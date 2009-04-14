@@ -3,6 +3,7 @@
 
 #include <iostream>
 #include <vector>
+#include "util.h"
 #include "heap.h"
 using std::ostream;
 using std::vector;
@@ -28,6 +29,7 @@ const int FLUID_PENALTY=20;
 const int ELECT_PENALTY=20;
 //const int STALL_PENALTY=20;
 const int STALL_PENALTY=0;
+enum CORNER{LL,UR};
 
 class Point{// a point denote by (row,col)
 public:
@@ -39,7 +41,6 @@ public:
 	int x,y;
 };
 
-enum CORNER{LL,UR};
 struct Block{// a block denote by two points
 	char name[MAXSTR];
 	Point pt[2]; // LL=0, UR=1
@@ -69,7 +70,6 @@ struct Chip{// a chip has an array, timing constraint and subproblems
 	int nSubProblem;
 	Subproblem prob[MAXSUB];// note:prob starts from index 1
 };
-
 
 void swap(int &a,int &b);
 Block get_bbox(const Pin & p1, const Pin & p2);

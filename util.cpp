@@ -28,7 +28,9 @@ bool check_bending(const Point & p1,const Point & p2){
 	return true;
 }
 
-// determine the relative position of l to r
+// determine the relative position from l to r
+// NOTE: l is supposed to be adjacent to r
+// hence only four possible case
 DIRECTION pt_relative_pos(const Point & l ,const Point & r){
 	int dx = l.x-r.x;
 	int dy = l.y-r.y;

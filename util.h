@@ -1,5 +1,7 @@
 #ifndef __UTIL_H__
 #define __UTIL_H__
+#include <vector>
+using std::vector;
 
 enum DIRECTION{LEFT,RIGHT,UP,DOWN,STAY}; // LEFT, RIGHT, UP, DOWN
 
@@ -7,9 +9,10 @@ enum DIRECTION{LEFT,RIGHT,UP,DOWN,STAY}; // LEFT, RIGHT, UP, DOWN
 #define TOSTRING(x) STRINGIFY(x)
 #define AT __FILE__ ":" TOSTRING(__LINE__)
 #define report_exit(a) _report_exit(AT,a)
+class RouteResult;
+class Point;
 typedef vector<int> IntVector ;
 typedef vector<Point> PtVector ;
-class RouteResult;
 typedef vector<RouteResult> ResultVector;
 
 void _report_exit(const char *location, const char *msg);
