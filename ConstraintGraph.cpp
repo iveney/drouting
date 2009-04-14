@@ -1,11 +1,10 @@
-#include <deque>
 #include <cassert>
 #include "ConstraintGraph.h"
-using std::deque;
 
 #define access_list(node) ((node).type==ROW?r_list:c_list)[(node).idx]
 #define get_color(node) ((node).type==ROW? \
 		r_color[(node).idx]:c_color[(node).idx])
+#define set_color(node,color) get_color(node) = (color)
 #define next_color(color) ((color)==H?L:H)
 
 // given a node u, check if there is an edge to node v
@@ -20,14 +19,21 @@ bool ConstraintGraph::has_edge(const GNode &u,const GNode &v){
 	else return true;
 }
 
-// add an edge between node u-v, regardless the color
-bool ConstraintGraph::add_edge(const GNode &u,const GNode &v){
-	// avoid duplicate edge
-	if( has_edge(u,v) ) return false;
+// add and edge between u,v
+// this method should not be used directly!
+void ConstraintGraph::do_add_edge(const GNode &u,const GNode &v){
 	set<GNode> & lu = access_list(u);
 	set<GNode> & lv = access_list(v);
 	lu.insert(v);
 	lv.insert(u); // symmetric
+}
+
+// add an edge between node u-v, with duplicate detection, 
+// regardless the color
+bool ConstraintGraph::add_edge(const GNode &u,const GNode &v){
+	// avoid duplicate edge
+	if( has_edge(u,v) ) return false;
+	do_add_edge(u,v);
 	return true;
 }
 
@@ -36,9 +42,86 @@ bool ConstraintGraph::add_edge(const GNode &u,const GNode &v){
 ADD_EDGE_RESULT ConstraintGraph::add_edge_color(const GNode &u,const GNode &v){
 	if( has_edge(u,v) ) return EXIST;
 	// check if adding this edge will conflict
-	// explore all 9 cases
-	// {G,H,V} X {G,H,V}
-	return SUCCESS;
+	// explore all 9 cases: {G,H,V} X {G,H,V}
+	
+	set<GNode> & lu = access_list(u);
+	set<GNode> & lv = access_list(v);
+	COLOR ucolor = get_color(u);
+	COLOR vcolor = get_color(v);
+	
+	if( lu.empty() ){// node u standalone
+		do_add_edge(u,v); // safely add edge
+		if( lv.empty() ){ // G,G: color them
+			recur_color(u,H);
+		}
+		else if( vcolor == H ){// G,H: color u to L
+			set_color(u,L);
+		}
+		else{// vcolor == L
+			set_color(u,H);
+		}
+		return SUCCESS;
+	}
+	else if( lv.empty() ) {// v standlone(symmetric)
+		do_add_edge(v,u); // safely add edge
+		if( lu.empty() ){ // G,G: color them
+			recur_color(v,H);
+		}
+		else if( ucolor == H ){// H,G: color v to L
+			set_color(v,L);
+		}
+		else{// vcolor == L
+			set_color(v,H);
+		}
+		return SUCCESS;
+	}
+	else{// u,v not standalone
+		if( ucolor != vcolor ){// H-L or L-H
+			do_add_edge(u,v);
+			return SUCCESS;
+		}
+		// H-H or L-L
+		// IMPORTANT: not possible in the same component
+		// it might be that by swapping the value
+		// of one connected component, we can do 2-coloring
+		ConstraintGraph bak(*this); // make backup
+		reverse_color(v);
+		COLOR u_newcolor = get_color(u);
+		if( ucolor != u_newcolor ){
+			*this = bak;
+			return FAIL;
+		}
+		else
+			return SUCCESS;
+	}
+}
+
+// recursively reverse the color of a componenet, which containing `node'
+void ConstraintGraph::recur_reverse_color(const GNode &node,
+		BoolVector &r_mark,BoolVector &c_mark){
+	if(node.type == ROW){
+		if( r_mark[node.idx] == true) return;
+		else r_mark[node.idx] = true;
+	}
+	if(node.type == COL) {
+		if( c_mark[node.idx] == true) return;
+		else c_mark[node.idx] = true;
+	}
+	COLOR origin_color = get_color(node);
+	COLOR new_color = next_color(origin_color);
+	set_color(node,new_color);
+
+	GNodeSet & l = access_list(node);
+	GNodeSet::iterator it;
+	for (it = l.begin(); it != l.end(); it++)
+		recur_reverse_color(*it,r_mark,c_mark);
+}
+
+// reverse the color of a component, which containing `node'
+void ConstraintGraph::reverse_color(const GNode &node){
+	BoolVector r_mark(row,false);
+	BoolVector c_mark(col,false);
+	recur_reverse_color(node,r_mark,c_mark);
 }
 
 // reset the color of node to G

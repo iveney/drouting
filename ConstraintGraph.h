@@ -6,6 +6,10 @@
 using std::set;
 using std::vector;
 
+class GNode;
+typedef set<GNode> GNodeSet;
+typedef vector<bool> BoolVector;
+
 enum GType{ROW,COL};
 enum COLOR{H,L,G};
 enum ADD_EDGE_RESULT{FAIL,SUCCESS,EXIST};
@@ -29,7 +33,6 @@ bool operator <(GNode u,GNode v){
 		(u.type == v.type && u.idx < v.idx);
 }
 
-typedef set<GNode> GNodeSet;
 class ConstraintGraph{ 
 public:
 	// given row number and column number, initialize the graph
@@ -50,6 +53,11 @@ public:
 	bool recur_color(const GNode & node,COLOR assign);
 	COLOR erase_color(const GNode & node);
 
+private:
+	void recur_reverse_color(const GNode &node,
+		BoolVector &r_mark,BoolVector &c_mark);
+	void reverse_color(const GNode &node);
+	void do_add_edge(const GNode &u,const GNode &v);
 	int row,col;  
 	vector< GNodeSet > r_list;
 	vector< GNodeSet > c_list;
