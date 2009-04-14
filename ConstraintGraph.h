@@ -13,6 +13,7 @@ typedef vector<bool> BoolVector;
 enum GType{ROW,COL};
 enum COLOR{H,L,G};
 enum ADD_EDGE_RESULT{FAIL,SUCCESS,EXIST};
+static const char * color_string[]={"H","L","G"};
 
 class GNode{
 public:
@@ -30,13 +31,17 @@ public:
 
 class ConstraintGraph{ 
 public:
+	friend class Router;
 	// given row number and column number, initialize the graph
-	ConstraintGraph(int r=0,int c=0):row(r),col(c),
-	r_list(vector< set<GNode> >(row)),
-	c_list(vector< set<GNode> >(col)),
+	ConstraintGraph(int r,int c):row(r),col(c),
+	r_list(vector< GNodeSet >(row)),
+	c_list(vector< GNodeSet >(col)),
 	r_color(vector<COLOR>(row,G)),
 	c_color(vector<COLOR>(col,G)){
 		// initialize all color to G
+	}
+
+	~ConstraintGraph(){
 	}
 
 	bool add_edge(const GNode &u,const GNode &v);
@@ -53,6 +58,7 @@ private:
 		BoolVector &r_mark,BoolVector &c_mark);
 	void reverse_color(const GNode &node);
 	void do_add_edge(const GNode &u,const GNode &v);
+
 	int row,col;  
 	vector< GNodeSet > r_list;
 	vector< GNodeSet > c_list;

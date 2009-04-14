@@ -1,5 +1,5 @@
 CC=/usr/bin/g++
-SRC=parser.cpp header.cpp GridPoint.cpp Router.cpp util.cpp ConstraintGraph.cpp
+SRC=parser.cpp header.cpp GridPoint.cpp Router.cpp util.cpp ConstraintGraph.cpp main.cpp
 HDR=$(SRC:.cpp=.h)
 OBJ=$(SRC:.cpp=.o)
 BIN=main
@@ -10,7 +10,7 @@ OPT=-Wall -g
 release: $(OBJ) tags
 	@echo "Making release..."
 #$(CC) $(OPT) -c $(SRC) main.cpp
-	$(CC) $(OPT) -o $(BIN) $(OBJ) main.o
+	$(CC) $(OPT) -o $(BIN) $(OBJ) 
 
 all: parser release debug
 	cp ./main ./util/
@@ -18,7 +18,7 @@ all: parser release debug
 debug: $(HDR) $(SRC)
 	@echo "Making debug..."
 	$(CC) -c -DDEBUG $(SRC) main.cpp
-	$(CC) $(OPT) -o $(DBG) $(OBJ) main.o
+	$(CC) $(OPT) -o $(DBG) $(OBJ) 
 
 parser: parser_main.cpp
 	@echo "Making parser..."

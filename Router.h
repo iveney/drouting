@@ -2,12 +2,14 @@
 #define __ROUTER_H__
 
 #include <deque>
+#include <vector>
 #include "header.h"
 #include "GridPoint.h"
 #include "heap.h"
 #include "util.h"
 #include "ConstraintGraph.h"
 using std::deque;
+using std::vector;
 
 // return value of fluidic constraint check
 enum FLUIDIC_RESULT{SAFE,VIOLATE,SAMENET,SAMEDEST};
@@ -24,7 +26,10 @@ public:
 		isConflict[net_idx] = 1;
 		order.push_back(net_idx);
 	}
-	int get_last(){return order.back();}
+	int get_last(){
+		assert( order.size() > 0 );
+		return order.back();
+	}
 	int net_num;
 	IntVector isConflict;
 	IntVector order;
@@ -66,12 +71,13 @@ class RouteResult{
 public:
 	// constructor, must use T and prob to initialize
 	RouteResult(int T_,int N_,int M_,Subproblem * subprob):
-		T(T_),N(N_),M(M_),pProb(subprob) {
-			// allocate route solution space for each net
-			for (int i = 0; i < subprob->nNet; i++) {
-				path.push_back(NetRoute(i,get_pinnum(i),T));
-			}
-			
+		T(T_),N(N_),M(M_),pProb(subprob) 
+	{
+		// allocate route solution space for each net
+		for (int i = 0; i < subprob->nNet; i++) {
+			path.push_back(NetRoute(i,get_pinnum(i),T));
+		}
+
 	}
 
 	// data members
@@ -186,7 +192,7 @@ public:
 	int netorder[MAXNET];
 	static Subproblem * pProb;
 	deque<int> nets;
-	ConstraintGraph * graph;
+	ConstraintGraph * graph[MAXTIME+1]; // each time step's graph
 
 private:
 	// sort the net according to some criteria defined in cmp_net

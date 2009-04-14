@@ -35,21 +35,30 @@ void Router::read_file(int argc, char * argv[]){
 	init();
 }
 
-// do initialization for global variables N M T
+// do initialization for global variables N M T and graph
 void Router::init(){
 	read=true;
 	N=chip.N;
 	M=chip.M;
 	T=chip.T;
+	/*
+	graph = vector<ConstraintGraph *>(T+1);
+	graph.push_back(NULL);
+	cout<<" size="<<graph.size()<<endl;
+	*/
+	for (int i = 1; i <= T ; i++) {
+		ConstraintGraph * p = new ConstraintGraph(N,M);
+		graph[i] = p;
+		//graph.push_back(p);
+		//cout<<graph[graph.size()-1]->row<<" size="<<graph.size()<<endl;
+	}
+	//cout<<graph[graph.size()-1]->row<<endl;
 }
 
 // solve subproblem `idx'
 RouteResult Router::solve_subproblem(int prob_idx){
 	if( read == false ) report_exit("Must read input first!");
 	cout<<"--- Solving subproblem ["<<prob_idx<<"] ---"<<endl;
-
-	// initialize constraint graph
-	graph = new ConstraintGraph(N,M);
 	
 	pProb = &chip.prob[prob_idx];
 	netcount = pProb->nNet;
@@ -84,17 +93,21 @@ RouteResult Router::solve_subproblem(int prob_idx){
 	output_result(result);
 
 	// release graph
-	delete graph;
+	for (int i = 1; i <= T; i++) {
+		//cout<<"deleting .."<<i<<endl;
+		delete graph[i];
+	}
 
 	return result ;
 }
 
 void Router::output_result(const RouteResult & result){
+	int i,j;
 	// for each net
-	for (int i = 0; i < netcount; i++) {
+	for (i = 0; i < netcount; i++) {
 		const NetRoute & net_path = result.path[i];
 		// for each subnet in a net
-		for (int j = 0; j < net_path.num_pin-1; j++) {
+		for (j = 0; j < net_path.num_pin-1; j++) {
 			cout<<"net["<<i<<"]:"<<this->T<<endl;
 			const PtVector & route = net_path.pin_route[j];
 			// output each time step
@@ -103,6 +116,26 @@ void Router::output_result(const RouteResult & result){
 				<<route[k]<<endl;
 			}
 		}
+	}
+	// output the voltage assignment
+	for (i = 1; i <= T; i++) {
+		cout<<"[t = "<<i<<"]"<<endl;
+		ConstraintGraph * p_graph = graph[i];
+		cout<<"ROW:"<<"\t";
+		// NOTE: should clarify N is row or col
+		for (j = 0; j < N; j++) {
+			COLOR clr = p_graph->r_color[j];
+			if(clr==G) continue;
+			cout<<"("<<j<<"="<<color_string[clr]<<") ";
+		}
+
+		cout<<endl<<"COL:"<<"\t";
+		for (j = 0; j < M; j++) {
+			COLOR clr = p_graph->c_color[j];
+			if(clr==G) continue;
+			cout<<"("<<j<<"="<<color_string[clr]<<") ";
+		}
+		cout<<endl;
 	}
 }
 
@@ -486,13 +519,16 @@ bool Router::electrode_check(int which, int pin_idx,
 		const Point & pt,int t,
 		const RouteResult & result,
 		ConflictSet & conflict_net){
+	if( t == 0 ) return true; // no need to do at time t=0
+
 	// IMPORTANT: what if the droplet STAYs at time=t?
 	
 	// construct the graph from the current configuration
+	ConstraintGraph * p_graph = graph[t];
 	GNode add_x,add_y;
 	add_x.set(COL,pt.x); // x is column
 	add_y.set(ROW,pt.y); // y is row
-	ADD_EDGE_RESULT add_result = graph->add_edge_color(add_x,add_y);
+	ADD_EDGE_RESULT add_result = p_graph->add_edge_color(add_x,add_y);
 	if( add_result == FAIL )
 		return false;
 
@@ -509,35 +545,35 @@ bool Router::electrode_check(int which, int pin_idx,
 			DIRECTION dir = pt_relative_pos(pin[t-1],pin[t]);
 			// note that if the droplet stays, pin[t] will not be 
 			// activated at time=t, NO need to add constraint
-			// if(dir == STAY) continue;
 			// IMPORTANT: what if the droplet STAYs at time=t?
+			if(dir == STAY) continue;
 			GNode ndx,ndy;
 			switch(dir){
 			case LEFT:
 				if( pt.x-2 == pin[t].x ) {
 					ndx.set(COL,pt.x-2);
-					if( graph->add_edge_color(add_x,ndx) == FAIL ) 
+					if( p_graph->add_edge_color(add_x,ndx) == FAIL ) 
 						return false;
 				}
 				break;
 			case RIGHT:
 				if( pt.x+2 == pin[t].x ) {
 					ndx.set(COL,pt.x-2);
-					if( graph->add_edge_color(add_x,ndx) == FAIL ) 
+					if( p_graph->add_edge_color(add_x,ndx) == FAIL ) 
 						return false;
 				}
 				break;
 			case DOWN:
 				if( pt.y-2 == pin[t].y ) {
 					ndy.set(COL,pt.y-2);
-					if( graph->add_edge_color(add_y,ndy) == FAIL ) 
+					if( p_graph->add_edge_color(add_y,ndy) == FAIL ) 
 						return false;
 				}
 				break;
 			case UP:
 				if( pt.y+2 == pin[t].y ) {
 					ndy.set(COL,pt.y+2);
-					if( graph->add_edge_color(add_y,ndy) == FAIL ) 
+					if( p_graph->add_edge_color(add_y,ndy) == FAIL ) 
 						return false;
 				}
 				break;
@@ -546,23 +582,23 @@ bool Router::electrode_check(int which, int pin_idx,
 			// check for y-1,y+1
 			if( pt.y-1 == pin[t].y ) {
 				ndy.set(ROW,pt.y-1);
-				if( graph->add_edge_color(add_y,ndy) == FAIL ) 
+				if( p_graph->add_edge_color(add_y,ndy) == FAIL ) 
 					return false;
 			}
 			else if( pt.y+1 == pin[t].y ){
 				ndy.set(ROW,pt.y+1);
-				if( graph->add_edge_color(add_y,ndy) == FAIL ) 
+				if( p_graph->add_edge_color(add_y,ndy) == FAIL ) 
 					return false;
 			}
 			// check for x-1,x+1
 			if( pt.x-1 == pin[t].x ){
 				ndx.set(COL,pt.x-1);
-				if( graph->add_edge_color(add_x,ndx) == FAIL ) 
+				if( p_graph->add_edge_color(add_x,ndx) == FAIL ) 
 					return false;
 			}
 			else if( pt.x+1 == pin[t].x ){
 				ndx.set(COL,pt.x+1);
-				if( graph->add_edge_color(add_x,ndx) == FAIL ) 
+				if( p_graph->add_edge_color(add_x,ndx) == FAIL ) 
 					return false;
 			}
 			
