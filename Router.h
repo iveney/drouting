@@ -186,7 +186,7 @@ public:
 	int netorder[MAXNET];
 	static Subproblem * pProb;
 	deque<int> nets;
-	ConstraintGraph graph;
+	ConstraintGraph * graph;
 
 private:
 	// sort the net according to some criteria defined in cmp_net

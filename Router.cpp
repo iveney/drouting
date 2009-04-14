@@ -49,7 +49,7 @@ RouteResult Router::solve_subproblem(int prob_idx){
 	cout<<"--- Solving subproblem ["<<prob_idx<<"] ---"<<endl;
 
 	// initialize constraint graph
-	graph = ConstraintGraph(N,M);
+	graph = new ConstraintGraph(N,M);
 	
 	pProb = &chip.prob[prob_idx];
 	netcount = pProb->nNet;
@@ -82,6 +82,9 @@ RouteResult Router::solve_subproblem(int prob_idx){
 	// finally, output result
 	cout<<"Subproblem "<<prob_idx<<" solved!"<<endl;
 	output_result(result);
+
+	// release graph
+	delete graph;
 
 	return result ;
 }
@@ -405,7 +408,7 @@ void Router::backtrack(int which,int pin_idx,GridPoint *current,
 	}
 
 	// output result
-	output_result(result);
+	//output_result(result);
 }
 
 // just print out what is in the heap
@@ -489,7 +492,7 @@ bool Router::electrode_check(int which, int pin_idx,
 	GNode add_x,add_y;
 	add_x.set(COL,pt.x); // x is column
 	add_y.set(ROW,pt.y); // y is row
-	ADD_EDGE_RESULT add_result = graph.add_edge_color(add_x,add_y);
+	ADD_EDGE_RESULT add_result = graph->add_edge_color(add_x,add_y);
 	if( add_result == FAIL )
 		return false;
 
@@ -513,28 +516,28 @@ bool Router::electrode_check(int which, int pin_idx,
 			case LEFT:
 				if( pt.x-2 == pin[t].x ) {
 					ndx.set(COL,pt.x-2);
-					if( graph.add_edge_color(add_x,ndx) == FAIL ) 
+					if( graph->add_edge_color(add_x,ndx) == FAIL ) 
 						return false;
 				}
 				break;
 			case RIGHT:
 				if( pt.x+2 == pin[t].x ) {
 					ndx.set(COL,pt.x-2);
-					if( graph.add_edge_color(add_x,ndx) == FAIL ) 
+					if( graph->add_edge_color(add_x,ndx) == FAIL ) 
 						return false;
 				}
 				break;
 			case DOWN:
 				if( pt.y-2 == pin[t].y ) {
 					ndy.set(COL,pt.y-2);
-					if( graph.add_edge_color(add_y,ndy) == FAIL ) 
+					if( graph->add_edge_color(add_y,ndy) == FAIL ) 
 						return false;
 				}
 				break;
 			case UP:
 				if( pt.y+2 == pin[t].y ) {
 					ndy.set(COL,pt.y+2);
-					if( graph.add_edge_color(add_y,ndy) == FAIL ) 
+					if( graph->add_edge_color(add_y,ndy) == FAIL ) 
 						return false;
 				}
 				break;
@@ -543,23 +546,23 @@ bool Router::electrode_check(int which, int pin_idx,
 			// check for y-1,y+1
 			if( pt.y-1 == pin[t].y ) {
 				ndy.set(ROW,pt.y-1);
-				if( graph.add_edge_color(add_y,ndy) == FAIL ) 
+				if( graph->add_edge_color(add_y,ndy) == FAIL ) 
 					return false;
 			}
 			else if( pt.y+1 == pin[t].y ){
 				ndy.set(ROW,pt.y+1);
-				if( graph.add_edge_color(add_y,ndy) == FAIL ) 
+				if( graph->add_edge_color(add_y,ndy) == FAIL ) 
 					return false;
 			}
 			// check for x-1,x+1
 			if( pt.x-1 == pin[t].x ){
 				ndx.set(COL,pt.x-1);
-				if( graph.add_edge_color(add_x,ndx) == FAIL ) 
+				if( graph->add_edge_color(add_x,ndx) == FAIL ) 
 					return false;
 			}
 			else if( pt.x+1 == pin[t].x ){
 				ndx.set(COL,pt.x+1);
-				if( graph.add_edge_color(add_x,ndx) == FAIL ) 
+				if( graph->add_edge_color(add_x,ndx) == FAIL ) 
 					return false;
 			}
 			

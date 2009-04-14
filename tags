@@ -206,7 +206,7 @@ Router::fluidic_check	Router.cpp	/^FLUIDIC_RESULT Router::fluidic_check(int whic
 Router::fluidic_check	Router.h	/^	FLUIDIC_RESULT fluidic_check(int which, int pin_idx,$/;"	p	class:Router	access:public	signature:(int which, int pin_idx, const Point & pt,int t, const RouteResult & result, ConflictSet & conflict_net)
 Router::get_neighbour	Router.cpp	/^PtVector Router::get_neighbour(const Point & pt){$/;"	f	class:Router	signature:(const Point & pt)
 Router::get_neighbour	Router.h	/^	PtVector get_neighbour(const Point & pt);$/;"	p	class:Router	access:public	signature:(const Point & pt)
-Router::graph	Router.h	/^	ConstraintGraph graph;$/;"	m	class:Router	access:public
+Router::graph	Router.h	/^	ConstraintGraph * graph;$/;"	m	class:Router	access:public
 Router::in_grid	Router.cpp	/^bool Router::in_grid(const Point & pt){$/;"	f	class:Router	signature:(const Point & pt)
 Router::in_grid	Router.h	/^	bool in_grid(const Point & pt);$/;"	p	class:Router	access:public	signature:(const Point & pt)
 Router::init	Router.cpp	/^void Router::init(){$/;"	f	class:Router	signature:()
@@ -320,7 +320,7 @@ dx	Router.cpp	/^int dx[]={-1,1,0,0,0};$/;"	v
 dx	route.cpp	/^int dx[]={-1,1,0,0,0};$/;"	v
 dy	Router.cpp	/^int dy[]={0,0,1,-1,0};$/;"	v
 dy	route.cpp	/^int dy[]={0,0,1,-1,0};$/;"	v
-dynamic_violate	Router.cpp	579;"	d	file:
+dynamic_violate	Router.cpp	582;"	d	file:
 electro	GridPoint.h	/^	int electro;$/;"	m	class:GridPoint	access:public
 electrodeCheck	route.cpp	/^bool electrodeCheck(const Point & pt){$/;"	f	signature:(const Point & pt)
 electrodeCheck	route.h	/^bool electrodeCheck(const Point & pt);$/;"	p	signature:(const Point & pt)
@@ -339,7 +339,7 @@ fluidicCheck	route.cpp	/^int fluidicCheck(int which, const Point & pt,int t){$/;
 fluidicCheck	route.h	/^int fluidicCheck(int which, const Point & pt,int t);$/;"	p	signature:(int which, const Point & pt,int t)
 fluidic_check	Router.cpp	/^FLUIDIC_RESULT Router::fluidic_check(int which,int pin_idx,$/;"	f	class:Router	signature:(int which,int pin_idx, const Point & pt,int t, const RouteResult & result,ConflictSet & conflict_net)
 fluidic_check	Router.h	/^	FLUIDIC_RESULT fluidic_check(int which, int pin_idx,$/;"	p	class:Router	access:public	signature:(int which, int pin_idx, const Point & pt,int t, const RouteResult & result, ConflictSet & conflict_net)
-fluidic_violate	Router.cpp	574;"	d	file:
+fluidic_violate	Router.cpp	577;"	d	file:
 free	heap.cpp	/^void heap<T,Container,Compare>::free(){$/;"	f	class:heap	signature:()
 free	heap.h	/^	static void free();$/;"	p	class:heap	access:public	signature:()
 getColor	parser.cpp	/^const char * getColor(){$/;"	f	signature:()
@@ -359,7 +359,7 @@ get_order	heap.cpp	/^void heap<T,Container,Compare>::get_order(const T &x){$/;"	
 get_order	heap.h	/^	static void get_order(const T &x);$/;"	p	class:heap	access:public	signature:(const T &x)
 get_pinnum	Router.h	60;"	d
 get_pinpt	Router.h	61;"	d
-graph	Router.h	/^	ConstraintGraph graph;$/;"	m	class:Router	access:public
+graph	Router.h	/^	ConstraintGraph * graph;$/;"	m	class:Router	access:public
 has_edge	ConstraintGraph.cpp	/^bool ConstraintGraph::has_edge(const GNode &u,const GNode &v){$/;"	f	class:ConstraintGraph	signature:(const GNode &u,const GNode &v)
 has_edge	ConstraintGraph.h	/^	bool has_edge(const GNode &u,const GNode &v);$/;"	p	class:ConstraintGraph	access:public	signature:(const GNode &u,const GNode &v)
 heap	heap.cpp	/^heap<T,Container,Compare>::heap(){}$/;"	f	class:heap	signature:()
@@ -532,7 +532,7 @@ sortNet	route.h	/^void sortNet(Subproblem * p, int * netorder);$/;"	p	signature:
 sort_net	Router.cpp	/^void Router::sort_net(Subproblem *pProb, int * netorder){$/;"	f	class:Router	signature:(Subproblem *pProb, int * netorder)
 sort_net	Router.h	/^	void sort_net(Subproblem *pProb, int * netorder);$/;"	p	class:Router	access:private	signature:(Subproblem *pProb, int * netorder)
 stalling	GridPoint.h	/^	int stalling;$/;"	m	class:GridPoint	access:public
-static_violate	Router.cpp	577;"	d	file:
+static_violate	Router.cpp	580;"	d	file:
 store	heap.cpp	/^void heap<T,Container,Compare>::store(const T &x) {$/;"	f	class:heap	signature:(const T &x)
 store	heap.h	/^	static void store(const T &x); $/;"	p	class:heap	access:public	signature:(const T &x)
 string_heap	test_heap.cpp	/^typedef heap<string*,vector<string*> > string_heap;$/;"	t	file:
