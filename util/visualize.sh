@@ -34,7 +34,7 @@ fi
 FILE=$1
 SUBPROB=$2
 OUTPUT="${FILE}_r${SUBPROB}.tex"
-MAIN=./main       # use to get the routing result
+MAIN=./main.3pin       # use to get the routing result
 PARSER=./parser   # use to parse the conrresponding problem and convert to tex
 
 ###########################################################################

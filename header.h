@@ -29,6 +29,7 @@ const int FLUID_PENALTY=20;
 const int ELECT_PENALTY=20;
 //const int STALL_PENALTY=20;
 const int STALL_PENALTY=0;
+const int MAXHEAPSIZE=2<<20;
 enum CORNER{LL,UR};
 
 class Point{// a point denote by (row,col)
@@ -68,6 +69,7 @@ struct Chip{// a chip has an array, timing constraint and subproblems
 	int N,M,T;	// array size,timing constraint
 	int time;
 	int nSubProblem;
+	Point WAT;
 	Subproblem prob[MAXSUB];// note:prob starts from index 1
 };
 

@@ -3,6 +3,7 @@
 
 #include <deque>
 #include <vector>
+#include <cassert>
 #include "header.h"
 #include "GridPoint.h"
 #include "heap.h"
@@ -13,6 +14,7 @@ using std::vector;
 
 // return value of fluidic constraint check
 enum FLUIDIC_RESULT{SAFE,VIOLATE,SAMENET,SAMEDEST};
+enum FUNCTION_PLACE{FREE,BLOCK,WASTE};
 
 // implements simple set function
 // keeps the ORDER of element insertion
@@ -209,7 +211,7 @@ private:
 	void output_netinfo(Net *pNet);
 
 	// init blockage bitmap for use
-	void init_block(Subproblem *p);
+	void init_place(Subproblem *p);
 
 };
 

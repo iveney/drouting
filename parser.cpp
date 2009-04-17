@@ -31,6 +31,7 @@ Chip * parse(FILE * f,Chip * chip){
 	fscanf(f,"ARRAY: %d %d\n",&chip->N,&chip->M);
 	fscanf(f,"TIME: %d\n",&chip->time);
 	fscanf(f,"TIMECONSTRAINT: %d\n",&chip->T);
+	fscanf(f,"WAT: %d %d\n",&(chip->WAT.x),&(chip->WAT.y));
 	fscanf(f,"NUMSUBPROBLEMS: %d\n",&chip->nSubProblem);
 	int i,j,k,temp;
 	// scan for each subproblem, index start from 1

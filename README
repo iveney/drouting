@@ -1,7 +1,24 @@
+SUMMARY of questions that need to handle:
+**When doing rip-up and re-route, should also remove the voltage assignment
+**3-pin net testing(merging),check how utexas handle
+**stalling problem of coloring
+**waste disposal checking
+
+2009年 04月 17日 星期五 17:07:23 CST
+NOTE: when a droplet 
+1.stalling
+2.reaches destination and stop there, 
+no need to add voltage assignment on that time step( i.e. coloring )
+
+-----------------------------------------------------------------------------------------------
 2009年 04月 13日 星期一 20:36:14 CST
 IMPORTANT:
 how to treat the waste disposal?
 seems that they should be queued in, but after reaches at t+1, can disappear at t+1
+
+IMPORTANT NOTE: according to utexas input, they specify the waste disposal point in the case
+
+now I added those points into the test case file
 -----------------------------------------------------------------------------------------------
 
 Fri Apr 10 10:59:58 HKT 2009
@@ -9,6 +26,7 @@ IMPORTANT:
 for multipin net/same dest net
 if they can merge earlier, than it can potentially decreases conflict(since droplet number
 is decreased)
+But we do not know if use this method would increase conflict rate or note before they merge!
 
 how to do?
 my idea: build MRST, calculate merge point, then route to there, and do post processing 
@@ -52,7 +70,7 @@ Tue Apr  7 13:51:16 HKT 2009
 * How to terminate a net-routing if it take too long a time?
 
 Evan's Idea:
-1. delete electro/fluidic constraint, when encounter such a case, just do not put into heap
+1. delete electro/fluidic penalty, when encounter such a case, just do not put into heap
 2. stalling problem. whether to add stall at each step or add it when no grid to go?
 3. how to avoid propagating the same cell(is it matter when GridPoint has a same pt,but different time? or same time)
 4. think about how to use 2-coloring

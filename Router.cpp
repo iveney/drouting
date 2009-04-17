@@ -41,6 +41,7 @@ void Router::init(){
 	N=chip.N;
 	M=chip.M;
 	T=chip.T;
+	// generate a series of time frame to store the voltage assignment
 	for (int i = 1; i <= T ; i++) {
 		ConstraintGraph * p = new ConstraintGraph(N,M);
 		graph[i] = p;
@@ -58,7 +59,7 @@ RouteResult Router::solve_subproblem(int prob_idx){
 	output_netorder(netorder,netcount);
 
 	// generate blockage bitmap
-	init_block(pProb);
+	init_place(pProb);
 
 	// the result to return
 	RouteResult result(this->T,this->M,this->N,this->pProb);
@@ -71,8 +72,6 @@ RouteResult Router::solve_subproblem(int prob_idx){
 		int which = nets.front();
 		nets.pop_front();
 		bool success = route_net(which,result);
-		// IMPORTANT: the return value of route_net here.
-		// how to model the return ?
 		if( success == false ){
 			// first net can not be routed means fail
 			report_exit("Error: route failed!");
@@ -131,15 +130,16 @@ void Router::output_result(const RouteResult & result){
 	}
 }
 
-void Router::init_block(Subproblem *p){
+// mark the block location as 1
+void Router::init_place(Subproblem *p){
 	assert( p != NULL );
-	memset(blockage,0,sizeof(blockage));
+	memset(blockage,FREE,sizeof(blockage));
 	int i,x,y;
 	for(i=0;i<p->nBlock;i++) {
 		Block b = p->block[i];
 		for(x=b.pt[0].x;x<=b.pt[1].x;x++)
 			for(y=b.pt[0].y;y<=b.pt[1].y;y++)
-				blockage[x][y]=1;
+				blockage[x][y]=BLOCK;
 	}
 }
 
@@ -170,6 +170,8 @@ bool Router::route_subnet(Point src,Point dst,
 	bool success = false;  // mark if this net is routed successfully
 	FLUIDIC_RESULT fluid_result;
 	while( !p.empty() ){
+		if( p.size() > MAXHEAPSIZE )
+			report_exit("Heap exceed!");
 		// get wave_front and propagate its neighbour
 		//p.sort();
 #ifdef DEBUG
@@ -227,8 +229,6 @@ bool Router::route_subnet(Point src,Point dst,
 		}
 
 		// stall at the same position, stall for 1 time step
-		// NOTE: also need to check fluidic constraint here
-		// may block routed net's path
 		GridPoint *same = new GridPoint( current->pt,
 				current, t,current->bend,  
 				current->fluidic, current->electro, 
@@ -321,9 +321,7 @@ int Router::ripup_reroute(int which,RouteResult & result,
 	result.path[last].clear(); // cancel the routed path
 
 	// re-push into queue: re route `last'
-	// IMPORTANT: since we are routing `which', do not push again!
 	nets.push_front(last);
-	//nets.push_front(which);
 
 	// re-order route order
 	IntVector temp(netorder,netorder+netcount);
@@ -355,7 +353,7 @@ void Router::propagate_nbrs(int which, int pin_idx,GridPoint * current,
 		// 2.check if there is blockage 
 		// 3.forbid circular move (1->2...->1)
 		if( nbr[i] == current->pt ) continue;
-		if( blockage[x][y] ) continue;
+		if( blockage[x][y] == BLOCK ) continue;
 		if( (par_par != NULL) && 
 		    (nbr[i] == par_par->pt) )
 			continue;
@@ -415,22 +413,34 @@ void Router::backtrack(int which,int pin_idx,GridPoint *current,
 	//
 	PtVector & pin_path = result.path[which].pin_route[pin_idx];
 	Point dst = current->pt;
-	while( current != NULL ){
-		//cout<<"\t"<<current->time<<":"<<current->pt<<endl;
+	while( current != NULL ){// trace back from dest to src
 		pin_path.insert(pin_path.begin(),current->pt);
+		// we need to update all the coloring status 
+		// for every time step until it reaches the dest, 
+		// however, do not add the stalling frame!
+		if( current->parent == NULL ) break;
+		DIRECTION dir = pt_relative_pos(current->parent->pt,
+				current->pt);
+		if( dir != STAY ){
+			int t = current->time;
+			ConstraintGraph * p_graph = graph[t];
+			GNode add_x(COL,current->pt.x),
+			      add_y(ROW,current->pt.y);
+			p_graph->add_edge_color(add_x,add_y);
+		}
 		current = current->parent;
 	}
 
 	// IMPORATANT: for waste disposal point
-	// Do not need to generate STAY result
+	// DO NOT need to generate STAY result
+	// e.g. reaches at t=13, then disppear from t=14
+	if( dst == chip.WAT ) return;
 
-	// note that some droplet may reach the destination early than the
+	// NOTE: that some droplet may reach the destination earlier than the
 	// timing constraint. fill all later time with its final position
 	for(int i=pin_path.size();i<=this->T;i++){
 		pin_path.push_back(dst); // dst is destination pt here
 	}
-
-	// also we need to update all the coloring status for every time step
 
 	// output result
 	//output_result(result);
@@ -562,7 +572,7 @@ bool Router::electrode_check(int which, int pin_idx,
 			case DOWN:
 				if( pt.y-2 == pin[t].y ) {
 					ndy.set(COL,pt.y-2);
-					if( temp.dd_edge_color(add_y,ndy) == FAIL ) 
+					if( temp.add_edge_color(add_y,ndy) == FAIL ) 
 						return false;
 				}
 				break;
@@ -627,8 +637,9 @@ FLUIDIC_RESULT Router::fluidic_check(int which,int pin_idx,
 	// for all the net routed before which
 	for(int i=0;i<netcount && netorder[i]!=which;i++){
 		int checking_idx = netorder[i];
-		if( net_same_dest(which,checking_idx) ) 
-			return SAMEDEST;
+		// NOTE: if two nets have same dest, they are going to
+		// the waste disposal point
+		//if( net_same_dest(which,checking_idx) ) return SAMEDEST;
 		const NetRoute & route = result.path[checking_idx];
 		// for each subnet
 		for (int j = 0; j < route.num_pin-1; j++) {
@@ -647,12 +658,6 @@ FLUIDIC_RESULT Router::fluidic_check(int which,int pin_idx,
 			// the second 1 will have two direction to go
 			// but both 1 belong to the same net!!
 			//if ( !(abs(pt.x - path[t-1].x) >=2 || abs(pt.y - path[t-1].y) >=2) ){
-			/*
-			if(){
-				conflict_net.insert(checking_idx);
-				return VIOLATE;
-			}
-			*/
 		} // end of for j
 	} // end of for i
 
@@ -662,7 +667,7 @@ FLUIDIC_RESULT Router::fluidic_check(int which,int pin_idx,
 	for (int j = 0; j < route.num_pin-1 && j!= pin_idx; j++) {
 		const PtVector & path = route.pin_route[j];
 		if( static_violate(pt,t) || dynamic_violate(pt,t) ){
-			return SAMENET;
+			return SAMENET;  // they should merge
 		}
 	}
 	return SAFE;

@@ -51,13 +51,13 @@ ADD_EDGE_RESULT ConstraintGraph::add_edge_color(const GNode &u,const GNode &v){
 	
 	if( lu.empty() ){// node u standalone
 		do_add_edge(u,v); // safely add edge
-		if( lv.empty() ){ // G,G: color them
+		if( vcolor == G ){ // G,G: color them
 			recur_color(u,H);
 		}
 		else if( vcolor == H ){// G,H: color u to L
 			set_color(u,L);
 		}
-		else{// vcolor == L
+		else{// G,L: color u to H
 			set_color(u,H);
 		}
 		return SUCCESS;
@@ -81,7 +81,7 @@ ADD_EDGE_RESULT ConstraintGraph::add_edge_color(const GNode &u,const GNode &v){
 			return SUCCESS;
 		}
 		// H-H or L-L
-		// IMPORTANT: not possible in the same component
+		// NOTE: not possible in the same component
 		// it might be that by swapping the value
 		// of one connected component, we can do 2-coloring
 		ConstraintGraph bak(*this); // make backup
@@ -170,7 +170,8 @@ bool ConstraintGraph::recur_color(const GNode &node,COLOR to_assign){
 	else if( cur_color != G ) 
 		return false;// has colored to different color
 
-	// it is G, color all its neighbours
+	// it is G, color it, and all its neighbours
+	set_color(node,to_assign);
 	
 	GNodeSet & l = access_list(node);
 	COLOR adj_color = next_color(to_assign);

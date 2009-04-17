@@ -8,6 +8,7 @@ ABS	header.h	11;"	d
 ADD_EDGE_RESULT	ConstraintGraph.h	/^enum ADD_EDGE_RESULT{FAIL,SUCCESS,EXIST};$/;"	g
 AT	util.h	10;"	d
 BIN	Makefile	/^BIN=main$/;"	m
+BLOCK	Router.h	/^enum FUNCTION_PLACE{FREE,BLOCK,WASTE};$/;"	e	enum:FUNCTION_PLACE
 BYTE	header.h	/^typedef unsigned char BYTE ;$/;"	t
 Block	header.h	/^struct Block{\/\/ a block denote by two points$/;"	s
 Block::name	header.h	/^	char name[MAXSTR];$/;"	m	struct:Block	access:public
@@ -21,6 +22,7 @@ Chip	header.h	/^struct Chip{\/\/ a chip has an array, timing constraint and subp
 Chip::M	header.h	/^	int N,M,T;	\/\/ array size,timing constraint$/;"	m	struct:Chip	access:public
 Chip::N	header.h	/^	int N,M,T;	\/\/ array size,timing constraint$/;"	m	struct:Chip	access:public
 Chip::T	header.h	/^	int N,M,T;	\/\/ array size,timing constraint$/;"	m	struct:Chip	access:public
+Chip::WAT	header.h	/^	Point WAT;$/;"	m	struct:Chip	access:public
 Chip::nSubProblem	header.h	/^	int nSubProblem;$/;"	m	struct:Chip	access:public
 Chip::prob	header.h	/^	Subproblem prob[MAXSUB];\/\/ note:prob starts from index 1$/;"	m	struct:Chip	access:public
 Chip::time	header.h	/^	int time;$/;"	m	struct:Chip	access:public
@@ -75,6 +77,8 @@ EXIST	ConstraintGraph.h	/^enum ADD_EDGE_RESULT{FAIL,SUCCESS,EXIST};$/;"	e	enum:A
 FAIL	ConstraintGraph.h	/^enum ADD_EDGE_RESULT{FAIL,SUCCESS,EXIST};$/;"	e	enum:ADD_EDGE_RESULT
 FLUIDIC_RESULT	Router.h	/^enum FLUIDIC_RESULT{SAFE,VIOLATE,SAMENET,SAMEDEST};$/;"	g
 FLUID_PENALTY	header.h	/^const int FLUID_PENALTY=20;$/;"	v
+FREE	Router.h	/^enum FUNCTION_PLACE{FREE,BLOCK,WASTE};$/;"	e	enum:FUNCTION_PLACE
+FUNCTION_PLACE	Router.h	/^enum FUNCTION_PLACE{FREE,BLOCK,WASTE};$/;"	g
 G	ConstraintGraph.h	/^enum COLOR{H,L,G};$/;"	e	enum:COLOR
 GNode	ConstraintGraph.h	/^	GNode(){}$/;"	f	class:GNode	access:public	signature:()
 GNode	ConstraintGraph.h	/^	GNode(GType t,int index):type(t),idx(index){}$/;"	f	class:GNode	access:public	signature:(GType t,int index)
@@ -133,6 +137,7 @@ MAX	header.h	13;"	d
 MAXBLK	header.h	/^const int MAXBLK=10;$/;"	v
 MAXBUF	header.h	/^const int MAXBUF=256;$/;"	v
 MAXGRID	header.h	/^const int MAXGRID=30;$/;"	v
+MAXHEAPSIZE	header.h	/^const int MAXHEAPSIZE=2<<20;$/;"	v
 MAXNET	header.h	/^const int MAXNET=10;$/;"	v
 MAXPIN	header.h	/^const int MAXPIN=3;$/;"	v
 MAXSTR	header.h	/^const int MAXSTR=30;$/;"	v
@@ -212,8 +217,8 @@ Router::in_grid	Router.cpp	/^bool Router::in_grid(const Point & pt){$/;"	f	class
 Router::in_grid	Router.h	/^	bool in_grid(const Point & pt);$/;"	p	class:Router	access:public	signature:(const Point & pt)
 Router::init	Router.cpp	/^void Router::init(){$/;"	f	class:Router	signature:()
 Router::init	Router.h	/^	void init();$/;"	p	class:Router	access:public	signature:()
-Router::init_block	Router.cpp	/^void Router::init_block(Subproblem *p){$/;"	f	class:Router	signature:(Subproblem *p)
-Router::init_block	Router.h	/^	void init_block(Subproblem *p);$/;"	p	class:Router	access:private	signature:(Subproblem *p)
+Router::init_place	Router.cpp	/^void Router::init_place(Subproblem *p){$/;"	f	class:Router	signature:(Subproblem *p)
+Router::init_place	Router.h	/^	void init_place(Subproblem *p);$/;"	p	class:Router	access:private	signature:(Subproblem *p)
 Router::netcount	Router.h	/^	int netcount;$/;"	m	class:Router	access:public
 Router::netorder	Router.h	/^	int netorder[MAXNET];$/;"	m	class:Router	access:public
 Router::nets	Router.h	/^	deque<int> nets;$/;"	m	class:Router	access:public
@@ -252,7 +257,7 @@ Router::~Router	Router.h	/^	~Router(){}$/;"	f	class:Router	access:public	signatu
 SAFE	Router.h	/^enum FLUIDIC_RESULT{SAFE,VIOLATE,SAMENET,SAMEDEST};$/;"	e	enum:FLUIDIC_RESULT
 SAMEDEST	Router.h	/^enum FLUIDIC_RESULT{SAFE,VIOLATE,SAMENET,SAMEDEST};$/;"	e	enum:FLUIDIC_RESULT
 SAMENET	Router.h	/^enum FLUIDIC_RESULT{SAFE,VIOLATE,SAMENET,SAMEDEST};$/;"	e	enum:FLUIDIC_RESULT
-SRC	Makefile	/^SRC=parser.cpp header.cpp GridPoint.cpp Router.cpp util.cpp ConstraintGraph.cpp main.cpp$/;"	m
+SRC	Makefile	/^SRC=parser.cpp header.cpp GridPoint.cpp Router.cpp util.cpp ConstraintGraph.cpp $/;"	m
 STALL_PENALTY	header.h	/^const int STALL_PENALTY=0;$/;"	v
 STAY	route.h	/^enum DIRECTION{LEFT,RIGHT,UP,DOWN,STAY}; \/\/ LEFT, RIGHT, UP, DOWN$/;"	e	enum:DIRECTION
 STAY	util.h	/^enum DIRECTION{LEFT,RIGHT,UP,DOWN,STAY}; \/\/ LEFT, RIGHT, UP, DOWN$/;"	e	enum:DIRECTION
@@ -271,6 +276,8 @@ UP	route.h	/^enum DIRECTION{LEFT,RIGHT,UP,DOWN,STAY}; \/\/ LEFT, RIGHT, UP, DOWN
 UP	util.h	/^enum DIRECTION{LEFT,RIGHT,UP,DOWN,STAY}; \/\/ LEFT, RIGHT, UP, DOWN$/;"	e	enum:DIRECTION
 UR	header.h	/^enum CORNER{LL,UR};$/;"	e	enum:CORNER
 VIOLATE	Router.h	/^enum FLUIDIC_RESULT{SAFE,VIOLATE,SAMENET,SAMEDEST};$/;"	e	enum:FLUIDIC_RESULT
+WASTE	Router.h	/^enum FUNCTION_PLACE{FREE,BLOCK,WASTE};$/;"	e	enum:FUNCTION_PLACE
+WAT	header.h	/^	Point WAT;$/;"	m	struct:Chip	access:public
 __CONSTRAINT_GRAPH__	ConstraintGraph.h	2;"	d
 __GRIDPOINT_H__	GridPoint.h	2;"	d
 __HEADER_H__	header.h	2;"	d
@@ -322,7 +329,7 @@ dx	Router.cpp	/^int dx[]={-1,1,0,0,0};$/;"	v
 dx	route.cpp	/^int dx[]={-1,1,0,0,0};$/;"	v
 dy	Router.cpp	/^int dy[]={0,0,1,-1,0};$/;"	v
 dy	route.cpp	/^int dy[]={0,0,1,-1,0};$/;"	v
-dynamic_violate	Router.cpp	605;"	d	file:
+dynamic_violate	Router.cpp	626;"	d	file:
 electro	GridPoint.h	/^	int electro;$/;"	m	class:GridPoint	access:public
 electrodeCheck	route.cpp	/^bool electrodeCheck(const Point & pt){$/;"	f	signature:(const Point & pt)
 electrodeCheck	route.h	/^bool electrodeCheck(const Point & pt);$/;"	p	signature:(const Point & pt)
@@ -341,7 +348,7 @@ fluidicCheck	route.cpp	/^int fluidicCheck(int which, const Point & pt,int t){$/;
 fluidicCheck	route.h	/^int fluidicCheck(int which, const Point & pt,int t);$/;"	p	signature:(int which, const Point & pt,int t)
 fluidic_check	Router.cpp	/^FLUIDIC_RESULT Router::fluidic_check(int which,int pin_idx,$/;"	f	class:Router	signature:(int which,int pin_idx, const Point & pt,int t, const RouteResult & result,ConflictSet & conflict_net)
 fluidic_check	Router.h	/^	FLUIDIC_RESULT fluidic_check(int which, int pin_idx,$/;"	p	class:Router	access:public	signature:(int which, int pin_idx, const Point & pt,int t, const RouteResult & result, ConflictSet & conflict_net)
-fluidic_violate	Router.cpp	600;"	d	file:
+fluidic_violate	Router.cpp	621;"	d	file:
 free	heap.cpp	/^void heap<T,Container,Compare>::free(){$/;"	f	class:heap	signature:()
 free	heap.h	/^	static void free();$/;"	p	class:heap	access:public	signature:()
 getColor	parser.cpp	/^const char * getColor(){$/;"	f	signature:()
@@ -356,11 +363,11 @@ get_last	Router.h	/^	int get_last(){$/;"	f	class:ConflictSet	access:public	signa
 get_neighbour	Router.cpp	/^PtVector Router::get_neighbour(const Point & pt){$/;"	f	class:Router	signature:(const Point & pt)
 get_neighbour	Router.h	/^	PtVector get_neighbour(const Point & pt);$/;"	p	class:Router	access:public	signature:(const Point & pt)
 get_neighbour	util.h	/^PtVector get_neighbour(const Point & pt);$/;"	p	signature:(const Point & pt)
-get_netdst_pt	Router.h	67;"	d
+get_netdst_pt	Router.h	69;"	d
 get_order	heap.cpp	/^void heap<T,Container,Compare>::get_order(const T &x){$/;"	f	class:heap	signature:(const T &x)
 get_order	heap.h	/^	static void get_order(const T &x);$/;"	p	class:heap	access:public	signature:(const T &x)
-get_pinnum	Router.h	65;"	d
-get_pinpt	Router.h	66;"	d
+get_pinnum	Router.h	67;"	d
+get_pinpt	Router.h	68;"	d
 graph	Router.h	/^	ConstraintGraph * graph[MAXTIME+1]; \/\/ each time step's graph$/;"	m	class:Router	access:public
 has_edge	ConstraintGraph.cpp	/^bool ConstraintGraph::has_edge(const GNode &u,const GNode &v){$/;"	f	class:ConstraintGraph	signature:(const GNode &u,const GNode &v)
 has_edge	ConstraintGraph.h	/^	bool has_edge(const GNode &u,const GNode &v);$/;"	p	class:ConstraintGraph	access:public	signature:(const GNode &u,const GNode &v)
@@ -414,8 +421,8 @@ init	Router.cpp	/^void Router::init(){$/;"	f	class:Router	signature:()
 init	Router.h	/^	void init();$/;"	p	class:Router	access:public	signature:()
 initBlock	route.cpp	/^void initBlock(Subproblem *p){$/;"	f	signature:(Subproblem *p)
 initBlock	route.h	/^void initBlock(Subproblem *p);$/;"	p	signature:(Subproblem *p)
-init_block	Router.cpp	/^void Router::init_block(Subproblem *p){$/;"	f	class:Router	signature:(Subproblem *p)
-init_block	Router.h	/^	void init_block(Subproblem *p);$/;"	p	class:Router	access:private	signature:(Subproblem *p)
+init_place	Router.cpp	/^void Router::init_place(Subproblem *p){$/;"	f	class:Router	signature:(Subproblem *p)
+init_place	Router.h	/^	void init_place(Subproblem *p);$/;"	p	class:Router	access:private	signature:(Subproblem *p)
 insert	Router.h	/^	void insert(int net_idx){$/;"	f	class:ConflictSet	access:public	signature:(int net_idx)
 isConflict	Router.h	/^	IntVector isConflict;$/;"	m	class:ConflictSet	access:public
 iterator	heap.h	/^	typedef class Container::iterator iterator;$/;"	t	class:heap	typeref:class:heap::iterator	access:public
@@ -433,7 +440,7 @@ name	header.h	/^	char name[MAXSTR];$/;"	m	struct:Net	access:public
 name	header.h	/^	char name[MAXSTR];$/;"	m	struct:Pin	access:public
 net	header.h	/^	Net net[MAXNET];$/;"	m	struct:Subproblem	access:public
 net_num	Router.h	/^	int net_num;$/;"	m	class:ConflictSet	access:public
-net_same_dest	Router.h	69;"	d
+net_same_dest	Router.h	71;"	d
 netcount	Router.h	/^	int netcount;$/;"	m	class:Router	access:public
 netorder	Router.h	/^	int netorder[MAXNET];$/;"	m	class:Router	access:public
 nets	Router.h	/^	deque<int> nets;$/;"	m	class:Router	access:public
@@ -534,7 +541,7 @@ sortNet	route.h	/^void sortNet(Subproblem * p, int * netorder);$/;"	p	signature:
 sort_net	Router.cpp	/^void Router::sort_net(Subproblem *pProb, int * netorder){$/;"	f	class:Router	signature:(Subproblem *pProb, int * netorder)
 sort_net	Router.h	/^	void sort_net(Subproblem *pProb, int * netorder);$/;"	p	class:Router	access:private	signature:(Subproblem *pProb, int * netorder)
 stalling	GridPoint.h	/^	int stalling;$/;"	m	class:GridPoint	access:public
-static_violate	Router.cpp	603;"	d	file:
+static_violate	Router.cpp	624;"	d	file:
 store	heap.cpp	/^void heap<T,Container,Compare>::store(const T &x) {$/;"	f	class:heap	signature:(const T &x)
 store	heap.h	/^	static void store(const T &x); $/;"	p	class:heap	access:public	signature:(const T &x)
 string_heap	test_heap.cpp	/^typedef heap<string*,vector<string*> > string_heap;$/;"	t	file:
