@@ -4,6 +4,7 @@
 debug
 parser
 main
+tag
 tags
 util/*.tex
 util/*.pdf

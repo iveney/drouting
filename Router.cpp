@@ -41,18 +41,10 @@ void Router::init(){
 	N=chip.N;
 	M=chip.M;
 	T=chip.T;
-	/*
-	graph = vector<ConstraintGraph *>(T+1);
-	graph.push_back(NULL);
-	cout<<" size="<<graph.size()<<endl;
-	*/
 	for (int i = 1; i <= T ; i++) {
 		ConstraintGraph * p = new ConstraintGraph(N,M);
 		graph[i] = p;
-		//graph.push_back(p);
-		//cout<<graph[graph.size()-1]->row<<" size="<<graph.size()<<endl;
 	}
-	//cout<<graph[graph.size()-1]->row<<endl;
 }
 
 // solve subproblem `idx'
@@ -162,15 +154,9 @@ bool Router::route_subnet(Point src,Point dst,
 			RouteResult & result,
 			ConflictSet & conflict_net){
 	assert( in_grid(src) && in_grid(dst) );
+
 	// do Lee's propagation,handles 2-pin net only currently
 	GridPoint *current;
-	//Point src = pNet->pin[0].pt; // source
-	//Point dst = get_netdst_pt(which);
-	//int numPin = pNet->numPin;
-	/*
-	if( numPin == 3 ) {// handle three pin net
-		dst = pNet->pin[2].pt; // sink
-	}*/       
 
 	// initialize the heap
 	GP_HEAP p;
@@ -284,6 +270,7 @@ bool Router::route_subnet(Point src,Point dst,
 	else{ cout<<"Success - start to backtrack"<<endl; }
 #endif
 	//////////////////////////////////////////////////////////////////
+	// This subnet is successully routed
 	// backtrack phase, stores results to RouteResult
 	backtrack(which,pin_idx,current,result);
 	p.free();
@@ -434,11 +421,16 @@ void Router::backtrack(int which,int pin_idx,GridPoint *current,
 		current = current->parent;
 	}
 
+	// IMPORATANT: for waste disposal point
+	// Do not need to generate STAY result
+
 	// note that some droplet may reach the destination early than the
 	// timing constraint. fill all later time with its final position
 	for(int i=pin_path.size();i<=this->T;i++){
 		pin_path.push_back(dst); // dst is destination pt here
 	}
+
+	// also we need to update all the coloring status for every time step
 
 	// output result
 	//output_result(result);
@@ -525,10 +517,14 @@ bool Router::electrode_check(int which, int pin_idx,
 	
 	// construct the graph from the current configuration
 	ConstraintGraph * p_graph = graph[t];
-	GNode add_x,add_y;
-	add_x.set(COL,pt.x); // x is column
-	add_y.set(ROW,pt.y); // y is row
-	ADD_EDGE_RESULT add_result = p_graph->add_edge_color(add_x,add_y);
+	GNode add_x(COL,pt.x), add_y(ROW,pt.y); // y is row
+	ADD_EDGE_RESULT add_result;
+	//add_result = p_graph->add_edge_color(add_x,add_y);
+	
+	// try do coloring in this time step, but do not commit change to the graph
+	// because we may try other GridPoint in the same step
+	ConstraintGraph temp(*p_graph);
+	add_result = temp.add_edge_color(add_x,add_y);
 	if( add_result == FAIL )
 		return false;
 
@@ -552,28 +548,28 @@ bool Router::electrode_check(int which, int pin_idx,
 			case LEFT:
 				if( pt.x-2 == pin[t].x ) {
 					ndx.set(COL,pt.x-2);
-					if( p_graph->add_edge_color(add_x,ndx) == FAIL ) 
+					if( temp.add_edge_color(add_x,ndx) == FAIL ) 
 						return false;
 				}
 				break;
 			case RIGHT:
 				if( pt.x+2 == pin[t].x ) {
 					ndx.set(COL,pt.x-2);
-					if( p_graph->add_edge_color(add_x,ndx) == FAIL ) 
+					if( temp.add_edge_color(add_x,ndx) == FAIL ) 
 						return false;
 				}
 				break;
 			case DOWN:
 				if( pt.y-2 == pin[t].y ) {
 					ndy.set(COL,pt.y-2);
-					if( p_graph->add_edge_color(add_y,ndy) == FAIL ) 
+					if( temp.dd_edge_color(add_y,ndy) == FAIL ) 
 						return false;
 				}
 				break;
 			case UP:
 				if( pt.y+2 == pin[t].y ) {
 					ndy.set(COL,pt.y+2);
-					if( p_graph->add_edge_color(add_y,ndy) == FAIL ) 
+					if( temp.add_edge_color(add_y,ndy) == FAIL ) 
 						return false;
 				}
 				break;
@@ -582,28 +578,30 @@ bool Router::electrode_check(int which, int pin_idx,
 			// check for y-1,y+1
 			if( pt.y-1 == pin[t].y ) {
 				ndy.set(ROW,pt.y-1);
-				if( p_graph->add_edge_color(add_y,ndy) == FAIL ) 
+				if( temp.add_edge_color(add_y,ndy) == FAIL ) 
 					return false;
 			}
 			else if( pt.y+1 == pin[t].y ){
 				ndy.set(ROW,pt.y+1);
-				if( p_graph->add_edge_color(add_y,ndy) == FAIL ) 
+				if( temp.add_edge_color(add_y,ndy) == FAIL ) 
 					return false;
 			}
 			// check for x-1,x+1
 			if( pt.x-1 == pin[t].x ){
 				ndx.set(COL,pt.x-1);
-				if( p_graph->add_edge_color(add_x,ndx) == FAIL ) 
+				if( temp.add_edge_color(add_x,ndx) == FAIL ) 
 					return false;
 			}
 			else if( pt.x+1 == pin[t].x ){
 				ndx.set(COL,pt.x+1);
-				if( p_graph->add_edge_color(add_x,ndx) == FAIL ) 
+				if( temp.add_edge_color(add_x,ndx) == FAIL ) 
 					return false;
 			}
 			
-		}
-	}
+		} // end of for j
+	} // end of for i
+
+	// no electro constraint violation!
 	return true;
 }
 
