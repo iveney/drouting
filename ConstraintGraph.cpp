@@ -141,6 +141,7 @@ COLOR ConstraintGraph::erase_color(const GNode & node){
 }
 
 // remove the edge between node u,v
+// note that when the cell becomes standalone, also rip its color
 bool ConstraintGraph::remove_edge(const GNode &u,const GNode &v){
 	set<GNode>::iterator upos= find_edge(u,v);
 	set<GNode> & lu = access_list(u);
@@ -150,10 +151,12 @@ bool ConstraintGraph::remove_edge(const GNode &u,const GNode &v){
 
 	set<GNode> & lv = access_list(v);
 	set<GNode>::iterator vpos= find_edge(v,u);
-	erase_color(u);
-	erase_color(v);
 	lu.erase(upos);
 	lv.erase(vpos); // symmetric
+	if( lu.empty() )
+		erase_color(u);
+	if( lv.empty() )
+		erase_color(v);
 
 	return true;
 }
@@ -211,4 +214,16 @@ bool ConstraintGraph::try_coloring(){
 bool operator <(GNode u,GNode v){
 	return (u.type == ROW && v.type == COL) ||
 		(u.type == v.type && u.idx < v.idx);
+}
+
+bool operator <(GEdge e1,GEdge e2){
+	if( e1.u == e2.u ) return e1.v < e2.v;
+	else if( e1.u == e2.v ) return e1.v < e2.u;
+	else if( e1.v == e2.v ) return e1.u < e2.u;
+	else{// no two are equal
+		GNode e1min = (e1.u<e1.v?e1.u:e1.v);
+		GNode e2min = (e2.u<e2.v?e2.u:e2.v);
+		if( e1min < e2min ) return true;
+		else return false;
+	}
 }

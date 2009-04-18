@@ -1,9 +1,25 @@
 SUMMARY of questions that need to handle:
-**When doing rip-up and re-route, should also remove the voltage assignment
-**3-pin net testing(merging),check how utexas handle
-**stalling problem of coloring
-**waste disposal checking
+** When doing rip-up and re-route, should also remove the voltage assignment
+  1.the same procedure like in electro constraint, however remove edge
+  but not add edge
+  2.clear all colors and reconstruct the graph (try_do_coloring)
+  3.keep track of what node/edge has been added by a net, 
+    and use this information to delete them -> but also need to know 
+    the later routed net's intrduced conflict caused by this net. 
+    by using this method, we may also have the information that
+    which net introduced most conflicts
 
+** how to handle the electro constraint of 3-pin net
+(now not handle at all, just think as no constraint at all)
+  
+** 3-pin(multipin) net testing(merging),check how utexas handle
+  my idea:the late net should use the route after merged
+
+** stalling problem of coloring(add dotted line(different edge))
+
+** waste disposal checking(check what?) -- DONE
+
+-----------------------------------------------------------------------------------------------
 2009年 04月 17日 星期五 17:07:23 CST
 NOTE: when a droplet 
 1.stalling

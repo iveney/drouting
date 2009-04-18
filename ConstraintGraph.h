@@ -25,8 +25,22 @@ public:
 		idx = index;
 	}
 	
+	bool operator == (const GNode & node){
+		return type == node.type && idx == node.idx;
+	}
 	GType type;
 	int idx;
+};
+
+class GEdge{
+public: 
+	GEdge(const GNode &u_,const GNode &v_):u(u_),v(v_){}
+	bool operator == (const GEdge & edge){
+		return (u==edge.u && u==edge.v) ||
+			(u==edge.v && v==edge.u);
+	}
+	friend bool operator <(GEdge e1,GEdge e2);
+	GNode u,v;
 };
 
 class ConstraintGraph{ 
@@ -41,8 +55,7 @@ public:
 		// initialize all color to G
 	}
 
-	~ConstraintGraph(){
-	}
+	~ConstraintGraph(){ }
 
 	bool add_edge(const GNode &u,const GNode &v);
 	ADD_EDGE_RESULT add_edge_color(const GNode &u,const GNode &v);

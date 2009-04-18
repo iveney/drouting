@@ -66,7 +66,7 @@ ConstraintGraph::reverse_color	ConstraintGraph.h	/^	void reverse_color(const GNo
 ConstraintGraph::row	ConstraintGraph.h	/^	int row,col;  $/;"	m	class:ConstraintGraph	access:private
 ConstraintGraph::try_coloring	ConstraintGraph.cpp	/^bool ConstraintGraph::try_coloring(){$/;"	f	class:ConstraintGraph	signature:()
 ConstraintGraph::try_coloring	ConstraintGraph.h	/^	bool try_coloring();$/;"	p	class:ConstraintGraph	access:public	signature:()
-ConstraintGraph::~ConstraintGraph	ConstraintGraph.h	/^	~ConstraintGraph(){$/;"	f	class:ConstraintGraph	access:public	signature:()
+ConstraintGraph::~ConstraintGraph	ConstraintGraph.h	/^	~ConstraintGraph(){ }$/;"	f	class:ConstraintGraph	access:public	signature:()
 DBG	Makefile	/^DBG=debug$/;"	m
 DIRECTION	route.h	/^enum DIRECTION{LEFT,RIGHT,UP,DOWN,STAY}; \/\/ LEFT, RIGHT, UP, DOWN$/;"	g
 DIRECTION	util.h	/^enum DIRECTION{LEFT,RIGHT,UP,DOWN,STAY}; \/\/ LEFT, RIGHT, UP, DOWN$/;"	g
@@ -80,6 +80,13 @@ FLUID_PENALTY	header.h	/^const int FLUID_PENALTY=20;$/;"	v
 FREE	Router.h	/^enum FUNCTION_PLACE{FREE,BLOCK,WASTE};$/;"	e	enum:FUNCTION_PLACE
 FUNCTION_PLACE	Router.h	/^enum FUNCTION_PLACE{FREE,BLOCK,WASTE};$/;"	g
 G	ConstraintGraph.h	/^enum COLOR{H,L,G};$/;"	e	enum:COLOR
+GEdge	ConstraintGraph.h	/^	GEdge(const GNode &u_,const GNode &v_):u(u_),v(v_){}$/;"	f	class:GEdge	access:public	signature:(const GNode &u_,const GNode &v_)
+GEdge	ConstraintGraph.h	/^class GEdge{$/;"	c
+GEdge::GEdge	ConstraintGraph.h	/^	GEdge(const GNode &u_,const GNode &v_):u(u_),v(v_){}$/;"	f	class:GEdge	access:public	signature:(const GNode &u_,const GNode &v_)
+GEdge::operator <	ConstraintGraph.h	/^	friend bool operator <(GEdge e1,GEdge e2);$/;"	p	class:GEdge	access:friend	signature:(GEdge e1,GEdge e2)
+GEdge::operator ==	ConstraintGraph.h	/^	bool operator == (const GEdge & edge){$/;"	f	class:GEdge	access:public	signature:(const GEdge & edge)
+GEdge::u	ConstraintGraph.h	/^	GNode u,v;$/;"	m	class:GEdge	access:public
+GEdge::v	ConstraintGraph.h	/^	GNode u,v;$/;"	m	class:GEdge	access:public
 GNode	ConstraintGraph.h	/^	GNode(){}$/;"	f	class:GNode	access:public	signature:()
 GNode	ConstraintGraph.h	/^	GNode(GType t,int index):type(t),idx(index){}$/;"	f	class:GNode	access:public	signature:(GType t,int index)
 GNode	ConstraintGraph.h	/^class GNode{$/;"	c
@@ -87,6 +94,7 @@ GNode::GNode	ConstraintGraph.h	/^	GNode(){}$/;"	f	class:GNode	access:public	sign
 GNode::GNode	ConstraintGraph.h	/^	GNode(GType t,int index):type(t),idx(index){}$/;"	f	class:GNode	access:public	signature:(GType t,int index)
 GNode::idx	ConstraintGraph.h	/^	int idx;$/;"	m	class:GNode	access:public
 GNode::operator <	ConstraintGraph.h	/^	friend bool operator <(GNode u,GNode v);$/;"	p	class:GNode	access:friend	signature:(GNode u,GNode v)
+GNode::operator ==	ConstraintGraph.h	/^	bool operator == (const GNode & node){$/;"	f	class:GNode	access:public	signature:(const GNode & node)
 GNode::set	ConstraintGraph.h	/^	void set(GType t,int index){$/;"	f	class:GNode	access:public	signature:(GType t,int index)
 GNode::type	ConstraintGraph.h	/^	GType type;$/;"	m	class:GNode	access:public
 GNodeSet	ConstraintGraph.h	/^typedef set<GNode> GNodeSet;$/;"	t
@@ -155,7 +163,7 @@ Net::pin	header.h	/^	Pin pin[3];$/;"	m	struct:Net	access:public
 NetRoute	Router.h	/^	NetRoute(int netidx,int pin_num,int timing_):idx(netidx),$/;"	f	struct:NetRoute	access:public	signature:(int netidx,int pin_num,int timing_)
 NetRoute	Router.h	/^struct NetRoute{$/;"	s
 NetRoute::NetRoute	Router.h	/^	NetRoute(int netidx,int pin_num,int timing_):idx(netidx),$/;"	f	struct:NetRoute	access:public	signature:(int netidx,int pin_num,int timing_)
-NetRoute::clear	Router.h	/^	void clear(){$/;"	f	struct:NetRoute	access:public	signature:()
+NetRoute::clear	Router.h	/^	void clear(){\/\/ clear all it's subnet's route$/;"	f	struct:NetRoute	access:public	signature:()
 NetRoute::idx	Router.h	/^	int idx;$/;"	m	struct:NetRoute	access:public
 NetRoute::merge_time	Router.h	/^	int merge_time;$/;"	m	struct:NetRoute	access:public
 NetRoute::num_pin	Router.h	/^	int num_pin;$/;"	m	struct:NetRoute	access:public
@@ -206,6 +214,7 @@ Router::blockage	Router.h	/^	BYTE blockage[MAXGRID][MAXGRID];$/;"	m	class:Router
 Router::chip	Router.h	/^	Chip chip;      \/\/ stores all the information$/;"	m	class:Router	access:public
 Router::cmp_net	Router.cpp	/^int Router::cmp_net(const void* id1,const void* id2){$/;"	f	class:Router	signature:(const void* id1,const void* id2)
 Router::cmp_net	Router.h	/^	static int cmp_net(const void* id1,const void* id2);$/;"	p	class:Router	access:private	signature:(const void* id1,const void* id2)
+Router::conflict_edge	Router.h	/^	set<GEdge> conflict_edge[MAXNET];$/;"	m	class:Router	access:public
 Router::electrode_check	Router.cpp	/^bool Router::electrode_check(int which, int pin_idx,$/;"	f	class:Router	signature:(int which, int pin_idx, const Point & pt,int t, const RouteResult & result, ConflictSet & conflict_net)
 Router::electrode_check	Router.h	/^	bool electrode_check(int which, int pin_idx,$/;"	p	class:Router	access:public	signature:(int which, int pin_idx, const Point & pt,int t, const RouteResult & result, ConflictSet & conflict_net)
 Router::fluidic_check	Router.cpp	/^FLUIDIC_RESULT Router::fluidic_check(int which,int pin_idx,$/;"	f	class:Router	signature:(int which,int pin_idx, const Point & pt,int t, const RouteResult & result,ConflictSet & conflict_net)
@@ -309,13 +318,14 @@ checkBending	route.h	/^bool checkBending(const Point & p1,const Point & p2);$/;"
 check_bending	util.cpp	/^bool check_bending(const Point & p1,const Point & p2){$/;"	f	signature:(const Point & p1,const Point & p2)
 check_bending	util.h	/^bool check_bending(const Point & p1,const Point & p2);$/;"	p	signature:(const Point & p1,const Point & p2)
 chip	Router.h	/^	Chip chip;      \/\/ stores all the information$/;"	m	class:Router	access:public
-clear	Router.h	/^	void clear(){$/;"	f	struct:NetRoute	access:public	signature:()
+clear	Router.h	/^	void clear(){\/\/ clear all it's subnet's route$/;"	f	struct:NetRoute	access:public	signature:()
 cmpNet	route.cpp	/^int cmpNet(const void * id1, const void * id2){$/;"	f	signature:(const void * id1, const void * id2)
 cmp_net	Router.cpp	/^int Router::cmp_net(const void* id1,const void* id2){$/;"	f	class:Router	signature:(const void* id1,const void* id2)
 cmp_net	Router.h	/^	static int cmp_net(const void* id1,const void* id2);$/;"	p	class:Router	access:private	signature:(const void* id1,const void* id2)
 col	ConstraintGraph.h	/^	int row,col;  $/;"	m	class:ConstraintGraph	access:private
 color_string	ConstraintGraph.h	/^static const char * color_string[]={"H","L","G"};$/;"	v
 comp	heap.h	/^	Compare comp;  \/\/ compare function(strictly weak order$/;"	m	class:heap	access:public
+conflict_edge	Router.h	/^	set<GEdge> conflict_edge[MAXNET];$/;"	m	class:Router	access:public
 counter	GridPoint.cpp	/^int GridPoint::counter=0;$/;"	m	class:GridPoint	file:
 counter	GridPoint.h	/^	static int counter;$/;"	m	class:GridPoint	access:public
 counter	heap.h	/^	static int counter;$/;"	m	class:heap	access:public
@@ -329,7 +339,7 @@ dx	Router.cpp	/^int dx[]={-1,1,0,0,0};$/;"	v
 dx	route.cpp	/^int dx[]={-1,1,0,0,0};$/;"	v
 dy	Router.cpp	/^int dy[]={0,0,1,-1,0};$/;"	v
 dy	route.cpp	/^int dy[]={0,0,1,-1,0};$/;"	v
-dynamic_violate	Router.cpp	626;"	d	file:
+dynamic_violate	Router.cpp	631;"	d	file:
 electro	GridPoint.h	/^	int electro;$/;"	m	class:GridPoint	access:public
 electrodeCheck	route.cpp	/^bool electrodeCheck(const Point & pt){$/;"	f	signature:(const Point & pt)
 electrodeCheck	route.h	/^bool electrodeCheck(const Point & pt);$/;"	p	signature:(const Point & pt)
@@ -348,7 +358,7 @@ fluidicCheck	route.cpp	/^int fluidicCheck(int which, const Point & pt,int t){$/;
 fluidicCheck	route.h	/^int fluidicCheck(int which, const Point & pt,int t);$/;"	p	signature:(int which, const Point & pt,int t)
 fluidic_check	Router.cpp	/^FLUIDIC_RESULT Router::fluidic_check(int which,int pin_idx,$/;"	f	class:Router	signature:(int which,int pin_idx, const Point & pt,int t, const RouteResult & result,ConflictSet & conflict_net)
 fluidic_check	Router.h	/^	FLUIDIC_RESULT fluidic_check(int which, int pin_idx,$/;"	p	class:Router	access:public	signature:(int which, int pin_idx, const Point & pt,int t, const RouteResult & result, ConflictSet & conflict_net)
-fluidic_violate	Router.cpp	621;"	d	file:
+fluidic_violate	Router.cpp	626;"	d	file:
 free	heap.cpp	/^void heap<T,Container,Compare>::free(){$/;"	f	class:heap	signature:()
 free	heap.h	/^	static void free();$/;"	p	class:heap	access:public	signature:()
 getColor	parser.cpp	/^const char * getColor(){$/;"	f	signature:()
@@ -363,11 +373,11 @@ get_last	Router.h	/^	int get_last(){$/;"	f	class:ConflictSet	access:public	signa
 get_neighbour	Router.cpp	/^PtVector Router::get_neighbour(const Point & pt){$/;"	f	class:Router	signature:(const Point & pt)
 get_neighbour	Router.h	/^	PtVector get_neighbour(const Point & pt);$/;"	p	class:Router	access:public	signature:(const Point & pt)
 get_neighbour	util.h	/^PtVector get_neighbour(const Point & pt);$/;"	p	signature:(const Point & pt)
-get_netdst_pt	Router.h	69;"	d
+get_netdst_pt	Router.h	62;"	d
 get_order	heap.cpp	/^void heap<T,Container,Compare>::get_order(const T &x){$/;"	f	class:heap	signature:(const T &x)
 get_order	heap.h	/^	static void get_order(const T &x);$/;"	p	class:heap	access:public	signature:(const T &x)
-get_pinnum	Router.h	67;"	d
-get_pinpt	Router.h	68;"	d
+get_pinnum	Router.h	60;"	d
+get_pinpt	Router.h	61;"	d
 graph	Router.h	/^	ConstraintGraph * graph[MAXTIME+1]; \/\/ each time step's graph$/;"	m	class:Router	access:public
 has_edge	ConstraintGraph.cpp	/^bool ConstraintGraph::has_edge(const GNode &u,const GNode &v){$/;"	f	class:ConstraintGraph	signature:(const GNode &u,const GNode &v)
 has_edge	ConstraintGraph.h	/^	bool has_edge(const GNode &u,const GNode &v);$/;"	p	class:ConstraintGraph	access:public	signature:(const GNode &u,const GNode &v)
@@ -440,7 +450,7 @@ name	header.h	/^	char name[MAXSTR];$/;"	m	struct:Net	access:public
 name	header.h	/^	char name[MAXSTR];$/;"	m	struct:Pin	access:public
 net	header.h	/^	Net net[MAXNET];$/;"	m	struct:Subproblem	access:public
 net_num	Router.h	/^	int net_num;$/;"	m	class:ConflictSet	access:public
-net_same_dest	Router.h	71;"	d
+net_same_dest	Router.h	64;"	d
 netcount	Router.h	/^	int netcount;$/;"	m	class:Router	access:public
 netorder	Router.h	/^	int netorder[MAXNET];$/;"	m	class:Router	access:public
 nets	Router.h	/^	deque<int> nets;$/;"	m	class:Router	access:public
@@ -449,7 +459,9 @@ numPin	header.h	/^	int numPin;$/;"	m	struct:Net	access:public
 num_pin	Router.h	/^	int num_pin;$/;"	m	struct:NetRoute	access:public
 operator !=	header.h	/^	bool operator != (const Point & pt) const {return !operator==(pt);}$/;"	f	class:Point	access:public	signature:(const Point & pt) const
 operator ()	GridPoint.h	/^		bool operator()(const GridPoint *a, const GridPoint *b) const{$/;"	f	class:GridPoint::GPpointerCmp	access:public	signature:(const GridPoint *a, const GridPoint *b) const
+operator <	ConstraintGraph.cpp	/^bool operator <(GEdge e1,GEdge e2){$/;"	f	signature:(GEdge e1,GEdge e2)
 operator <	ConstraintGraph.cpp	/^bool operator <(GNode u,GNode v){$/;"	f	signature:(GNode u,GNode v)
+operator <	ConstraintGraph.h	/^	friend bool operator <(GEdge e1,GEdge e2);$/;"	p	class:GEdge	access:friend	signature:(GEdge e1,GEdge e2)
 operator <	ConstraintGraph.h	/^	friend bool operator <(GNode u,GNode v);$/;"	p	class:GNode	access:friend	signature:(GNode u,GNode v)
 operator <	GridPoint.cpp	/^bool GridPoint::operator < (const GridPoint& g) const{ $/;"	f	class:GridPoint	signature:(const GridPoint& g) const
 operator <	GridPoint.h	/^	bool operator < (const GridPoint& g) const;$/;"	p	class:GridPoint	access:public	signature:(const GridPoint& g) const
@@ -459,6 +471,8 @@ operator <<	header.cpp	/^ostream & operator <<(ostream & out,const Point & pt){$
 operator <<	header.h	/^	friend ostream &operator <<(ostream&,const Point&);$/;"	p	class:Point	access:friend	signature:(ostream&,const Point&)
 operator <<	heap.h	/^	friend ostream & operator <<(ostream & out,const heap<_T,_Container,_Compare> & h);$/;"	p	class:heap	access:friend	signature:(ostream & out,const heap<_T,_Container,_Compare> & h)
 operator <<	heap.h	/^ostream & operator <<(ostream & out,$/;"	f	signature:(ostream & out, const heap<_T,_Container,_Compare> & h)
+operator ==	ConstraintGraph.h	/^	bool operator == (const GEdge & edge){$/;"	f	class:GEdge	access:public	signature:(const GEdge & edge)
+operator ==	ConstraintGraph.h	/^	bool operator == (const GNode & node){$/;"	f	class:GNode	access:public	signature:(const GNode & node)
 operator ==	GridPoint.cpp	/^bool GridPoint::operator == (const GridPoint &g) const{$/;"	f	class:GridPoint	signature:(const GridPoint &g) const
 operator ==	GridPoint.h	/^	bool operator == (const GridPoint &g) const;$/;"	p	class:GridPoint	access:public	signature:(const GridPoint &g) const
 operator ==	header.h	/^	bool operator == (const Point & pt) const {return x==pt.x && y==pt.y;}$/;"	f	class:Point	access:public	signature:(const Point & pt) const
@@ -541,7 +555,7 @@ sortNet	route.h	/^void sortNet(Subproblem * p, int * netorder);$/;"	p	signature:
 sort_net	Router.cpp	/^void Router::sort_net(Subproblem *pProb, int * netorder){$/;"	f	class:Router	signature:(Subproblem *pProb, int * netorder)
 sort_net	Router.h	/^	void sort_net(Subproblem *pProb, int * netorder);$/;"	p	class:Router	access:private	signature:(Subproblem *pProb, int * netorder)
 stalling	GridPoint.h	/^	int stalling;$/;"	m	class:GridPoint	access:public
-static_violate	Router.cpp	624;"	d	file:
+static_violate	Router.cpp	629;"	d	file:
 store	heap.cpp	/^void heap<T,Container,Compare>::store(const T &x) {$/;"	f	class:heap	signature:(const T &x)
 store	heap.h	/^	static void store(const T &x); $/;"	p	class:heap	access:public	signature:(const T &x)
 string_heap	test_heap.cpp	/^typedef heap<string*,vector<string*> > string_heap;$/;"	t	file:
@@ -564,12 +578,14 @@ traceback_line	route.h	/^Point traceback_line(int which, int t, const Point & cu
 try_coloring	ConstraintGraph.cpp	/^bool ConstraintGraph::try_coloring(){$/;"	f	class:ConstraintGraph	signature:()
 try_coloring	ConstraintGraph.h	/^	bool try_coloring();$/;"	p	class:ConstraintGraph	access:public	signature:()
 type	ConstraintGraph.h	/^	GType type;$/;"	m	class:GNode	access:public
+u	ConstraintGraph.h	/^	GNode u,v;$/;"	m	class:GEdge	access:public
 updateWeight	GridPoint.cpp	/^int GridPoint::updateWeight(){$/;"	f	class:GridPoint	signature:()
 updateWeight	GridPoint.h	/^	int updateWeight();$/;"	p	class:GridPoint	access:public	signature:()
+v	ConstraintGraph.h	/^	GNode u,v;$/;"	m	class:GEdge	access:public
 weight	GridPoint.h	/^	int weight;$/;"	m	class:GridPoint	access:public
 x	header.h	/^	int x,y;$/;"	m	class:Point	access:public
 y	header.h	/^	int x,y;$/;"	m	class:Point	access:public
-~ConstraintGraph	ConstraintGraph.h	/^	~ConstraintGraph(){$/;"	f	class:ConstraintGraph	access:public	signature:()
+~ConstraintGraph	ConstraintGraph.h	/^	~ConstraintGraph(){ }$/;"	f	class:ConstraintGraph	access:public	signature:()
 ~Router	Router.h	/^	~Router(){}$/;"	f	class:Router	access:public	signature:()
 ~heap	heap.cpp	/^heap<T,Container,Compare>::~heap(){}$/;"	f	class:heap	signature:()
 ~heap	heap.h	/^	~heap();$/;"	p	class:heap	access:public	signature:()

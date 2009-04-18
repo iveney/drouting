@@ -301,9 +301,9 @@ bool Router::route_net(int which,RouteResult &result)//, ConflictSet &conflict_n
 			output_netorder(netorder,netcount);
 			i--; // re-route this one
 		}
-	}
+	}// end of for
 	return true;
-}
+}// end of route_net
 
 // for a given net `which', find a valid net order to reroute it
 // POSTCONDITION: the net order will be changed
@@ -318,7 +318,11 @@ int Router::ripup_reroute(int which,RouteResult & result,
 		if( netorder[i] == last ) last_idx = i;
 		if( netorder[i] == which) which_idx = i;
 	}
-	result.path[last].clear(); // cancel the routed path
+	// cancel the routed path of this net(all subnets)
+	result.path[last].clear(); 
+	// also cancel the voltage assignment
+	// (like what is done in electro constraint checking
+	// detect all the possible conflict node, then remove edge
 
 	// re-push into queue: re route `last'
 	nets.push_front(last);
@@ -529,7 +533,6 @@ bool Router::electrode_check(int which, int pin_idx,
 	ConstraintGraph * p_graph = graph[t];
 	GNode add_x(COL,pt.x), add_y(ROW,pt.y); // y is row
 	ADD_EDGE_RESULT add_result;
-	//add_result = p_graph->add_edge_color(add_x,add_y);
 	
 	// try do coloring in this time step, but do not commit change to the graph
 	// because we may try other GridPoint in the same step
@@ -537,6 +540,7 @@ bool Router::electrode_check(int which, int pin_idx,
 	add_result = temp.add_edge_color(add_x,add_y);
 	if( add_result == FAIL )
 		return false;
+	conflict_edge[which].insert(GEdge(add_x,add_y));
 
 	// let current checking droplet be `d',location be (x,y)
 	for (int i = 0; i<netcount && netorder[i]!=which; i++) {
@@ -545,9 +549,9 @@ bool Router::electrode_check(int which, int pin_idx,
 		// for each subnet
 		for (int j = 0; j<route.num_pin-1; j++) {
 			const PtVector & pin = route.pin_route[j];
-			// pin[t] is the location at time t(activated at t-1)
+			// pin[t] is the location at time t(but activated at t-1)
 		
-			// check for moving direction, add one more constraint
+			// check for moving direction from (t-1)->(t)
 			DIRECTION dir = pt_relative_pos(pin[t-1],pin[t]);
 			// note that if the droplet stays, pin[t] will not be 
 			// activated at time=t, NO need to add constraint
@@ -560,6 +564,7 @@ bool Router::electrode_check(int which, int pin_idx,
 					ndx.set(COL,pt.x-2);
 					if( temp.add_edge_color(add_x,ndx) == FAIL ) 
 						return false;
+					conflict_edge[which].insert(GEdge(add_x,ndx));
 				}
 				break;
 			case RIGHT:
@@ -567,6 +572,7 @@ bool Router::electrode_check(int which, int pin_idx,
 					ndx.set(COL,pt.x-2);
 					if( temp.add_edge_color(add_x,ndx) == FAIL ) 
 						return false;
+					conflict_edge[which].insert(GEdge(add_x,ndx));
 				}
 				break;
 			case DOWN:
@@ -574,6 +580,7 @@ bool Router::electrode_check(int which, int pin_idx,
 					ndy.set(COL,pt.y-2);
 					if( temp.add_edge_color(add_y,ndy) == FAIL ) 
 						return false;
+					conflict_edge[which].insert(GEdge(add_y,ndy));
 				}
 				break;
 			case UP:
@@ -581,6 +588,7 @@ bool Router::electrode_check(int which, int pin_idx,
 					ndy.set(COL,pt.y+2);
 					if( temp.add_edge_color(add_y,ndy) == FAIL ) 
 						return false;
+					conflict_edge[which].insert(GEdge(add_y,ndy));
 				}
 				break;
 			case STAY:break; // impossible to reach here
@@ -590,22 +598,26 @@ bool Router::electrode_check(int which, int pin_idx,
 				ndy.set(ROW,pt.y-1);
 				if( temp.add_edge_color(add_y,ndy) == FAIL ) 
 					return false;
+				conflict_edge[which].insert(GEdge(add_y,ndy));
 			}
 			else if( pt.y+1 == pin[t].y ){
 				ndy.set(ROW,pt.y+1);
 				if( temp.add_edge_color(add_y,ndy) == FAIL ) 
 					return false;
+				conflict_edge[which].insert(GEdge(add_y,ndy));
 			}
 			// check for x-1,x+1
 			if( pt.x-1 == pin[t].x ){
 				ndx.set(COL,pt.x-1);
 				if( temp.add_edge_color(add_x,ndx) == FAIL ) 
 					return false;
+				conflict_edge[which].insert(GEdge(add_x,ndx));
 			}
 			else if( pt.x+1 == pin[t].x ){
 				ndx.set(COL,pt.x+1);
 				if( temp.add_edge_color(add_x,ndx) == FAIL ) 
 					return false;
+				conflict_edge[which].insert(GEdge(add_x,ndx));
 			}
 			
 		} // end of for j
@@ -657,6 +669,7 @@ FLUIDIC_RESULT Router::fluidic_check(int which,int pin_idx,
 			// 1 2 1 2
 			// the second 1 will have two direction to go
 			// but both 1 belong to the same net!!
+			// SOLUTION: I think electro constraint implied this
 			//if ( !(abs(pt.x - path[t-1].x) >=2 || abs(pt.y - path[t-1].y) >=2) ){
 		} // end of for j
 	} // end of for i
