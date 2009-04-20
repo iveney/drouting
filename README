@@ -2,12 +2,20 @@ SUMMARY of questions that need to handle:
 ** When doing rip-up and re-route, should also remove the voltage assignment
   1.the same procedure like in electro constraint, however remove edge
   but not add edge
-  2.clear all colors and reconstruct the graph (try_do_coloring)
+see PROBLEM below
+
+  *2.clear all colors and reconstruct the graph (try_do_coloring)
+   this may be correct
+
   3.keep track of what node/edge has been added by a net, 
     and use this information to delete them -> but also need to know 
     the later routed net's intrduced conflict caused by this net. 
     by using this method, we may also have the information that
     which net introduced most conflicts
+PROBLEM: if do it like this, there is problem, e.g.
+two droplets use row=5, and both have an edge between row=6
+but if one be ripped up, the edge will be removed,
+however, another droplet still require this conflict
 
 ** how to handle the electro constraint of 3-pin net
 (now not handle at all, just think as no constraint at all)
