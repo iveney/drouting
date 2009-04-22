@@ -20,13 +20,6 @@ int dy[]={0,0,1,-1,0};
 
 Subproblem * Router::pProb=NULL;
 
-Router::Router():read(false){
-	for(int i=0;i<MAXNET;i++) {
-		netorder[i]=i;
-		conflict_edge[i]=set<GEdge>();
-	}
-}
-
 void Router::read_file(int argc, char * argv[]){
 	FILE * f;
 	if(argc<2)
@@ -64,7 +57,6 @@ RouteResult Router::solve_subproblem(int prob_idx){
 	netcount = pProb->nNet;
 	sort_net(pProb,netorder);// sort : decide net order
 	output_netorder(netorder,netcount);
-
 
 	// generate blockage bitmap
 	init_place(pProb);
@@ -278,8 +270,6 @@ bool Router::route_subnet(Point src,Point dst,
 	else{ cout<<"Success - start to backtrack"<<endl; }
 #endif
 	//////////////////////////////////////////////////////////////////
-	// update timing of this net
-	result.path[which].timing = current->time; 
 	// This subnet is successully routed
 	// backtrack phase, stores results to RouteResult
 	backtrack(which,pin_idx,current,result);
@@ -321,36 +311,18 @@ bool Router::route_net(int which,RouteResult &result)//, ConflictSet &conflict_n
 int Router::ripup_reroute(int which,RouteResult & result,
 		ConflictSet &conflict_net){
 	// cancel the route result of some conflict net
-	// X:now use the last conflict net
-	// now use the net which conflicts most
+	// now use the last conflict net
 	int last = conflict_net.get_last();
 	int last_idx,which_idx;
-	size_t num=0;
-	int max_idx=-1;
 	for(int i = 0; i < netcount; i++) {
 		if( netorder[i] == last ) last_idx = i;
 		if( netorder[i] == which) which_idx = i;
-		if( conflict_edge[i].size() > num ){
-			num = conflict_edge[i].size();
-			max_idx=i;
-		}
 	}
 	// cancel the routed path of this net(all subnets)
 	result.path[last].clear(); 
 	// also cancel the voltage assignment
-	assert(max_idx>0);
-	set<GEdge>::iterator it=conflict_edge[max_idx].begin();
-	ConstraintGraph * p_graph;
-	// clear the edges in all time step this conflicting net occupies
-	for(int t=0; t<result.path[last].timing; t++){
-		p_graph = graph[t];
-		for(it=conflict_edge[max_idx].begin(); 
-		    it!=conflict_edge[max_idx].end(); it++) {
-			p_graph->remove_edge((*it).u,(*it).v);
-		}
-	}
-	// note that the conflict is mutual, remove one edge from this conflict
-	// set means also remove this conflict edge from the corresponding set
+	// (like what is done in electro constraint checking
+	// detect all the possible conflict node, then remove edge
 
 	// re-push into queue: re route `last'
 	nets.push_front(last);
@@ -593,7 +565,6 @@ bool Router::electrode_check(int which, int pin_idx,
 					if( temp.add_edge_color(add_x,ndx) == FAIL ) 
 						return false;
 					conflict_edge[which].insert(GEdge(add_x,ndx));
-					conflict_edge[i].insert(GEdge(add_x,ndx));
 				}
 				break;
 			case RIGHT:
@@ -602,7 +573,6 @@ bool Router::electrode_check(int which, int pin_idx,
 					if( temp.add_edge_color(add_x,ndx) == FAIL ) 
 						return false;
 					conflict_edge[which].insert(GEdge(add_x,ndx));
-					conflict_edge[i].insert(GEdge(add_x,ndx));
 				}
 				break;
 			case DOWN:
@@ -611,7 +581,6 @@ bool Router::electrode_check(int which, int pin_idx,
 					if( temp.add_edge_color(add_y,ndy) == FAIL ) 
 						return false;
 					conflict_edge[which].insert(GEdge(add_y,ndy));
-					conflict_edge[i].insert(GEdge(add_y,ndy));
 				}
 				break;
 			case UP:
@@ -620,7 +589,6 @@ bool Router::electrode_check(int which, int pin_idx,
 					if( temp.add_edge_color(add_y,ndy) == FAIL ) 
 						return false;
 					conflict_edge[which].insert(GEdge(add_y,ndy));
-					conflict_edge[i].insert(GEdge(add_y,ndy));
 				}
 				break;
 			case STAY:break; // impossible to reach here
@@ -631,14 +599,12 @@ bool Router::electrode_check(int which, int pin_idx,
 				if( temp.add_edge_color(add_y,ndy) == FAIL ) 
 					return false;
 				conflict_edge[which].insert(GEdge(add_y,ndy));
-				conflict_edge[i].insert(GEdge(add_y,ndy));
 			}
 			else if( pt.y+1 == pin[t].y ){
 				ndy.set(ROW,pt.y+1);
 				if( temp.add_edge_color(add_y,ndy) == FAIL ) 
 					return false;
 				conflict_edge[which].insert(GEdge(add_y,ndy));
-				conflict_edge[i].insert(GEdge(add_y,ndy));
 			}
 			// check for x-1,x+1
 			if( pt.x-1 == pin[t].x ){
@@ -646,14 +612,12 @@ bool Router::electrode_check(int which, int pin_idx,
 				if( temp.add_edge_color(add_x,ndx) == FAIL ) 
 					return false;
 				conflict_edge[which].insert(GEdge(add_x,ndx));
-				conflict_edge[i].insert(GEdge(add_x,ndx));
 			}
 			else if( pt.x+1 == pin[t].x ){
 				ndx.set(COL,pt.x+1);
 				if( temp.add_edge_color(add_x,ndx) == FAIL ) 
 					return false;
 				conflict_edge[which].insert(GEdge(add_x,ndx));
-				conflict_edge[i].insert(GEdge(add_x,ndx));
 			}
 			
 		} // end of for j

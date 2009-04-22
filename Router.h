@@ -4,7 +4,6 @@
 #include <deque>
 #include <vector>
 #include <cassert>
-#include <iostream>
 #include "header.h"
 #include "GridPoint.h"
 #include "heap.h"
@@ -12,7 +11,6 @@
 #include "ConstraintGraph.h"
 using std::deque;
 using std::vector;
-using std::cout;
 
 // return value of fluidic constraint check
 enum FLUIDIC_RESULT{SAFE,VIOLATE,SAMENET,SAMEDEST};
@@ -50,7 +48,7 @@ struct NetRoute{
 	}
 	int idx;
 	int num_pin;
-	int timing;   // what is the usage of this timing?
+	int timing;
 	int merge_time;
 	// important: for a net with N pins
 	// there will be N-1 routes, since it was decomposed
@@ -106,7 +104,9 @@ public:
 
 	// default constructor: mark the router's input be empty
 	// initialize the netorder vector(default order:1,2,...)
-	Router();
+	Router():read(false){
+		for(int i=0;i<MAXNET;i++) netorder[i]=i;
+	}
 
 	// free the resources allocated
 	~Router(){}
