@@ -43,15 +43,15 @@ void Router::read_file(int argc, char * argv[]){
 	init();
 }
 
-// do initialization for global variables N M T and graph
+// do initialization for global variables W H T and graph
 void Router::init(){
 	read=true;
-	N=chip.N;
-	M=chip.M;
+	W=chip.W;
+	H=chip.H;
 	T=chip.T;
 	// generate a series of time frame to store the voltage assignment
 	for (int i = 1; i <= T ; i++) {
-		ConstraintGraph * p = new ConstraintGraph(N,M);
+		ConstraintGraph * p = new ConstraintGraph(W,H);
 		graph[i] = p;
 	}
 }
@@ -70,7 +70,7 @@ RouteResult Router::solve_subproblem(int prob_idx){
 	init_place(pProb);
 
 	// the result to return
-	RouteResult result(this->T,this->M,this->N,this->pProb);
+	RouteResult result(this->T,this->W,this->H,this->pProb);
 
 	// start to route each net according to sorted order
 	nets.clear();
@@ -116,6 +116,11 @@ void Router::output_result(const RouteResult & result){
 			}
 		}
 	}
+	output_voltage();
+}
+
+void Router::output_voltage(){
+	int i,j;
 	// output the voltage assignment
 	for (i = 1; i <= T; i++) {
 		cout<<"[t = "<<i<<"]"<<endl;
@@ -123,23 +128,22 @@ void Router::output_result(const RouteResult & result){
 		cout<<"ROW:\t";
 		PtVector activated;
 		activated.clear();
-		// NOTE: should clarify N is row or col
-		for (j = 0; j < N; j++) {
-			COLOR clr = p_graph->r_color[j];
+		for (j = 0;j<H; j++) {
+			COLOR clr = p_graph->node_list[j].color;
 			if(clr==G) continue;
 			cout<<"("<<j<<"="<<color_string[clr]<<") ";
-			for(int k=0;k<M;k++){
-				COLOR c_clr = p_graph->c_color[k];
-				if(clr==H && c_clr==L||
-				   clr==L && c_clr==H) {
+			for(int k=0;k<W;k++){
+				COLOR c_clr = p_graph->node_list[k+H].color;
+				if(clr==HI && c_clr==LO||
+				   clr==LO && c_clr==HI) {
 					activated.push_back(Point(k,j));
 				}
 			}
 		}
 
 		cout<<endl<<"COL:\t";
-		for (j = 0; j < M; j++) {
-			COLOR clr = p_graph->c_color[j];
+		for (j = 0; j < W; j++) {
+			COLOR clr = p_graph->node_list[j+H].color;
 			if(clr==G) continue;
 			cout<<"("<<j<<"="<<color_string[clr]<<") ";
 		}
@@ -150,6 +154,7 @@ void Router::output_result(const RouteResult & result){
 		}
 		cout<<endl;
 	}
+
 }
 
 // mark the block location as 1
@@ -323,6 +328,7 @@ bool Router::route_net(int which,RouteResult &result)//, ConflictSet &conflict_n
 			output_netorder(netorder,netcount);
 			i--; // re-route this one
 		}
+		output_result(result);
 	}
 	return true;
 }
@@ -444,7 +450,7 @@ void Router::backtrack(int which,int pin_idx,GridPoint *current,
 			ConstraintGraph * p_graph = graph[t];
 			GNode add_x(COL,current->pt.x),
 			      add_y(ROW,current->pt.y);
-			p_graph->add_edge_color(add_x,add_y);
+			p_graph->add_edge_color(add_x,add_y,DIFF);
 		}
 		current = current->parent;
 	}
@@ -473,8 +479,8 @@ void Router::output_heap(const GP_HEAP & h){
 
 // test if a point is in the chip array
 bool Router::in_grid(const Point & pt){
-	if( pt.x >=0 && pt.x <N && 
-	    pt.y >=0 && pt.y <M) return true;
+	if( pt.x >=0 && pt.x <W && 
+	    pt.y >=0 && pt.y <H) return true;
 	else return false;
 }
 
@@ -515,8 +521,8 @@ int Router::cmp_net(const void* id1,const void* id2){
 }
 
 void Router::sort_net(Subproblem *pProb, int * netorder){
-	int N=pProb->nNet;
-	qsort(netorder,N,sizeof(int),cmp_net);
+	int num=pProb->nNet;
+	qsort(netorder,num,sizeof(int),cmp_net);
 }
 
 void Router::output_netinfo(Net *pNet){
@@ -548,14 +554,14 @@ bool Router::electrode_check(int which, int pin_idx,
 	// construct the graph from the current configuration
 	ConstraintGraph * p_graph = graph[t];
 	GNode add_x(COL,pt.x), add_y(ROW,pt.y); // y is row
-	ADD_EDGE_RESULT add_result;
+	bool add_result;
 	//add_result = p_graph->add_edge_color(add_x,add_y);
 	
 	// try do coloring in this time step, but do not commit change to the graph
 	// because we may try other GridPoint in the same step
 	ConstraintGraph temp(*p_graph);
-	add_result = temp.add_edge_color(add_x,add_y);
-	if( add_result == FAIL )
+	add_result = temp.add_edge_color(add_x,add_y,DIFF);
+	if( add_result == false )
 		return false;
 
 	// let current another droplet be `d'
@@ -578,28 +584,28 @@ bool Router::electrode_check(int which, int pin_idx,
 			case LEFT:
 				if( pt.x-2 == pin[t].x ) {
 					ndx.set(COL,pt.x-2);
-					if( temp.add_edge_color(add_x,ndx) == FAIL ) 
+					if( temp.add_edge_color(add_x,ndx,DIFF) == FAIL ) 
 						return false;
 				}
 				break;
 			case RIGHT:
 				if( pt.x+2 == pin[t].x ) {
 					ndx.set(COL,pt.x-2);
-					if( temp.add_edge_color(add_x,ndx) == FAIL ) 
+					if( temp.add_edge_color(add_x,ndx,DIFF) == FAIL ) 
 						return false;
 				}
 				break;
 			case DOWN:
 				if( pt.y-2 == pin[t].y ) {
 					ndy.set(COL,pt.y-2);
-					if( temp.add_edge_color(add_y,ndy) == FAIL ) 
+					if( temp.add_edge_color(add_y,ndy,DIFF) == FAIL ) 
 						return false;
 				}
 				break;
 			case UP:
 				if( pt.y+2 == pin[t].y ) {
 					ndy.set(COL,pt.y+2);
-					if( temp.add_edge_color(add_y,ndy) == FAIL ) 
+					if( temp.add_edge_color(add_y,ndy,DIFF) == FAIL ) 
 						return false;
 				}
 				break;
@@ -609,23 +615,23 @@ bool Router::electrode_check(int which, int pin_idx,
 			// check for y-1,y+1
 			if( pt.y == pin[t].y-1 ) {
 				ndy.set(ROW,pin[t].y-1);
-				if( temp.add_edge_color(add_y,ndy) == FAIL ) 
+				if( temp.add_edge_color(add_y,ndy,DIFF) == FAIL ) 
 					return false;
 			}
 			else if( pt.y == pin[t].y+1 ){
 				ndy.set(ROW,pt.y+1);
-				if( temp.add_edge_color(add_y,ndy) == FAIL ) 
+				if( temp.add_edge_color(add_y,ndy,DIFF) == FAIL ) 
 					return false;
 			}
 			// check for x-1,x+1
 			if( pt.x-1 == pin[t].x ){
 				ndx.set(COL,pt.x-1);
-				if( temp.add_edge_color(add_x,ndx) == FAIL ) 
+				if( temp.add_edge_color(add_x,ndx,DIFF) == FAIL ) 
 					return false;
 			}
 			else if( pt.x+1 == pin[t].x ){
 				ndx.set(COL,pt.x+1);
-				if( temp.add_edge_color(add_x,ndx) == FAIL ) 
+				if( temp.add_edge_color(add_x,ndx,DIFF) == FAIL ) 
 					return false;
 			}
 			

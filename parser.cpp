@@ -28,7 +28,7 @@ const char * getColor(){
 // 2. all strings must be exactly the same
 Chip * parse(FILE * f,Chip * chip){
 	//char buf[MAXBUF];
-	fscanf(f,"ARRAY: %d %d\n",&chip->N,&chip->M);
+	fscanf(f,"ARRAY: %d %d\n",&chip->W,&chip->H);
 	fscanf(f,"TIME: %d\n",&chip->time);
 	fscanf(f,"TIMECONSTRAINT: %d\n",&chip->T);
 	fscanf(f,"WAT: %d %d\n",&(chip->WAT.x),&(chip->WAT.y));
@@ -71,7 +71,7 @@ Chip * parse(FILE * f,Chip * chip){
 
 // use tgf/tikz to draw A subproblem
 // can be used with ``gen.sh'' to generate all subproblems
-void drawSubproblem(Subproblem * prob, int N,int M,int num,char * name){
+void drawSubproblem(Subproblem * prob, int W,int H,int num,char * name){
 	char figName[MAXBUF];
 	char filename[MAXBUF];
 	char cmd[MAXBUF];
@@ -87,10 +87,10 @@ void drawSubproblem(Subproblem * prob, int N,int M,int num,char * name){
 	FILE * fig = fopen(filename,"a");
 	int i;
 
-	// define \N and \M
+	// define \W and \H
 	fprintf(fig,"%% define the row and column number\n");
-	fprintf(fig,"\\def \\N{%d}",N);
-	fprintf(fig,"\\def \\M{%d}\n",M);
+	fprintf(fig,"\\def \\W{%d}",W);
+	fprintf(fig,"\\def \\H{%d}\n",H);
 
 	// draw block
 	fprintf(fig,"%% blockages\n");
@@ -132,7 +132,7 @@ void drawSubproblem(Subproblem * prob, int N,int M,int num,char * name){
 	}
 
 	// draw grids
-	fprintf(fig,"\\drawgrid{\\N}{\\M}\n");
+	fprintf(fig,"\\drawgrid{\\W}{\\H}\n");
 
 	// output remaing part
 	fprintf(fig,"\\end{tikzpicture}\n");

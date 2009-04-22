@@ -66,7 +66,7 @@ struct Subproblem{// a subproblem has some blocks and nets
 };
 
 struct Chip{// a chip has an array, timing constraint and subproblems
-	int N,M,T;	// array size,timing constraint
+	int W,H,T;	// array size,timing constraint
 	int time;
 	int nSubProblem;
 	Point WAT;

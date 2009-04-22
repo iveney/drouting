@@ -31,12 +31,12 @@ int main(int argc, char * argv[]){
 			printf("subproblem index out of bound!\n");
 			return 1;
 		}
-		drawSubproblem(&chip.prob[idx],chip.N,chip.M,idx,argv[1]);
+		drawSubproblem(&chip.prob[idx],chip.W,chip.H,idx,argv[1]);
 	}
 	else{// draw all subproblems
 		int i=1;
 		for(i=1;i<=chip.nSubProblem;i++){
-			drawSubproblem(&chip.prob[i],chip.N,chip.M,i,argv[1]);
+			drawSubproblem(&chip.prob[i],chip.W,chip.H,i,argv[1]);
 		}
 	}
 

@@ -72,8 +72,8 @@ struct NetRoute{
 class RouteResult{
 public:
 	// constructor, must use T and prob to initialize
-	RouteResult(int T_,int N_,int M_,Subproblem * subprob):
-		T(T_),N(N_),M(M_),pProb(subprob) 
+	RouteResult(int T_,int W_,int H_,Subproblem * subprob):
+		T(T_),W(W_),H(H_),pProb(subprob) 
 	{
 		// allocate route solution space for each net
 		for (int i = 0; i < subprob->nNet; i++) {
@@ -84,7 +84,7 @@ public:
 
 	// data members
 	// timing constraint, should be the same as the chip->T
-	int T,N,M;
+	int T,W,H;
 
 	// the corresponding subproblem
 	// This includes all the information we need
@@ -128,6 +128,9 @@ public:
 
 	// output all the members in current heap
 	void output_heap(const GP_HEAP & h);
+
+	// output voltage assignment status;
+	void output_voltage();
 
 	// given a net index, route the net
 	bool route_net(int which,RouteResult &result);//,ConflictSet &conflict_net);
@@ -187,7 +190,7 @@ public:
 	// members for internal use of routing
 	BYTE blockage[MAXGRID][MAXGRID];
 	int netcount;
-	int N,M,T; // N is , M is
+	int W,H,T; // W=width, H=height
 	int netorder[MAXNET];
 	static Subproblem * pProb;
 	deque<int> nets;

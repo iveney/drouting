@@ -6,77 +6,94 @@
 using std::set;
 using std::vector;
 
-class GNode;
-typedef set<GNode> GNodeSet;
-typedef vector<bool> BoolVector;
-
-enum GType{ROW,COL};
-enum COLOR{H,L,G};
-enum ADD_EDGE_RESULT{FAIL,SUCCESS,EXIST};
 static const char * color_string[]={"H","L","G"};
+
+class GNode;
+class GEdge;
+//typedef set<GNode> GNodeSet;
+//typedef set<GEdge> GEdgeSet;
+typedef vector<bool> BoolVector;
+typedef vector<GNode> GNodeVector;
+typedef vector<GEdge> GEdgeVector;
+
+enum NType{ROW,COL};
+enum EType{SAME,DIFF,NOEDGE};
+enum COLOR{HI,LO,G};
+enum ADD_EDGE_RESULT{FAIL,SUCCESS,EXIST};
 
 class GNode{
 public:
 	friend bool operator <(GNode u,GNode v);
+	friend bool operator == (GNode u,GNode v);
+	friend bool operator != (GNode u, GNode v);
+
 	GNode(){}
-	GNode(GType t,int index):type(t),idx(index){}
-	void set(GType t,int index){
+
+	// default color is G
+	GNode(NType t,int index,COLOR clr=G):
+	      type(t),idx(index),color(clr),ecount(0){}
+
+	void set(NType t,int index){
 		type = t;
 		idx = index;
 	}
 	
-	bool operator == (const GNode & node){
-		return type == node.type && idx == node.idx;
-	}
-	GType type;
-	int idx;
+	NType type;  // specify the node type
+	int idx;     // which index of this node
+	COLOR color; //
+
+	// how many edges from this node,should not be used directly
+	int ecount;  
 };
 
 class GEdge{
 public: 
-	GEdge(const GNode &u_,const GNode &v_):u(u_),v(v_){}
+	//friend bool operator <(GEdge e1,GEdge e2);
+
+	//default constructor
+	GEdge():type(NOEDGE),count(0){
+	}
+	GEdge(const GNode &u_,const GNode &v_,
+	      EType t=NOEDGE):u(u_),v(v_),type(t),count(0){}
+
 	bool operator == (const GEdge & edge){
 		return (u==edge.u && u==edge.v) ||
-			(u==edge.v && v==edge.u);
+		       (u==edge.v && v==edge.u);
 	}
-	friend bool operator <(GEdge e1,GEdge e2);
+
 	GNode u,v;
+	// SAME or DIFF, note being BOTH type means conflict
+	EType type;  
+	// keep track of how many conflict edges
+	int count;
 };
 
 class ConstraintGraph{ 
 public:
 	friend class Router;
+
 	// given row number and column number, initialize the graph
-	ConstraintGraph(int r,int c):row(r),col(c),
-	r_list(vector< GNodeSet >(row)),
-	c_list(vector< GNodeSet >(col)),
-	r_color(vector<COLOR>(row,G)),
-	c_color(vector<COLOR>(col,G)){
-		// initialize all color to G
-	}
 
-	~ConstraintGraph(){ }
+	ConstraintGraph(int width,int height);
+	~ConstraintGraph();
 
-	bool add_edge(const GNode &u,const GNode &v);
-	ADD_EDGE_RESULT add_edge_color(const GNode &u,const GNode &v);
-	bool remove_edge(const GNode & u,const GNode & v);
+	////////////////////////////////////////////////////////
 	bool has_edge(const GNode &u,const GNode &v);
-	GNodeSet::iterator find_edge(const GNode &u,const GNode &v);
-	bool try_coloring();
-	bool recur_color(const GNode & node,COLOR assign);
+	bool remove_edge(const GNode & u,const GNode & v);
 	COLOR erase_color(const GNode & node);
+	bool add_edge_color(const GNode &u,const GNode &v,EType type);
+	bool recur_color(const GNode & node,COLOR assign);
+	bool try_coloring();
 
 private:
-	void recur_reverse_color(const GNode &node,
-		BoolVector &r_mark,BoolVector &c_mark);
+	bool do_add_edge(const GNode &u,const GNode &v,EType type);
+	void recur_reverse_color(const GNode &node, BoolVector &mark);
 	void reverse_color(const GNode &node);
-	void do_add_edge(const GNode &u,const GNode &v);
 
-	int row,col;  
-	vector< GNodeSet > r_list;
-	vector< GNodeSet > c_list;
-	vector< COLOR > r_color;
-	vector< COLOR > c_color;
+	int row,col;                // row and col count
+	GNodeVector node_list;    // 0~row-1 is ROW
+				    // row~(row+col-1) is col
+	vector< GEdgeVector > edge;
 };
 
 #endif
