@@ -40,8 +40,15 @@ public:
 // struct tracks the routing information of a net
 struct NetRoute{
 	NetRoute(int netidx,int pin_num,int timing_):idx(netidx),
-	num_pin(pin_num),timing(timing_) { }
-	void clear(){// clear all it's subnet's route
+	num_pin(pin_num),timing(timing_) {
+		// for this net, generate num_pin-1 subnet
+		/*
+		for (int i = 0; i < num_pin-1; i++) {
+			pin_route[i]=PtVector(timing+1);
+		}
+		*/
+	}
+	void clear(){
 		for (int i = 0; i < num_pin-1; i++) {
 			pin_route[i].clear();
 		}
@@ -52,7 +59,7 @@ struct NetRoute{
 	int merge_time;
 	// important: for a net with N pins
 	// there will be N-1 routes, since it was decomposed
-	// into N-1 2-pin nets. e.g. 3-pin -> 2 subnets
+	// into N-1 2-pin nets
 	PtVector pin_route[MAXPIN-1]; 
 };
 
@@ -188,8 +195,6 @@ public:
 	static Subproblem * pProb;
 	deque<int> nets;
 	ConstraintGraph * graph[MAXTIME+1]; // each time step's graph
-	// for each net, there is a set of conflict edges introduced by this net
-	set<GEdge> conflict_edge[MAXNET];
 
 private:
 	// sort the net according to some criteria defined in cmp_net

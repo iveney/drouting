@@ -1,11 +1,11 @@
+tag
+tags
 *.swp
 *.o
 *.out
 debug
 parser
 main
-tag
-tags
 util/*.tex
 util/*.pdf
 util/*.out
