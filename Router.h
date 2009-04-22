@@ -4,6 +4,7 @@
 #include <deque>
 #include <vector>
 #include <cassert>
+#include <iostream>
 #include "header.h"
 #include "GridPoint.h"
 #include "heap.h"
@@ -11,6 +12,7 @@
 #include "ConstraintGraph.h"
 using std::deque;
 using std::vector;
+using std::cout;
 
 // return value of fluidic constraint check
 enum FLUIDIC_RESULT{SAFE,VIOLATE,SAMENET,SAMEDEST};
@@ -40,26 +42,19 @@ public:
 // struct tracks the routing information of a net
 struct NetRoute{
 	NetRoute(int netidx,int pin_num,int timing_):idx(netidx),
-	num_pin(pin_num),timing(timing_) {
-		// for this net, generate num_pin-1 subnet
-		/*
-		for (int i = 0; i < num_pin-1; i++) {
-			pin_route[i]=PtVector(timing+1);
-		}
-		*/
-	}
-	void clear(){
+	num_pin(pin_num),timing(timing_) { }
+	void clear(){// clear all it's subnet's route
 		for (int i = 0; i < num_pin-1; i++) {
 			pin_route[i].clear();
 		}
 	}
 	int idx;
 	int num_pin;
-	int timing;
+	int timing;   // what is the usage of this timing?
 	int merge_time;
 	// important: for a net with N pins
 	// there will be N-1 routes, since it was decomposed
-	// into N-1 2-pin nets
+	// into N-1 2-pin nets. e.g. 3-pin -> 2 subnets
 	PtVector pin_route[MAXPIN-1]; 
 };
 
@@ -111,9 +106,7 @@ public:
 
 	// default constructor: mark the router's input be empty
 	// initialize the netorder vector(default order:1,2,...)
-	Router():read(false){
-		for(int i=0;i<MAXNET;i++) netorder[i]=i;
-	}
+	Router();
 
 	// free the resources allocated
 	~Router(){}
@@ -195,6 +188,8 @@ public:
 	static Subproblem * pProb;
 	deque<int> nets;
 	ConstraintGraph * graph[MAXTIME+1]; // each time step's graph
+	// for each net, there is a set of conflict edges introduced by this net
+	set<GEdge> conflict_edge[MAXNET];
 
 private:
 	// sort the net according to some criteria defined in cmp_net
