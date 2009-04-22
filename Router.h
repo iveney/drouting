@@ -111,12 +111,9 @@ public:
 
 	// default constructor: mark the router's input be empty
 	// initialize the netorder vector(default order:1,2,...)
-	Router():read(false){
-		for(int i=0;i<MAXNET;i++) netorder[i]=i;
-	}
-
+	Router();
 	// free the resources allocated
-	~Router(){}
+	~Router();
 
 	void init();
 

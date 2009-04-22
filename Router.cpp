@@ -20,6 +20,14 @@ int dy[]={0,0,1,-1,0};
 
 Subproblem * Router::pProb=NULL;
 
+Router::Router():read(false){
+	for(int i=0;i<MAXNET;i++) netorder[i]=i;
+}
+
+Router::~Router(){
+}
+
+
 void Router::read_file(int argc, char * argv[]){
 	FILE * f;
 	if(argc<2)
@@ -112,19 +120,33 @@ void Router::output_result(const RouteResult & result){
 	for (i = 1; i <= T; i++) {
 		cout<<"[t = "<<i<<"]"<<endl;
 		ConstraintGraph * p_graph = graph[i];
-		cout<<"ROW:"<<"\t";
+		cout<<"ROW:\t";
+		PtVector activated;
+		activated.clear();
 		// NOTE: should clarify N is row or col
 		for (j = 0; j < N; j++) {
 			COLOR clr = p_graph->r_color[j];
 			if(clr==G) continue;
 			cout<<"("<<j<<"="<<color_string[clr]<<") ";
+			for(int k=0;k<M;k++){
+				COLOR c_clr = p_graph->c_color[k];
+				if(clr==H && c_clr==L||
+				   clr==L && c_clr==H) {
+					activated.push_back(Point(k,j));
+				}
+			}
 		}
 
-		cout<<endl<<"COL:"<<"\t";
+		cout<<endl<<"COL:\t";
 		for (j = 0; j < M; j++) {
 			COLOR clr = p_graph->c_color[j];
 			if(clr==G) continue;
 			cout<<"("<<j<<"="<<color_string[clr]<<") ";
+		}
+		cout<<endl;
+		cout<<"Act:\t";
+		for(size_t k=0;k<activated.size();k++){
+			cout<<activated[k]<<" ";
 		}
 		cout<<endl;
 	}
@@ -360,21 +382,17 @@ void Router::propagate_nbrs(int which, int pin_idx,GridPoint * current,
 		// calculate its weight
 		Point tmp(x,y);
 		int f_pen=0,e_pen=0,bending=current->bend;
-		/*
 		FLUIDIC_RESULT fluid_result=fluidic_check(which,pin_idx,
 				tmp,t,result,conflict_net);
-				*/
 		bool elect_violate=electrode_check(which,pin_idx,
 			       	tmp,t,result,conflict_net);
 
 		// fluidic constraint check
-		/*
 		if( fluid_result == SAMENET ){
 			// multipin net
 		} else if( fluid_result == VIOLATE ){
 			continue;
 		}
-		*/
 
 		// electro constraint check
 		if( !elect_violate ){
@@ -513,6 +531,8 @@ void Router::output_netorder(int *netorder,int netcount){
 }
 
 // perform electrode constraint check
+// a droplet is moving to a point `pt' at time `t', 
+// determine whether it will violate electrode constraint
 // note that this will implies dynamic fluidic check
 // if we constrain no cell be activated at x+2
 // suppose droplet moving from x to x+1
@@ -538,7 +558,7 @@ bool Router::electrode_check(int which, int pin_idx,
 	if( add_result == FAIL )
 		return false;
 
-	// let current checking droplet be `d',location be (x,y)
+	// let current another droplet be `d'
 	for (int i = 0; i<netcount && netorder[i]!=which; i++) {
 		int checking_idx = netorder[i];
 		const NetRoute & route = result.path[checking_idx];
@@ -547,7 +567,7 @@ bool Router::electrode_check(int which, int pin_idx,
 			const PtVector & pin = route.pin_route[j];
 			// pin[t] is the location at time t(activated at t-1)
 		
-			// check for moving direction, add one more constraint
+			// check for moving direction from t-1 to t
 			DIRECTION dir = pt_relative_pos(pin[t-1],pin[t]);
 			// note that if the droplet stays, pin[t] will not be 
 			// activated at time=t, NO need to add constraint
@@ -585,13 +605,14 @@ bool Router::electrode_check(int which, int pin_idx,
 				break;
 			case STAY:break; // impossible to reach here
 			}
+
 			// check for y-1,y+1
-			if( pt.y-1 == pin[t].y ) {
-				ndy.set(ROW,pt.y-1);
+			if( pt.y == pin[t].y-1 ) {
+				ndy.set(ROW,pin[t].y-1);
 				if( temp.add_edge_color(add_y,ndy) == FAIL ) 
 					return false;
 			}
-			else if( pt.y+1 == pin[t].y ){
+			else if( pt.y == pin[t].y+1 ){
 				ndy.set(ROW,pt.y+1);
 				if( temp.add_edge_color(add_y,ndy) == FAIL ) 
 					return false;
