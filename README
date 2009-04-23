@@ -1,3 +1,6 @@
+CHANGE: rewrite the ConstraintGraph class(use matrix)
+now need to rewrite the constraint part in electrode constraint
+-----------------------------------------------------------------------------------------------
 SUMMARY of questions that need to handle:
 ** When doing rip-up and re-route, should also remove the voltage assignment
   1.the same procedure like in electro constraint, however remove edge
@@ -19,7 +22,9 @@ however, another droplet still require this conflict
 SOLUTION: keep edge count!!
 
 ** how to handle the electro constraint of 3-pin net
-(now not handle at all, just think as no constraint at all)
+evan's IDEA: 
+find a merge point first, 
+and consider a path with odd number of steps
 
 ** 3-pin(multipin) net testing(merging),check how utexas handle
   my idea:the late net should use the route after merged

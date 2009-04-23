@@ -41,26 +41,17 @@ public:
 struct NetRoute{
 	NetRoute(int netidx,int pin_num,int timing_):idx(netidx),
 	num_pin(pin_num),timing(timing_) {
-		// for this net, generate num_pin-1 subnet
-		/*
-		for (int i = 0; i < num_pin-1; i++) {
-			pin_route[i]=PtVector(timing+1);
-		}
-		*/
 	}
 	void clear(){
-		for (int i = 0; i < num_pin-1; i++) {
-			pin_route[i].clear();
-		}
+		pin_route[0].clear();
+		if( num_pin == 3 ) pin_route[1].clear();
 	}
 	int idx;
 	int num_pin;
 	int timing;
 	int merge_time;
-	// important: for a net with N pins
-	// there will be N-1 routes, since it was decomposed
-	// into N-1 2-pin nets
-	PtVector pin_route[MAXPIN-1]; 
+	// at most 3pin
+	PtVector pin_route[2]; 
 };
 
 // the class to stores the final routing result
@@ -153,8 +144,10 @@ public:
 			ConflictSet & conflict_net);
 
 	// determines if there is electrode constraint violation
+	// 2nd Point is parent's location
 	bool electrode_check(int which, int pin_idx,
-			const Point & pt,int t,
+			const Point & pt,
+			const Point & parent_pt,int t,
 			const RouteResult & result,
 			ConflictSet & conflict_net);
 

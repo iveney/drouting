@@ -328,7 +328,7 @@ bool Router::route_net(int which,RouteResult &result)//, ConflictSet &conflict_n
 			output_netorder(netorder,netcount);
 			i--; // re-route this one
 		}
-		output_result(result);
+		//output_result(result);
 	}
 	return true;
 }
@@ -391,7 +391,7 @@ void Router::propagate_nbrs(int which, int pin_idx,GridPoint * current,
 		FLUIDIC_RESULT fluid_result=fluidic_check(which,pin_idx,
 				tmp,t,result,conflict_net);
 		bool elect_violate=electrode_check(which,pin_idx,
-			       	tmp,t,result,conflict_net);
+			       	tmp,current->pt,t,result,conflict_net);
 
 		// fluidic constraint check
 		if( fluid_result == SAMENET ){
@@ -536,39 +536,44 @@ void Router::output_netorder(int *netorder,int netcount){
 	cout<<"]"<<endl;
 }
 
-// perform electrode constraint check
 // a droplet is moving to a point `pt' at time `t', 
 // determine whether it will violate electrode constraint
-// note that this will implies dynamic fluidic check
-// if we constrain no cell be activated at x+2
-// suppose droplet moving from x to x+1
-// then electrode check always implies dynamic+static check!!
+// 1  2  3  4
+// 5  6->7  8
+// 9  10 11 12
+// suppose move 6->7, then row 5, col 3 activated(type 1 constraint)
+// ensure it will not be affected by others if (5,3) activated
+// NOTE: this also implies (5,3) will not affect others(type 2)
+// ensure 2 nets will not cause conflict on another net:1,2,4,9,10,12(type 3)
 bool Router::electrode_check(int which, int pin_idx,
-		const Point & pt,int t,
+		const Point & pt,const Point & parent_pt,int t,
 		const RouteResult & result,
 		ConflictSet & conflict_net){
-	if( t == 0 ) return true; // no need to do at time t=0
-
-	// IMPORTANT: what if the droplet STAYs at time=t?
+	// no need to check at time t=0, no row/col activate
+	if( t == 0 ) return true; 
 	
-	// construct the graph from the current configuration
+	// add edge into the graph of this time step
 	ConstraintGraph * p_graph = graph[t];
+	ConstraintGraph temp(*p_graph);
 	GNode add_x(COL,pt.x), add_y(ROW,pt.y); // y is row
 	bool add_result;
-	//add_result = p_graph->add_edge_color(add_x,add_y);
 	
-	// try do coloring in this time step, but do not commit change to the graph
+	// TYPE 1:
+	// try coloring in this time step, but do not commit change to the graph
 	// because we may try other GridPoint in the same step
-	ConstraintGraph temp(*p_graph);
-	add_result = temp.add_edge_color(add_x,add_y,DIFF);
-	if( add_result == false )
-		return false;
+	// IMPORTANT: if the droplet stays, ignore this
+	DIRECTION which_dir = pt_relative_pos(parent_pt,pt);
+	if( which_dir != STAY ){
+		add_result = temp.add_edge_color(add_x,add_y,DIFF);
+		if( add_result == false ) return false;
+	}
 
-	// let current another droplet be `d'
+	// TYPE 2:
+	// let another droplet be `d'
 	for (int i = 0; i<netcount && netorder[i]!=which; i++) {
 		int checking_idx = netorder[i];
 		const NetRoute & route = result.path[checking_idx];
-		// for each subnet
+		// for each subnet(at most 2)
 		for (int j = 0; j<route.num_pin-1; j++) {
 			const PtVector & pin = route.pin_route[j];
 			// pin[t] is the location at time t(activated at t-1)
@@ -691,8 +696,9 @@ FLUIDIC_RESULT Router::fluidic_check(int which,int pin_idx,
 	// check whether it hit into inself
 	const NetRoute & route = result.path[which];
 	// for all the subnet routed before this pin
-	for (int j = 0; j < route.num_pin-1 && j!= pin_idx; j++) {
-		const PtVector & path = route.pin_route[j];
+	// only need to do it for 3-pin net
+	if( route.num_pin == 3 ){
+		const PtVector & path = route.pin_route[0];
 		if( static_violate(pt,t) || dynamic_violate(pt,t) ){
 			return SAMENET;  // they should merge
 		}
