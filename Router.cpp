@@ -536,6 +536,8 @@ void Router::output_netorder(int *netorder,int netcount){
 	cout<<"]"<<endl;
 }
 
+// TODO: add a parameter to switch between ConstraintGraph
+// one for testing, one for real storage
 // a droplet is moving to a point `pt' at time `t', 
 // determine whether it will violate electrode constraint
 // 1  2  3  4

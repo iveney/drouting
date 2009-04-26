@@ -1,5 +1,15 @@
+an idea for 3-pin net
+route_subnet use src and dest as parameter(don't use Net)
+and return a route regarding the previous RouteResult
+then 3-pin net can be modelled as route pin0,pin1 to their merge point first
+and route merge point to sink point,finally store the result into this Net's RouteResult.
+-----------------------------------------------------------------------------------------------
 CHANGE: rewrite the ConstraintGraph class(use matrix)
 now need to rewrite the constraint part in electrode constraint
+
+HOW TO DO rip-up reroute?
+Routing net X, keep info. that how many times each net will block it
+use the net which causes most conflict numbers to rip-up
 -----------------------------------------------------------------------------------------------
 SUMMARY of questions that need to handle:
 ** When doing rip-up and re-route, should also remove the voltage assignment

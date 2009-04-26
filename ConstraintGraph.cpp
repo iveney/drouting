@@ -163,20 +163,22 @@ bool ConstraintGraph::add_edge_color(const GNode &u,const GNode &v, EType type){
 		return SUCCESS;
 	}
 	else{// u,v not standalone => u,v has colors, but not connected
+		/*
 		if( ucolor != vcolor ){// H-L or L-H
 			if( type == SAME ) // type incompatible!
 				return false;
 			do_add_edge(u,v,type); // safely link them
 			return SUCCESS;
 		}
-		// H-H or L-L
-		// NOTE: not possible in the same component
-		// it might be that by swapping the value
-		// of one connected component, we can do 2-coloring
+		*/
+		// H-L, H-H or L-L
+		// try to swap the color 
+		// of one connected component
 		ConstraintGraph bak(*this); // make backup
-		reverse_color(v);  // reverse the coloring of v component
+		do_add_edge(u,v,type);      // link them first
+		reverse_color(v);           // reverse the coloring of v component
 		COLOR u_newcolor = get_color(u);
-		if( ucolor != u_newcolor ){
+		if( ucolor != u_newcolor ){ // if u's color changed=>2-color failed
 			*this = bak;
 			return FAIL;
 		}
