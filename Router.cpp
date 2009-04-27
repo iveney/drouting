@@ -17,6 +17,7 @@ using std::setw;
 
 int dx[]={-1,1,0,0,0};
 int dy[]={0,0,1,-1,0};
+extern const char *color_string[];
 
 Subproblem * Router::pProb=NULL;
 
@@ -391,7 +392,7 @@ void Router::propagate_nbrs(int which, int pin_idx,GridPoint * current,
 		FLUIDIC_RESULT fluid_result=fluidic_check(which,pin_idx,
 				tmp,t,result,conflict_net);
 		bool elect_violate=electrode_check(which,pin_idx,
-			       	tmp,current->pt,t,result,conflict_net);
+			       	tmp,current->pt,t,result,conflict_net,0);
 
 		// fluidic constraint check
 		if( fluid_result == SAMENET ){
@@ -536,42 +537,41 @@ void Router::output_netorder(int *netorder,int netcount){
 	cout<<"]"<<endl;
 }
 
-// TODO: add a parameter to switch between ConstraintGraph
-// one for testing, one for real storage
-// a droplet is moving to a point `pt' at time `t', 
+// control=0: test =1:real
+// a droplet `d1' is moving to a point `pt' at time `t', 
+// d1 is `pin_idx' subnet of net `which'
+//
 // determine whether it will violate electrode constraint
 // 1  2  3  4
 // 5  6->7  8
 // 9  10 11 12
-// suppose move 6->7, then row 5, col 3 activated(type 1 constraint)
-// ensure it will not be affected by others if (5,3) activated
-// NOTE: this also implies (5,3) will not affect others(type 2)
+// suppose move 6->7, then row 5, col 3 (C3,R5) activated(type 1 constraint)
+// ensure it will not be affected by others if (C3,R5) activated(type 2)
 // ensure 2 nets will not cause conflict on another net:1,2,4,9,10,12(type 3)
 bool Router::electrode_check(int which, int pin_idx,
 		const Point & pt,const Point & parent_pt,int t,
 		const RouteResult & result,
-		ConflictSet & conflict_net){
+		ConflictSet & conflict_net,int control){
 	// no need to check at time t=0, no row/col activate
 	if( t == 0 ) return true; 
 	
 	// add edge into the graph of this time step
 	ConstraintGraph * p_graph = graph[t];
-	ConstraintGraph temp(*p_graph);
-	GNode add_x(COL,pt.x), add_y(ROW,pt.y); // y is row
+	ConstraintGraph testgraph(*p_graph);
+	if( control == 0 ) p_graph = &testgraph; // use for testing
+	GNode add_x(COL,pt.x), add_y(ROW,pt.y);  // y is row
 	bool add_result;
 	
 	// TYPE 1:
-	// try coloring in this time step, but do not commit change to the graph
-	// because we may try other GridPoint in the same step
+	// try coloring in this time step
 	// IMPORTANT: if the droplet stays, ignore this
-	DIRECTION which_dir = pt_relative_pos(parent_pt,pt);
-	if( which_dir != STAY ){
-		add_result = temp.add_edge_color(add_x,add_y,DIFF);
+	DIRECTION dir1 = pt_relative_pos(parent_pt,pt);
+	if( dir1 != STAY ){
+		add_result = p_graph->add_edge_color(add_x,add_y,DIFF);
 		if( add_result == false ) return false;
 	}
 
-	// TYPE 2:
-	// let another droplet be `d'
+	// let another droplet be `d2'
 	for (int i = 0; i<netcount && netorder[i]!=which; i++) {
 		int checking_idx = netorder[i];
 		const NetRoute & route = result.path[checking_idx];
@@ -579,73 +579,156 @@ bool Router::electrode_check(int which, int pin_idx,
 		for (int j = 0; j<route.num_pin-1; j++) {
 			const PtVector & pin = route.pin_route[j];
 			// pin[t] is the location at time t(activated at t-1)
-		
-			// check for moving direction from t-1 to t
-			DIRECTION dir = pt_relative_pos(pin[t-1],pin[t]);
-			// note that if the droplet stays, pin[t] will not be 
-			// activated at time=t, NO need to add constraint
-			// IMPORTANT: what if the droplet STAYs at time=t?
-			if(dir == STAY) continue;
-			GNode ndx,ndy;
-			switch(dir){
-			case LEFT:
-				if( pt.x-2 == pin[t].x ) {
-					ndx.set(COL,pt.x-2);
-					if( temp.add_edge_color(add_x,ndx,DIFF) == FAIL ) 
-						return false;
-				}
-				break;
-			case RIGHT:
-				if( pt.x+2 == pin[t].x ) {
-					ndx.set(COL,pt.x-2);
-					if( temp.add_edge_color(add_x,ndx,DIFF) == FAIL ) 
-						return false;
-				}
-				break;
-			case DOWN:
-				if( pt.y-2 == pin[t].y ) {
-					ndy.set(COL,pt.y-2);
-					if( temp.add_edge_color(add_y,ndy,DIFF) == FAIL ) 
-						return false;
-				}
-				break;
-			case UP:
-				if( pt.y+2 == pin[t].y ) {
-					ndy.set(COL,pt.y+2);
-					if( temp.add_edge_color(add_y,ndy,DIFF) == FAIL ) 
-						return false;
-				}
-				break;
-			case STAY:break; // impossible to reach here
+			// Type 2: check if net-which+other-net affect d2
+			if( dir1 != STAY ){
+				add_result=check_droplet_conflict(parent_pt,pt,pin[t-1],pin[t],p_graph,t,control);
+				if( add_result == false ) return false;
+			}
+			// Type 3: check if d2+other-net affect net-which
+			DIRECTION dir2 = pt_relative_pos(pin[t-1],pin[t]);
+			if( dir2 != STAY ){
+				add_result=check_droplet_conflict(pin[t-1],pin[t],parent_pt,pt,p_graph,t,control);
+				if( add_result == false ) return false;
 			}
 
-			// check for y-1,y+1
-			if( pt.y == pin[t].y-1 ) {
-				ndy.set(ROW,pin[t].y-1);
-				if( temp.add_edge_color(add_y,ndy,DIFF) == FAIL ) 
-					return false;
-			}
-			else if( pt.y == pin[t].y+1 ){
-				ndy.set(ROW,pt.y+1);
-				if( temp.add_edge_color(add_y,ndy,DIFF) == FAIL ) 
-					return false;
-			}
-			// check for x-1,x+1
-			if( pt.x-1 == pin[t].x ){
-				ndx.set(COL,pt.x-1);
-				if( temp.add_edge_color(add_x,ndx,DIFF) == FAIL ) 
-					return false;
-			}
-			else if( pt.x+1 == pin[t].x ){
-				ndx.set(COL,pt.x+1);
-				if( temp.add_edge_color(add_x,ndx,DIFF) == FAIL ) 
-					return false;
-			}
-			
 		} // end of for j
 	} // end of for i
 
+	// check 3-pin net here
+	if( get_pinnum(which) == 3 && pin_idx == 1 ){
+		// if satisfies merging condition ...
+		cout<<"2nd pin of 3-pin net "<<which<<endl;
+	}
+
 	// no electro constraint violation!
+	return true;
+}
+
+// check whether droplet d1 will cause conflict on droplet d2 at time t
+// where S1,T1 are d1's location
+// where S2,T2 are d2's location
+bool Router::check_droplet_conflict(
+		const Point & S1, const Point & T1,
+		const Point & S2, const Point & T2,
+		ConstraintGraph * p_graph,
+		int t,int control){
+	DIRECTION dir1 = pt_relative_pos(S1,T1);
+	if( dir1 == STAY ) return true;
+
+	bool result;
+	// check if the activation of a row affect d2
+	result = try_add_edge(ROW,T1.y,S2,T2,t,p_graph);
+	if( result == false ) return false;
+
+	// check if the activation of a col affect d2
+	result = try_add_edge(COL,T1.x,S2,T2,t,p_graph);
+	if( result == false ) return false;
+
+	return true;
+}
+
+// hline is the horizontal line num
+// S and T are the droplet's position
+PtVector Router::geometry_check_H(int hline,const Point & S,const Point & T){
+	PtVector pts,cells(3);
+	cells[0]=Point(T.x-1,hline);
+	cells[1]=Point(T.x  ,hline);
+	cells[2]=Point(T.x+1,hline);
+	DIRECTION dir = pt_relative_pos(S,T);
+
+	// if the line not intersect with 5x5 bounding box(BB) of T
+	int delta = hline - T.y;
+	if( ABS(delta) > 2 ) return pts; // empty
+	if( ABS(delta) <=1 ){// intersect with 3x3 BB
+		pts = cells;
+		switch( dir ){
+			case LEFT: 
+				pts.push_back(Point(S.x+1,S.y));
+				break;
+			case RIGHT:
+				pts.push_back(Point(S.x-1,S.y));
+				break;
+			default:break; // stalling or moving vertically
+		}
+	}
+	else if( (dir == UP   && hline == S.y-1) || 
+		 (dir == DOWN && hline == S.y+1)) {// ABS(delta) = 2
+		// intersects with upper or lower boundary of 5x5 BB
+		pts = cells;
+	}
+	return pts;
+}
+
+// vline is the vertical line num
+// S and T are the droplet's position
+PtVector Router::geometry_check_V(int vline,const Point & S,const Point & T){
+	PtVector pts,cells(3);
+	cells[0]=Point(vline,T.y-1);
+	cells[1]=Point(vline,T.y);
+	cells[2]=Point(vline,T.y+1);
+	DIRECTION dir = pt_relative_pos(S,T);
+
+	// if the line not intersect with 5x5 bounding box(BB) of T
+	int delta = vline - T.x;
+	if( ABS(delta) > 2 ) return pts; // empty
+	if( ABS(delta) <=1 ){// intersect with 3x3 BB
+		pts = cells;
+		switch( dir ){
+			case UP: 
+				pts.push_back(Point(vline,S.y-1));
+				break;
+			case DOWN:
+				pts.push_back(Point(vline,S.y+1));
+				break;
+			default:break; // stalling or moving vertically
+		}
+	}
+	else if( (dir == LEFT  && vline == S.x+1) || 
+		 (dir == RIGHT && vline == S.x-1)) {// ABS(delta) = 2
+		// intersects with upper or lower boundary of 5x5 BB
+		pts = cells;
+	}
+	return pts;
+}
+
+PtVector Router::geometry_check(NType ntype,int line,
+		const Point & S,const Point & T){
+	if(ntype == ROW) return geometry_check_H(line,S,T);
+	else return geometry_check_V(line,S,T);
+}
+
+
+// add an edge to a constraint graph
+// ntype:  be ROW or COL
+// lineid: the line's index
+// t    :  current time
+// S    :  the droplet's position at t-1
+// T    :  the droplet's position at t
+bool Router::try_add_edge(NType ntype,int lineid,
+		const Point & S, const Point & T,
+		int t,ConstraintGraph * p_graph){
+	PtVector pts = geometry_check(ntype,lineid,S,T);
+	bool result;
+	for (size_t i = 0; i < pts.size(); i++) {
+		// get the information of cell i in graph
+		if( ntype == ROW ){
+			// get the node of col pts[i].x
+			GNode col_node(COL,pts[i].x);
+			GNode row_node(ROW,lineid);
+			if( p_graph->get_node_color(col_node) != G ){
+				result = p_graph->add_edge_color(col_node,row_node,SAME);
+				if(result == false) return false;
+			}
+		}	
+		else{// COL
+			GNode col_node(COL,lineid);
+			GNode row_node(ROW,pts[i].y);
+			if( p_graph->get_node_color(row_node) != G ){
+				result = p_graph->add_edge_color(col_node,row_node,SAME);
+				if(result == false) return false;
+			}
+		}
+	}
 	return true;
 }
 

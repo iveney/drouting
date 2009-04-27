@@ -1,3 +1,12 @@
+* an idea to speed up fluidic constraint check
+use 3D bitmap to mark the forbidden cell occupied by the routed nets
+i.e. do not need to check it one net by one net
+
+1. use add_bitmap to add a routed net based on previous 3D bitmap
+2. if rip-up re-route, bitmap need to reconstruct, (is it ok to just remove existing route for that net?
+suppose NOT, then can clear the 3Dbitmap first, and use add_bitmap to re-add all routed net but the ripped net)
+
+-----------------------------------------------------------------------------------------------
 an idea for 3-pin net
 route_subnet use src and dest as parameter(don't use Net)
 and return a route regarding the previous RouteResult
@@ -29,10 +38,14 @@ PROBLEM: if do it like this, there is problem, e.g.
 two droplets use row=5, and both have an edge between row=6
 but if one be ripped up, the edge will be removed,
 however, another droplet still require this conflict
+
 SOLUTION: keep edge count!!
+PROBLEM again: when adding constraint, e.g.
+for a droplet A, droplet B,C will introduce constraint for A,
+hence there might be 2 edges when doing checking,i.e. B->C and C->B(but actually they are the same edge)
 
 ** how to handle the electro constraint of 3-pin net
-evan's IDEA: 
+Evan's IDEA: 
 find a merge point first, 
 and consider a path with odd number of steps
 

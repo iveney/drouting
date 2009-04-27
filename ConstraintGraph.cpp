@@ -2,10 +2,9 @@
 #include "util.h"
 #include "ConstraintGraph.h"
 
+const char * color_string[]={"H","L","G"};
 // get the real index of the GNode in ConstraintGraph::node
 #define get_node_idx(n) (((n).type==ROW?0:row) + (n).idx)
-
-//
 #define access_node(n) node_list[get_node_idx(n)]
 
 // access the edge of two nodes u,v NOTE: no self edge!
@@ -14,6 +13,10 @@
 #define get_color(n) node_list[get_node_idx(n)].color
 #define set_color(n,color) get_color(n) = (color)
 #define next_color(color) (color)==HI?LO:HI
+
+COLOR ConstraintGraph::get_node_color(const GNode & node){
+	return get_color(node);
+}
 
 ConstraintGraph::ConstraintGraph(int width,int height):
 	row(height),col(width), 

@@ -146,10 +146,25 @@ public:
 	// determines if there is electrode constraint violation
 	// 2nd Point is parent's location
 	bool electrode_check(int which, int pin_idx,
-			const Point & pt,
-			const Point & parent_pt,int t,
+			const Point & pt, const Point & parent_pt,int t,
 			const RouteResult & result,
-			ConflictSet & conflict_net);
+			ConflictSet & conflict_net,int control);
+
+	bool check_droplet_conflict(
+		const Point & S1, const Point & T1,
+		const Point & S2, const Point & T2,
+		ConstraintGraph * p_graph,
+		int t,int control);
+
+	bool try_add_edge(NType ntype,int lineid,
+		const Point & S, const Point & T,
+		int t,ConstraintGraph * p_graph);
+
+	PtVector geometry_check(NType ntype,int line,
+		const Point & S,const Point & T);
+
+	PtVector geometry_check_V(int vline,const Point & S,const Point & T);
+	PtVector geometry_check_H(int hline,const Point & S,const Point & T);
 
 	// determine if given point pt is in valid position
 	bool in_grid(const Point & pt);

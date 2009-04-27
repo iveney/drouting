@@ -6,8 +6,6 @@
 using std::set;
 using std::vector;
 
-static const char * color_string[]={"H","L","G"};
-
 class GNode;
 class GEdge;
 //typedef set<GNode> GNodeSet;
@@ -84,6 +82,7 @@ public:
 	bool add_edge_color(const GNode &u,const GNode &v,EType type);
 	bool recur_color(const GNode & node,COLOR assign);
 	bool try_coloring();
+	COLOR get_node_color(const GNode & node);
 
 private:
 	bool do_add_edge(const GNode &u,const GNode &v,EType type);
