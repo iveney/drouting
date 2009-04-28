@@ -630,10 +630,11 @@ bool Router::check_droplet_conflict(
 // hline is the horizontal line num
 // S and T are the droplet's position
 PtVector Router::geometry_check_H(int hline,const Point & S,const Point & T){
+	assert(hline>=0);
 	PtVector pts,cells(3);
-	cells[0]=Point(T.x-1,hline);
-	cells[1]=Point(T.x  ,hline);
-	cells[2]=Point(T.x+1,hline);
+	const int xs[]={T.x-1,T.x,T.x+1};
+	for (int i = 0; i < 3; i++) 
+		if( xs[i] >= 0 ) cells.push_back( Point(xs[i],hline) );
 	DIRECTION dir = pt_relative_pos(S,T);
 
 	// if the line not intersect with 5x5 bounding box(BB) of T
@@ -643,10 +644,12 @@ PtVector Router::geometry_check_H(int hline,const Point & S,const Point & T){
 		pts = cells;
 		switch( dir ){
 			case LEFT: 
-				pts.push_back(Point(S.x+1,S.y));
+				if( S.x+1 >= 0 )
+					pts.push_back(Point(S.x+1,S.y));
 				break;
 			case RIGHT:
-				pts.push_back(Point(S.x-1,S.y));
+				if( S.x-1 >= 0 )
+					pts.push_back(Point(S.x-1,S.y));
 				break;
 			default:break; // stalling or moving vertically
 		}
@@ -661,11 +664,13 @@ PtVector Router::geometry_check_H(int hline,const Point & S,const Point & T){
 
 // vline is the vertical line num
 // S and T are the droplet's position
+// IMPORTANT: remember to check whether a point is in the chip
 PtVector Router::geometry_check_V(int vline,const Point & S,const Point & T){
+	assert( vline >= 0 );
 	PtVector pts,cells(3);
-	cells[0]=Point(vline,T.y-1);
-	cells[1]=Point(vline,T.y);
-	cells[2]=Point(vline,T.y+1);
+	const int ys[]={T.y-1,T.y,T.y+1};
+	for (int i = 0; i < 3; i++) 
+		if( ys[i] >= 0 ) cells.push_back( Point(vline,ys[i]) );
 	DIRECTION dir = pt_relative_pos(S,T);
 
 	// if the line not intersect with 5x5 bounding box(BB) of T
@@ -675,10 +680,12 @@ PtVector Router::geometry_check_V(int vline,const Point & S,const Point & T){
 		pts = cells;
 		switch( dir ){
 			case UP: 
-				pts.push_back(Point(vline,S.y-1));
+				if( S.y-1 >= 0 )
+					pts.push_back(Point(vline,S.y-1));
 				break;
 			case DOWN:
-				pts.push_back(Point(vline,S.y+1));
+				if( S.y+1 >= 0 )
+					pts.push_back(Point(vline,S.y+1));
 				break;
 			default:break; // stalling or moving vertically
 		}
