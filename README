@@ -1,3 +1,10 @@
+*how to know what nets are affecting it when coloring?
+
+*how to do ripup? how to know what edge to remove?
+I guess there will be not much rip-up and reroute
+and re-do coloring is very fast
+so just remove all things in the graph, and re-add all edges
+-----------------------------------------------------------------------------------------------
 * an idea to speed up fluidic constraint check
 use 3D bitmap to mark the forbidden cell occupied by the routed nets
 i.e. do not need to check it one net by one net
@@ -19,6 +26,11 @@ now need to rewrite the constraint part in electrode constraint
 HOW TO DO rip-up reroute?
 Routing net X, keep info. that how many times each net will block it
 use the net which causes most conflict numbers to rip-up
+Detail:
+when doing propagation, if the net can not move for some reason
+RESULT: sometimes can not find a net that cause this 
+currently just use my method: when propagating a gridpoint, every time violation happens,
+the count for the net causing this ++
 -----------------------------------------------------------------------------------------------
 SUMMARY of questions that need to handle:
 ** When doing rip-up and re-route, should also remove the voltage assignment

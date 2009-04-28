@@ -18,11 +18,14 @@ enum FUNCTION_PLACE{FREE,BLOCK,WASTE};
 
 // implements simple set function
 // keeps the ORDER of element insertion
+// count the conflict net
 class ConflictSet{
 public:
-	ConflictSet(int num):net_num(num),
-		isConflict(IntVector(net_num,0)){
+	ConflictSet(int num):net_num(num),max_id(-1),
+	//	isConflict(IntVector(net_num,0)),
+		conflict_count(IntVector(net_num,0)){
 	}
+	/*
 	void insert(int net_idx){
 		if( isConflict[net_idx] ) return;
 		isConflict[net_idx] = 1;
@@ -32,9 +35,35 @@ public:
 		assert( order.size() > 0 );
 		return order.back();
 	}
+	*/
+	
+	// increment a net's count by 1
+	void increment(int net_id){
+		int tmp = ++conflict_count[net_id];
+		if( max_id == -1 || conflict_count[max_id] < tmp ){
+			// update max conflict net
+			max_id = net_id;
+		}
+	}
+
+	// merge 2nd ConflictSet to this
+	void add_nets(const ConflictSet & toadd){
+		for (int i = 0; i < net_num; i++) {
+			conflict_count[i]+=toadd.conflict_count[i];
+			// update max conflict net
+			if( max_id == -1 || 
+			    conflict_count[i] > conflict_count[max_id] ){
+		//		std::cout<<"update max_id = "<<max_id<<endl;
+				max_id = i;
+			}
+		}
+//		std::cout<<"after add:"<<max_id<<endl;
+	}
 	int net_num;
-	IntVector isConflict;
-	IntVector order;
+	int max_id;		// which net causes most conflict
+	IntVector conflict_count;
+	//IntVector isConflict;
+	//IntVector order;
 };
 
 // struct tracks the routing information of a net
@@ -90,8 +119,8 @@ public:
 	// at each t, there is a list of H and a list of L, those not
 	// in these two lists are assume to be G(ground)
 	// 1st diemstion = time, 2nd dimenstion = some voltage
-	vector< IntVector > tHigh;
-	vector< IntVector > tLow;
+	//vector< IntVector > tHigh;
+	//vector< IntVector > tLow;
 };
 
 // main class for routing the droplets net
@@ -141,7 +170,7 @@ public:
 	FLUIDIC_RESULT fluidic_check(int which, int pin_idx,
 			const Point & pt,int t,
 			const RouteResult & result,
-			ConflictSet & conflict_net);
+			int & conflict_netid);
 
 	// determines if there is electrode constraint violation
 	// 2nd Point is parent's location
@@ -166,6 +195,14 @@ public:
 	PtVector geometry_check_V(int vline,const Point & S,const Point & T);
 	PtVector geometry_check_H(int hline,const Point & S,const Point & T);
 
+
+	void update_graph(int which,int pin_idx,
+			const PtVector & pin_path,
+		const RouteResult & result);
+
+	void allocate_graph();
+	void destroy_graph();
+
 	// determine if given point pt is in valid position
 	bool in_grid(const Point & pt);
 
@@ -177,7 +214,7 @@ public:
 			GridPoint *current,RouteResult &result);
 
 	// given a point `current',propagate it.
-	void propagate_nbrs(int which, int pin_idx,GridPoint * current,
+	bool propagate_nbrs(int which, int pin_idx,GridPoint * current,
 			Point & dst,RouteResult & result,
 			GP_HEAP & p,ConflictSet & conflict_net);
 
