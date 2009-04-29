@@ -220,6 +220,7 @@ void ConstraintGraph::reverse_color(const GNode &node){
 	BoolVector mark(row+col,false);
 	recur_reverse_color(node,mark);
 }
+
 // color `node' using the color `to_assign' 
 // and try color all its adjacent nodes
 bool ConstraintGraph::recur_color(const GNode &node,COLOR to_assign){
