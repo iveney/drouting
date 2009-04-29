@@ -19,7 +19,7 @@ debug: $(HDR) $(SRC)
 	$(CC) -c -DDEBUG $(SRC) main.cpp
 	$(CC) $(OPT) -o $(DBG) $(OBJ) 
 
-parser: parser_main.cpp
+parser: $(OBJ) parser_main.o
 	@echo "Making parser..."
 	$(CC) $(OPT) -o $(parser) $(OBJ) parser_main.o
 

@@ -35,7 +35,7 @@ FILE=$1
 SUBPROB=$2
 OUTPUT="${FILE}_r${SUBPROB}.tex"
 MAIN=./main.3pin       # use to get the routing result
-PARSER=./parser   # use to parse the conrresponding problem and convert to tex
+PARSER=./parser.old   # use to parse the conrresponding problem and convert to tex
 
 ###########################################################################
 echo "Start to visualize..."
@@ -60,7 +60,7 @@ egrep -e "[\]draw.*pin" -e "[\]blockage" "$INTERMEDIATE" >> "${OUTPUT}"
 
 echo "  finishing..."
 cat droute_draw_tail.tex >> "${OUTPUT}"
-#exit 1
+exit 1
 
 pdflatex "${OUTPUT}"
 
