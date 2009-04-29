@@ -45,6 +45,7 @@ void Router::read_file(int argc, char * argv[]){
 }
 
 void Router::allocate_graph(){
+	// index range: 1,2,...T, (totally T graphs)
 	for (int i = 1; i <= T ; i++) {
 		ConstraintGraph * p = new ConstraintGraph(W,H);
 		graph[i] = p;
@@ -589,6 +590,11 @@ int Router::cmp_net(const void* id1,const void* id2){
 void Router::sort_net(Subproblem *pProb, int * netorder){
 	int num=pProb->nNet;
 	qsort(netorder,num,sizeof(int),cmp_net);
+	// test: set predefined netorder here
+	/*
+	int predefine[]={2,0,1,3};
+	std::copy(predefine,predefine+4,netorder);
+	*/
 }
 
 void Router::output_netinfo(Net *pNet){

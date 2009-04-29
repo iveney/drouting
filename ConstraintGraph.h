@@ -90,7 +90,7 @@ private:
 	void reverse_color(const GNode &node);
 
 	int row,col;                // row and col count
-	GNodeVector node_list;    // 0~row-1 is ROW
+	GNodeVector node_list;      // 0~row-1 is ROW
 				    // row~(row+col-1) is col
 	vector< GEdgeVector > edge;
 };
