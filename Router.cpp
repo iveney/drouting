@@ -9,6 +9,7 @@
 #include "Router.h"
 #include "parser.h"
 #include "heap.h"
+#include "draw_voltage.h"
 using std::cout;
 using std::cerr;
 using std::endl;
@@ -75,7 +76,7 @@ void Router::init(){
 RouteResult Router::solve_subproblem(int prob_idx){
 	if( read == false ) report_exit("Must read input first!");
 	cout<<"--- Solving subproblem ["<<prob_idx<<"] ---"<<endl;
-	
+
 	pProb = &chip.prob[prob_idx];
 	netcount = pProb->nNet;
 	sort_net(pProb,netorder);// sort : decide net order
@@ -105,6 +106,9 @@ RouteResult Router::solve_subproblem(int prob_idx){
 	// finally, output result
 	cout<<"Subproblem "<<prob_idx<<" solved!"<<endl;
 	output_result(result);
+
+	// test: output result to TeX file
+	draw_voltage(result);
 
 	// release graph
 	destroy_graph();

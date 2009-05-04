@@ -1,3 +1,8 @@
+wanna to implement a visualizer for the cross-routing result, including the functionality:
+for **each time frame** of the result, (hence the output file contains T pages)
+* draw activation cells,rows,columns
+* draw droplet current position(or movement)
+-----------------------------------------------------------------------------------------------
 added a very loose condition, don't know if any error:
 if two droplet sharing col/row when moving(activate the electrode on that row/col)
 don't check their type 2 constraint
