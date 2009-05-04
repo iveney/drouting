@@ -1,0 +1,7 @@
+-- DAC05 --
+3,5	:loop, netorder deadlock
+6	:slow, can not find result
+9	:good case, big problem but solved 
+
+updated:
+3,5,6 solved!
