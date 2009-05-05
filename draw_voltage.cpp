@@ -59,14 +59,32 @@ void draw_voltage(const RouteResult & result,const char *filename){
 					"green",result.activated[t][k].x,result.activated[t][k].y);
 		}
 
+		// draw block
+		Block * pBlk = result.pProb->block;
+		for(i=0;i<result.pProb->nBlock;i++){
+			fprintf(fig,"\\blockage{%d}{%d}{%d}{%d}\n",
+					pBlk[i].pt[0].x,
+					pBlk[i].pt[0].y,
+					pBlk[i].pt[1].x,
+					pBlk[i].pt[1].y);
+		}
+
+
 		// draw each droplet
 		for (i = 0; i < result.pProb->nNet; i++) {
 			const NetRoute & net_path = result.path[i];
 			for (j = 0; j < net_path.num_pin-1; j++) {
+				// for those routed to waste disposal point
+				if( t >= (int)net_path.pin_route[j].size() ) break;
 				Point pt = net_path.pin_route[j][t];
 				// temporarily use red color
-				fprintf(fig,"\\node[pins,fill=%s] (net_%d_%d) at (%d+\\half,%d+\\half) {\\tt %d};\n",
-						"red",i,j,pt.x,pt.y,t);
+				if( net_path.num_pin == 2 )
+					fprintf(fig,"\\node[pins,fill=%s] (net_%d_%d) at (%d+\\half,%d+\\half) {\\tt %d};\n",
+						"red",i,j,pt.x,pt.y,i);
+				else{
+					fprintf(fig,"\\node[pins,fill=%s] (net_%d_%d) at (%d+\\half,%d+\\half) {\\tt %d_%d};\n",
+						"red",i,j,pt.x,pt.y,i,j);
+				}
 			}
 		}
 
