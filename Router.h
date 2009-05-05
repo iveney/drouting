@@ -4,6 +4,7 @@
 #include <deque>
 #include <vector>
 #include <cassert>
+#include <string>
 #include "header.h"
 #include "GridPoint.h"
 #include "heap.h"
@@ -11,6 +12,7 @@
 #include "ConstraintGraph.h"
 using std::deque;
 using std::vector;
+using std::string;
 
 // return value of fluidic constraint check
 enum FLUIDIC_RESULT{SAFE,VIOLATE,SAMENET,SAMEDEST};
@@ -93,13 +95,20 @@ class RouteResult{
 public:
 	// constructor, must use T and prob to initialize
 	RouteResult(int T_,int W_,int H_,Subproblem * subprob):
-		T(T_),W(W_),H(H_),pProb(subprob) 
+		T(T_),W(W_),H(H_),pProb(subprob),
+		v_row(vector< vector<COLOR> >(T+1)),
+		v_col(vector< vector<COLOR> >(T+1)), // T for dummy use
+		activated(vector< PtVector >(T+1))
 	{
 		// allocate route solution space for each net
 		for (int i = 0; i < subprob->nNet; i++) {
 			path.push_back(NetRoute(i,get_pinnum(i),T));
 		}
-
+		for (int i = 0; i <=T; i++) {
+			v_row[i] = vector<COLOR>(H);
+			v_col[i] = vector<COLOR>(W);
+			activated[i] = PtVector();
+		}
 	}
 
 	// data members
@@ -118,9 +127,11 @@ public:
 	// voltage assignment for each time step from 1 up to T
 	// at each t, there is a list of H and a list of L, those not
 	// in these two lists are assume to be G(ground)
-	// 1st diemstion = time, 2nd dimenstion = some voltage
-	//vector< IntVector > tHigh;
-	//vector< IntVector > tLow;
+	// 1st dimension = time, 2nd dimenstion = row/col index
+	vector< vector<COLOR> > v_row;
+	vector< vector<COLOR> > v_col;
+	// a list of activated cell at time t
+	vector< PtVector > activated;
 };
 
 // main class for routing the droplets net
@@ -137,7 +148,7 @@ public:
 
 	void init();
 
-	void output_result(const RouteResult & result);
+	void output_result(RouteResult & result);
 
 	// do rip up and re route for a net
 	int ripup_reroute(int which,RouteResult & result,
@@ -150,7 +161,7 @@ public:
 	void output_heap(const GP_HEAP & h);
 
 	// output voltage assignment status;
-	void output_voltage();
+	void output_voltage(RouteResult & result);
 
 	// given a net index, route the net
 	bool route_net(int which,RouteResult &result);//,ConflictSet &conflict_net);
@@ -257,7 +268,8 @@ private:
 
 	// init blockage bitmap for use
 	void init_place(Subproblem *p);
-
+	
+	string filename;
 };
 
 #endif

@@ -4,6 +4,7 @@
 \usepackage[dvips]{graphicx,color}
 \usepackage{times}
 \usepackage{tikz}
+\usepackage{ifthen}
 \usepackage{fp}
 \usetikzlibrary {snakes,arrows}
 
@@ -60,6 +61,27 @@
     %\node at (#7) {\tt t\arabic{netcount}}; % label
     \stepcounter{netcount}
 }
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\providecommand{\drawhline}[2]{
+    \ifthenelse{#2=2}
+    {
+    \draw[line width=10pt,blue!50] (0-\half*\half,#1+\half) -- (\W+\half*\half,#1+\half);
+    }
+    {
+
+    \draw[line width=10pt,red!50] (0-\half*\half,#1+\half) -- (\W+\half*\half,#1+\half);
+    }
+}
+\providecommand{\drawvline}[2]{
+    \ifthenelse{#2=2}
+    {
+    \draw[line width=10pt,blue!50] (#1+\half,0-\half*\half) -- (#1+\half,\W+\half*\half);
+    }
+    {
+    \draw[line width=10pt,red!50] (#1+\half,0-\half*\half) -- (#1+\half,\W+\half*\half);
+    }
+}
+%
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \begin{document}
 

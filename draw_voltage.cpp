@@ -22,19 +22,43 @@ void end_figure(FILE * fig,int time){
 		     \\clearpage\n",time);
 }
 
-void draw_voltage(const RouteResult & result){
+void draw_voltage(const RouteResult & result,const char *filename){
 	// fill in template header
-	const char * fn = "result.tex";
+	//const char * fn = filename.c_str();
+	printf("output to %s\n",filename);
 	char cmd[100];
-       	sprintf(cmd,"cat result_header.tex > %s",fn);
+       	sprintf(cmd,"cat result_header.tex > %s",filename);
 	system(cmd);
 
 	// ************************************
 	// main body
-	FILE * fig = fopen("result.tex","a");
+	FILE * fig = fopen(filename,"a");
+	fprintf(fig,"\\def \\W{%d}",result.W);
+	fprintf(fig,"\\def \\H{%d}\n",result.H);
 	int i,j,t;
 	for(t=0;t<=result.T;t++){
 		begin_figure(fig);
+
+		// draw the voltages
+		for (i = 0; i < result.H; i++) {
+			if( result.v_row[t][i] == HI )
+				fprintf(fig,"\\drawhline{%d}{%d}\n",i,1);
+			else if(result.v_row[t][i] == LO )
+				fprintf(fig,"\\drawhline{%d}{%d}\n",i,2);
+		}
+
+		for (i = 0; i < result.W; i++) {
+			if( result.v_col[t][i] == HI )
+				fprintf(fig,"\\drawvline{%d}{%d}\n",i,1);
+			else if(result.v_col[t][i] == LO )
+				fprintf(fig,"\\drawvline{%d}{%d}\n",i,2);
+		}
+		// draw activated cells
+		for(size_t k=0;k<result.activated[t].size();k++){
+			fprintf(fig,"\\node[pins,fill=%s] () at (%d+\\half,%d+\\half) {} ;\n",
+					"green",result.activated[t][k].x,result.activated[t][k].y);
+		}
+
 		// draw each droplet
 		for (i = 0; i < result.pProb->nNet; i++) {
 			const NetRoute & net_path = result.path[i];
@@ -45,10 +69,9 @@ void draw_voltage(const RouteResult & result){
 						"red",i,j,pt.x,pt.y,t);
 			}
 		}
+
 		// draw grids
 		fprintf(fig,"\\drawgrid{%d}{%d}]\n",result.W,result.H);
-
-		// draw the voltages
 
 		// end time frame
 		end_figure(fig,t);

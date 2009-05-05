@@ -1,5 +1,6 @@
 #include <iostream>
 #include <iomanip>
+#include <string>
 #include <stdlib.h>
 #include <algorithm>
 #include <assert.h>
@@ -15,6 +16,7 @@ using std::cerr;
 using std::endl;
 using std::sort;
 using std::setw;
+using std::string;
 
 int dx[]={-1,1,0,0,0};
 int dy[]={0,0,1,-1,0};
@@ -35,10 +37,12 @@ void Router::read_file(int argc, char * argv[]){
 	if(argc<2)
 		report_exit("Usage ./main filename [subproblem]\n");
 
-	const char * filename = argv[1];
+	//const char * filename = argv[1];
+	filename = string(argv[1]);
+
 	if( argc == 3 ) tosolve = atoi(argv[2]);
 	else            tosolve = -1;   // not given in cmdline, solve all
-	if( (f = fopen(filename,"r")) == NULL )
+	if( (f = fopen(filename.c_str(),"r")) == NULL )
 		report_exit("open file error\n");
 	parse(f,&chip); // now `chip' stores subproblems
 	fclose(f);
@@ -107,8 +111,10 @@ RouteResult Router::solve_subproblem(int prob_idx){
 	cout<<"Subproblem "<<prob_idx<<" solved!"<<endl;
 	output_result(result);
 
-	// test: output result to TeX file
-	draw_voltage(result);
+	// TEST: output result to TeX file
+	char buf[100];
+	sprintf(buf,"%s_%d_sol.tex",filename.c_str(),prob_idx);
+	draw_voltage(result,buf);
 
 	// release graph
 	destroy_graph();
@@ -116,7 +122,7 @@ RouteResult Router::solve_subproblem(int prob_idx){
 	return result ;
 }
 
-void Router::output_result(const RouteResult & result){
+void Router::output_result(RouteResult & result){
 	int i,j;
 	// for each net
 	for (i = 0; i < netcount; i++) {
@@ -132,34 +138,42 @@ void Router::output_result(const RouteResult & result){
 			}
 		}
 	}
-	output_voltage();
+	output_voltage(result);
 }
 
-void Router::output_voltage(){
+// output the voltage assignment
+// also save the result into RouteResult...
+void Router::output_voltage(RouteResult & result){
 	int i,j;
-	// output the voltage assignment
+	// for each time step
 	for (i = 1; i <= T; i++) {
 		cout<<"[t = "<<i<<"]"<<endl;
 		ConstraintGraph * p_graph = graph[i];
 		cout<<"ROW:\t";
 		PtVector activated;
 		activated.clear();
+		result.activated[i-1].clear();
+		// output ROW
 		for (j = 0;j<H; j++) {
 			COLOR clr = p_graph->node_list[j].color;
+			result.v_row[i-1][j] = clr;
 			if(clr==G) continue;
 			cout<<"("<<j<<"="<<color_string[clr]<<") ";
 			for(int k=0;k<W;k++){
 				COLOR c_clr = p_graph->node_list[k+H].color;
 				if(clr==HI && c_clr==LO||
 				   clr==LO && c_clr==HI) {
-					activated.push_back(Point(k,j));
+					Point tmp(k,j);
+					activated.push_back(tmp);
 				}
 			}
 		}
 
+		// output COL
 		cout<<endl<<"COL:\t";
 		for (j = 0; j < W; j++) {
 			COLOR clr = p_graph->node_list[j+H].color;
+			result.v_col[i-1][j] = clr;
 			if(clr==G) continue;
 			cout<<"("<<j<<"="<<color_string[clr]<<") ";
 		}
@@ -167,10 +181,16 @@ void Router::output_voltage(){
 		cout<<"Act:\t";
 		for(size_t k=0;k<activated.size();k++){
 			cout<<activated[k]<<" ";
+			result.activated[i-1].push_back(activated[k]);
 		}
 		cout<<endl;
 	}
-
+	for(i=0;i<W;i++){
+		result.v_col[T][i]=G;
+	}
+	for(i=0;i<H;i++){
+		result.v_row[T][i]=G;
+	}
 }
 
 // mark the block location as 1
@@ -333,7 +353,7 @@ bool Router::route_subnet(Point src,Point dst,
 	// This subnet is successully routed
 	// backtrack phase, stores results to RouteResult
 	backtrack(which,pin_idx,current,result);
-	output_result(result);
+	//output_result(result);
 	p.free();
 	return true;
 
