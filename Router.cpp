@@ -829,6 +829,7 @@ bool Router::try_add_edge(NType ntype,int lineid,
 // for a net `which' at location `pt' at time `t', 
 // perform fluidic constraint check.if successful return 0 
 // else return the conflicting net
+// IMPORTANT: seems we need to check path[t] and net[which] at t-1
 #define fluidic_violate(pt,t,ep) \
 	(!(abs((pt).x - path[(t)-(ep)].x) >=2 || \
 	   abs((pt).y - path[(t)-(ep)].y) >=2))
