@@ -251,6 +251,7 @@ public:
 	static Subproblem * pProb;
 	deque<int> nets;
 	ConstraintGraph * graph[MAXTIME+1]; // each time step's graph
+	int max_t;
 
 private:
 	// sort the net according to some criteria defined in cmp_net

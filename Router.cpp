@@ -27,6 +27,7 @@ Subproblem * Router::pProb=NULL;
 
 Router::Router():read(false){
 	for(int i=0;i<MAXNET;i++) netorder[i]=i;
+	max_t = -1;
 }
 
 Router::~Router(){
@@ -274,6 +275,7 @@ bool Router::route_subnet(Point src,Point dst,
 			if( !fail ){// safely enter destination and stay
 				cout<<"Find "<<dst
 				    <<" at time "<<current->time<<"!"<<endl;
+				if( reach_t > max_t ) max_t = reach_t;
 				success = true;
 				break;
 			}// otherwise, continue to search
@@ -717,6 +719,8 @@ bool Router::electrode_check(int which, int pin_idx,
 		for (int j = 0; j<route.num_pin-1; j++) {
 			const PtVector & pin = route.pin_route[j];
 			// pin[t] is the location at time t(activated at t-1)
+			// IMOPRTANT: some droplet may disappear (waste disposal)
+			if( t >= (int)pin.size() ) break;
 			// IMPORTANT: if two droplet's sharing same activating row/column
 			//            NO need to check the constraint!( my assumption )
 			if( pt.x == pin[t].x || pt.y == pin[t].y ) continue;
@@ -785,7 +789,7 @@ PtVector Router::geometry_check_H(int hline,const Point & S,const Point & T){
 	PtVector pts,cells;
 	const int xs[]={T.x-1,T.x,T.x+1};
 	for (int i = 0; i < 3; i++) 
-		if( xs[i] >= 0 ) cells.push_back( Point(xs[i],hline) );
+		if( xs[i] >= 0 && xs[i] < W ) cells.push_back( Point(xs[i],hline) );
 	DIRECTION dir = pt_relative_pos(S,T);
 
 	// if the line not intersect with 5x5 bounding box(BB) of T
@@ -821,7 +825,7 @@ PtVector Router::geometry_check_V(int vline,const Point & S,const Point & T){
 	PtVector pts,cells;
 	const int ys[]={T.y-1,T.y,T.y+1};
 	for (int i = 0; i < 3; i++) 
-		if( ys[i] >= 0 ) cells.push_back( Point(vline,ys[i]) );
+		if( ys[i] >= 0 && ys[i] < H ) cells.push_back( Point(vline,ys[i]) );
 	DIRECTION dir = pt_relative_pos(S,T);
 
 	// if the line not intersect with 5x5 bounding box(BB) of T
