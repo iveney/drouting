@@ -1,3 +1,13 @@
+IMPORTANT:
+since for 3pin net, electrode conflict might happen between them
+which increases conflict count of the net they belong
+hence may get a rip-up net idx equalss themselve!
+
+IMPORTANT:
+for case DAC05 56
+electrode interference happens for net 2
+maybe that is because lack of chekcing electrode constraint after it stops there
+-----------------------------------------------------------------------------------------------
 problem:
 if several nets are stalling outside th WAT(waiting to disappear)
 many conflict will be caused

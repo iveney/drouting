@@ -16,6 +16,8 @@ using std::string;
 
 // return value of fluidic constraint check
 enum FLUIDIC_RESULT{SAFE,VIOLATE,SRC_VIOLATE,SAMENET,SAMEDEST};
+
+// marks the functional part on chip
 enum FUNCTION_PLACE{FREE,BLOCK,WASTE};
 
 // implements simple set function
@@ -50,10 +52,10 @@ public:
 		}
 	}
 
-	int net_num;
+	int net_num;		// total number of nets
 	int max_id;		// which net causes most conflict
-	int total;
-	IntVector conflict_count;
+	int total;		// total number of conflicts
+	IntVector conflict_count; // each net's conflict count
 };
 
 // struct tracks the routing information of a net
@@ -65,15 +67,18 @@ struct NetRoute{
 		pin_route[0].clear();
 		if( num_pin == 3 ) pin_route[1].clear();
 	}
-	int idx;
-	int num_pin;
-	int timing;
-	int merge_time;
-	// at most 3pin
+	int idx;	// this net's id
+	int num_pin;    // net pins,be 2 or 3
+	int timing;     // total time used
+	int merge_time; // merge time for this net
+	// The route location of this net,
+	// at most 3pin, hence only two elements
 	PtVector pin_route[2]; 
+	int reach_time[2]; // the time a droplet finishes routing
 };
 
 // the class to stores the final routing result
+// ** 
 #define get_pinnum(net_id) pProb->net[(net_id)].numPin
 #define get_pinpt(net_id,pin_id) pProb->net[(net_id)].pin[(pin_id)].pt
 #define get_netdst_pt(net_id) ((get_pinnum(net_id)==2)?\
@@ -118,6 +123,7 @@ public:
 	// 1st dimension = time, 2nd dimenstion = row/col index
 	vector< vector<COLOR> > v_row;
 	vector< vector<COLOR> > v_col;
+
 	// a list of activated cell at time t
 	vector< PtVector > activated;
 };
@@ -221,25 +227,30 @@ public:
 			int which,int pin_idx,
 			RouteResult & result,
 			ConflictSet & conflict_net);
+
+	bool route_2pin(int which,RouteResult & result,
+		ConflictSet & conflict_net);
 	
+	bool route_3pin(int which,RouteResult & result,
+		ConflictSet & conflict_net);
 
 	///////////////////////////////////////////////////////////////////
 	// members
 	bool read;      // mark if configuration has been read
 	Chip chip;      // stores all the information
 	int tosolve;    // which subproblem to solve,given in cmd line
-	ResultVector route_result;
+	ResultVector route_result; // stores the final route result
 
 	///////////////////////////////////////////////////////////////////
 	// members for internal use of routing
-	BYTE blockage[MAXGRID][MAXGRID];
-	int netcount;
+	BYTE blockage[MAXGRID][MAXGRID]; // bitmap for block
+	int netcount;              // total net number
 	int W,H,T; // W=width, H=height
-	int netorder[MAXNET];
-	static Subproblem * pProb;
-	deque<int> nets;
+	int netorder[MAXNET];      // the net routing order
+	static Subproblem * pProb; // pointer to the current solving subproblem
+	deque<int> nets;  // a list of unrouted nets
 	ConstraintGraph * graph[MAXTIME+1]; // each time step's graph
-	int max_t;
+	int max_t; // TEST: output maximum time used
 
 private:
 	int last_ripper_id;
@@ -260,7 +271,7 @@ private:
 	// init blockage bitmap for use
 	void init_place(Subproblem *p);
 	
-	string filename;
+	string filename;  // TEST: filename to output the tex file
 };
 
 #endif

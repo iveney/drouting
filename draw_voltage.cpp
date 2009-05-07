@@ -83,7 +83,7 @@ void draw_voltage(const RouteResult & result,const char *filename){
 					fprintf(fig,"\\node[pins,fill=%s] (net_%d_%d) at (%d+\\half,%d+\\half) {\\tt %d};\n",
 						"red",i,j,pt.x,pt.y,i);
 				else{
-					fprintf(fig,"\\node[pins,fill=%s] (net_%d_%d) at (%d+\\half,%d+\\half) {\\tt %d_%d};\n",
+					fprintf(fig,"\\node[pins,fill=%s] (net_%d_%d) at (%d+\\half,%d+\\half) {$\\mathtt{%d}$\\_$\\mathtt{%d}$};\n",
 						"red",i,j,pt.x,pt.y,i,j);
 				}
 			}
