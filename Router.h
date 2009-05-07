@@ -139,7 +139,7 @@ public:
 	void output_result(RouteResult & result);
 
 	// do rip up and re route for a net
-	int ripup_reroute(int which,RouteResult & result,
+	bool ripup_reroute(int which,RouteResult & result,
 			ConflictSet &conflict_net);
 
 	// read the file and subproblem number from cmd line argument
@@ -169,7 +169,7 @@ public:
 	FLUIDIC_RESULT fluidic_check(int which, int pin_idx,
 			const Point & pt,int t,
 			const RouteResult & result,
-			int & conflict_netid);
+			ConflictSet & conflict_set);
 
 	// determines if there is electrode constraint violation
 	// 2nd Point is parent's location
@@ -242,6 +242,8 @@ public:
 	int max_t;
 
 private:
+	int last_ripper_id;
+
 	// sort the net according to some criteria defined in cmp_net
 	void sort_net(Subproblem *pProb, int * netorder);
 

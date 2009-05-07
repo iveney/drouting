@@ -1,3 +1,12 @@
+problem:
+if several nets are stalling outside th WAT(waiting to disappear)
+many conflict will be caused
+what about cancel some conflict by detecting if the causer is stalling?
+
+deadlock breaking
+if going to rip up the one rip up itself previously,
+try to rip up another net: second-most
+-----------------------------------------------------------------------------------------------
 one question
 when checking electrode constraint
 what if one of the droplet's adjacent cell is blockage?

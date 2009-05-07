@@ -87,6 +87,8 @@ RouteResult Router::solve_subproblem(int prob_idx){
 	sort_net(pProb,netorder);// sort : decide net order
 	output_netorder(netorder,netcount);
 
+	last_ripper_id = -1;
+
 	// generate blockage bitmap
 	init_place(pProb);
 
@@ -276,13 +278,13 @@ bool Router::route_subnet(Point src,Point dst,
 			// see whether it can stay in destination
 			// TODO: also need to check electrode constraint here!!
 			for (int i = reach_t+1; i <= T; i++) {
-				int conflict_netid;
+				//int conflict_netid;
 				fluid_result = fluidic_check(which,
 						pin_idx, current->pt,
-						i,result,conflict_netid);
+						i,result,conflict_net);
 				if( fluid_result == VIOLATE ){
-					assert(conflict_netid != which);
-					conflict_net.increment(conflict_netid);
+					//assert(conflict_netid != which);
+					//conflict_net.increment(conflict_netid);
 					fail = true;
 					break;
 				}
@@ -409,12 +411,15 @@ bool Router::route_net(int which,RouteResult &result) {
 				return false;
 			cerr<<"Error: route subnet "<<which<<"-"<<i
 			    <<" failed ,try ripup-reroute!"<<endl;
-			ripup_reroute(which,result,conflict_net);
+			bool ret;
+			ret = ripup_reroute(which,result,conflict_net);
+			if( ret == false ) return false;
 			output_netorder(netorder,netcount);
 		//	cout<<"after rip"<<endl;
 		//	output_result(result);
 			cout<<"re-route net "<<which<<endl;
 			i=-1; // re-route WHOLE net
+			last_ripper_id = which;
 			rerouted=true;
 		}
 		//output_result(result);
@@ -425,15 +430,40 @@ bool Router::route_net(int which,RouteResult &result) {
 
 // for a given net `which', find a valid net order to reroute it
 // POSTCONDITION: the net order will be changed
-int Router::ripup_reroute(int which,RouteResult & result,
+bool Router::ripup_reroute(int which,RouteResult & result,
 		ConflictSet &conflict_net){
 	// cancel the route result of some conflict net
 	// now use the most conflict net=`max_id'
 	int max_id = conflict_net.max_id;
 	assert(max_id>=0);
-	cout<<"*** ripping net "<<max_id<<",conflict count="<<
-		conflict_net.conflict_count[max_id]<<" ***"<<endl;
+
+	// check if max_id is the net that rip `which' previously
+	if(max_id == last_ripper_id){
+		cout<<"deadlock...break using the 2nd largest"<<endl;
+		// find the 2nd largest
+		int max_count=-1;
+		max_id=-1;
+		for (int i = 0; i < conflict_net.net_num; i++) {
+			cout<<"confclit "<<i<<"="<<conflict_net.conflict_count[i]<<endl;
+			if( max_count < conflict_net.conflict_count[i] &&
+			    i != conflict_net.max_id ){
+				max_count = conflict_net.conflict_count[i];
+				max_id = i;
+			}
+		}
+	}
+	
+	if( max_id == -1 ){ // there is no 2nd largest...
+		return false;
+	}
+
+	cout<<"** ripping net "<<max_id<<",conflict count="
+	    <<conflict_net.conflict_count[max_id]
+	    <<" last ripper = "<<last_ripper_id<<" **"<<endl;
 	result.path[max_id].clear(); // cancel the routed path
+
+	// clear the conflict result of this net
+	conflict_net =  ConflictSet(conflict_net.net_num);
 
 	// find there index in netorder
 	int max_id_inorder,which_id_inorder;
@@ -467,7 +497,9 @@ int Router::ripup_reroute(int which,RouteResult & result,
 		}
 	}
 
-	return which_id_inorder-1;//`which' moved one place before in netorder
+	//`which' moved one place before in netorder
+	//return which_id_inorder-1;
+	return true;
 }
 
 // given a grid point `gp_from' during propagation of routing net `which',
@@ -506,17 +538,17 @@ bool Router::propagate_nbrs(int which, int pin_idx,GridPoint * gp_from,
 		// calculate its weight
 		Point moving_to(x,y);
 		int f_pen=0,e_pen=0,bending=gp_from->bend;
-		int conflict_netid;
+		//int conflict_netid;
 
 		// fluidic constraint check
 		FLUIDIC_RESULT fluid_result=fluidic_check(which,pin_idx,
-				moving_to,t,result,conflict_netid);
+				moving_to,t,result,possible_nets);
 		if( fluid_result == SAMENET ){
 			// multipin net, leave it blank currently
 			report_exit("fluid_result == SAMENET");
 		} else if( fluid_result == VIOLATE ){
-			assert(conflict_netid != which);
-			possible_nets.increment(conflict_netid);
+			//assert(conflict_netid != which);
+			//possible_nets.increment(conflict_netid);
 			//cout<<"net "<<which<<" fluidic violation:"
 			//    <<from_pt<<"->"<<moving_to<<endl;
 			continue;
@@ -932,7 +964,7 @@ bool Router::try_add_edge(NType ntype,int lineid,
 	fluidic_violate(pt,t,1)
 FLUIDIC_RESULT Router::fluidic_check(int which,int pin_idx,
 	       	const Point & pt,int t,
-		const RouteResult & result,int & conflict_netid){
+		const RouteResult & result,ConflictSet & conflict_set){
 	// for each routed net(including partial), 
 	// check if the current routing net(which) violate fluidic rule
 	// we have known the previous routed net 
@@ -953,8 +985,10 @@ FLUIDIC_RESULT Router::fluidic_check(int which,int pin_idx,
 			// static fluidic check
 			if( static_violate(pt,t) || 
 		            dynamic_violate(pt,t) ){
-				//conflict_net.insert(checking_idx);
-				conflict_netid = checking_idx;
+				DIRECTION dir = pt_relative_pos(
+						path[t],path[t-1]);
+				if( dir != STAY )
+					conflict_set.increment(checking_idx);
 				return VIOLATE;
 			}
 		} // end of for j
