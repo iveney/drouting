@@ -22,6 +22,10 @@ int dx[]={-1,1,0,0,0};
 int dy[]={0,0,1,-1,0};
 extern const char *color_string[];
 
+// parameter to control the searching
+int MAXCFLT=10000;
+int MAX_SINGLE_CFLT=1000;
+
 // static memeber initialization
 Subproblem * Router::pProb=NULL;
 
@@ -94,6 +98,10 @@ RouteResult Router::solve_subproblem(int prob_idx){
 
 	// the result to return
 	RouteResult result(this->T,this->W,this->H,this->pProb);
+
+	// set the parameter
+	MAX_SINGLE_CFLT = this->W * this->H * this->T / (pProb->nNet/2);
+	MAXCFLT = MAX_SINGLE_CFLT;
 
 	// start to route each net according to sorted order
 	nets.clear();
@@ -444,7 +452,8 @@ bool Router::ripup_reroute(int which,RouteResult & result,
 		int max_count=-1;
 		max_id=-1;
 		for (int i = 0; i < conflict_net.net_num; i++) {
-			cout<<"confclit "<<i<<"="<<conflict_net.conflict_count[i]<<endl;
+			//cout<<"confclit "<<i<<"="
+			//    <<conflict_net.conflict_count[i]<<endl;
 			if( max_count < conflict_net.conflict_count[i] &&
 			    i != conflict_net.max_id ){
 				max_count = conflict_net.conflict_count[i];

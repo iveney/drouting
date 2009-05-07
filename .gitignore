@@ -13,3 +13,5 @@ util/*.bak
 util/*.log
 util/*.aux
 cscope.files
+*.pdf
+*.tex
