@@ -1,5 +1,6 @@
 #include <iostream>
 #include <iomanip>
+#include <string>
 #include <stdlib.h>
 #include <algorithm>
 #include <assert.h>
@@ -9,35 +10,44 @@
 #include "Router.h"
 #include "parser.h"
 #include "heap.h"
+#include "draw_voltage.h"
 using std::cout;
 using std::cerr;
 using std::endl;
 using std::sort;
 using std::setw;
+using std::string;
 
 int dx[]={-1,1,0,0,0};
 int dy[]={0,0,1,-1,0};
 extern const char *color_string[];
 
+// parameter to control the searching
+int MAXCFLT=10000;
+int MAX_SINGLE_CFLT=1000;
+
+// static memeber initialization
 Subproblem * Router::pProb=NULL;
 
 Router::Router():read(false){
 	for(int i=0;i<MAXNET;i++) netorder[i]=i;
+	max_t = -1;
 }
 
 Router::~Router(){
 }
-
 
 void Router::read_file(int argc, char * argv[]){
 	FILE * f;
 	if(argc<2)
 		report_exit("Usage ./main filename [subproblem]\n");
 
-	const char * filename = argv[1];
+	//const char * filename = argv[1];
+	filename = string(argv[1]);
+
 	if( argc == 3 ) tosolve = atoi(argv[2]);
 	else            tosolve = -1;   // not given in cmdline, solve all
-	if( (f = fopen(filename,"r")) == NULL )
+	if( (f = fopen(filename.c_str(),"r")) == NULL )
 		report_exit("open file error\n");
 	parse(f,&chip); // now `chip' stores subproblems
 	fclose(f);
@@ -45,6 +55,7 @@ void Router::read_file(int argc, char * argv[]){
 }
 
 void Router::allocate_graph(){
+	// index range: 1,2,...T, (totally T graphs)
 	for (int i = 1; i <= T ; i++) {
 		ConstraintGraph * p = new ConstraintGraph(W,H);
 		graph[i] = p;
@@ -74,17 +85,23 @@ void Router::init(){
 RouteResult Router::solve_subproblem(int prob_idx){
 	if( read == false ) report_exit("Must read input first!");
 	cout<<"--- Solving subproblem ["<<prob_idx<<"] ---"<<endl;
-	
+
 	pProb = &chip.prob[prob_idx];
 	netcount = pProb->nNet;
 	sort_net(pProb,netorder);// sort : decide net order
 	output_netorder(netorder,netcount);
+
+	last_ripper_id = -1;
 
 	// generate blockage bitmap
 	init_place(pProb);
 
 	// the result to return
 	RouteResult result(this->T,this->W,this->H,this->pProb);
+
+	// set the parameter
+	MAX_SINGLE_CFLT = this->W * this->H * this->T / (pProb->nNet/2);
+	MAXCFLT = MAX_SINGLE_CFLT;
 
 	// start to route each net according to sorted order
 	nets.clear();
@@ -105,13 +122,18 @@ RouteResult Router::solve_subproblem(int prob_idx){
 	cout<<"Subproblem "<<prob_idx<<" solved!"<<endl;
 	output_result(result);
 
+	// TEST: output result to TeX file
+	char buf[100];
+	sprintf(buf,"%s_%d_sol.tex",filename.c_str(),prob_idx);
+	draw_voltage(result,buf);
+
 	// release graph
 	destroy_graph();
 
 	return result ;
 }
 
-void Router::output_result(const RouteResult & result){
+void Router::output_result(RouteResult & result){
 	int i,j;
 	// for each net
 	for (i = 0; i < netcount; i++) {
@@ -127,34 +149,42 @@ void Router::output_result(const RouteResult & result){
 			}
 		}
 	}
-	output_voltage();
+	output_voltage(result);
 }
 
-void Router::output_voltage(){
+// output the voltage assignment
+// also save the result into RouteResult...
+void Router::output_voltage(RouteResult & result){
 	int i,j;
-	// output the voltage assignment
+	// for each time step
 	for (i = 1; i <= T; i++) {
 		cout<<"[t = "<<i<<"]"<<endl;
 		ConstraintGraph * p_graph = graph[i];
 		cout<<"ROW:\t";
 		PtVector activated;
 		activated.clear();
+		result.activated[i-1].clear();
+		// output ROW
 		for (j = 0;j<H; j++) {
 			COLOR clr = p_graph->node_list[j].color;
+			result.v_row[i-1][j] = clr;
 			if(clr==G) continue;
 			cout<<"("<<j<<"="<<color_string[clr]<<") ";
 			for(int k=0;k<W;k++){
 				COLOR c_clr = p_graph->node_list[k+H].color;
 				if(clr==HI && c_clr==LO||
 				   clr==LO && c_clr==HI) {
-					activated.push_back(Point(k,j));
+					Point tmp(k,j);
+					activated.push_back(tmp);
 				}
 			}
 		}
 
+		// output COL
 		cout<<endl<<"COL:\t";
 		for (j = 0; j < W; j++) {
 			COLOR clr = p_graph->node_list[j+H].color;
+			result.v_col[i-1][j] = clr;
 			if(clr==G) continue;
 			cout<<"("<<j<<"="<<color_string[clr]<<") ";
 		}
@@ -162,10 +192,16 @@ void Router::output_voltage(){
 		cout<<"Act:\t";
 		for(size_t k=0;k<activated.size();k++){
 			cout<<activated[k]<<" ";
+			result.activated[i-1].push_back(activated[k]);
 		}
 		cout<<endl;
 	}
-
+	for(i=0;i<W;i++){
+		result.v_col[T][i]=G;
+	}
+	for(i=0;i<H;i++){
+		result.v_row[T][i]=G;
+	}
 }
 
 // mark the block location as 1
@@ -208,8 +244,23 @@ bool Router::route_subnet(Point src,Point dst,
 	bool success = false;  // mark if this net is routed successfully
 	FLUIDIC_RESULT fluid_result;
 	while( !p.empty() ){
-		if( p.size() > MAXHEAPSIZE )
-			report_exit("Heap exceed!");
+		if( p.size() > MAXHEAPSIZE ){
+			// jump out to rip up others
+			cerr<<"heap size exceed"<<endl;
+			break;
+			//report_exit("Heap exceed!");
+		}
+		// if there are too much conflict, ripup and reroute
+		if( conflict_net.total > MAXCFLT ){
+			cerr<<"too much conflict"<<endl;
+			break;
+		}
+		// if there is some net causing too much conflict
+		int mid = conflict_net.max_id;
+		if( conflict_net.conflict_count[mid] > MAX_SINGLE_CFLT ){
+			cerr<<"too much conflict caused by "<<mid<<endl;
+			break;
+		}
 		// get wave_front and propagate its neighbour
 		//p.sort();
 #ifdef DEBUG
@@ -233,14 +284,15 @@ bool Router::route_subnet(Point src,Point dst,
 			int reach_t = current->time;
 			bool fail = false;
 			// see whether it can stay in destination
+			// TODO: also need to check electrode constraint here!!
 			for (int i = reach_t+1; i <= T; i++) {
-				int conflict_netid;
+				//int conflict_netid;
 				fluid_result = fluidic_check(which,
 						pin_idx, current->pt,
-						i,result,conflict_netid);
+						i,result,conflict_net);
 				if( fluid_result == VIOLATE ){
-					assert(conflict_netid != which);
-					conflict_net.increment(conflict_netid);
+					//assert(conflict_netid != which);
+					//conflict_net.increment(conflict_netid);
 					fail = true;
 					break;
 				}
@@ -248,6 +300,7 @@ bool Router::route_subnet(Point src,Point dst,
 			if( !fail ){// safely enter destination and stay
 				cout<<"Find "<<dst
 				    <<" at time "<<current->time<<"!"<<endl;
+				if( reach_t > max_t ) max_t = reach_t;
 				success = true;
 				break;
 			}// otherwise, continue to search
@@ -270,6 +323,7 @@ bool Router::route_subnet(Point src,Point dst,
 		}
 
 		// stall at the same position, stall for 1 time step
+		/*
 		GridPoint *same = new GridPoint( current->pt,
 				current, t,current->bend,  
 				current->fluidic, current->electro, 
@@ -278,6 +332,8 @@ bool Router::route_subnet(Point src,Point dst,
 		int conflict_netid ;
 		fluid_result=fluidic_check(which,pin_idx,
 			same->pt,same->time,result,conflict_netid);
+		bool not_elect_violate = electrode_check(which,pin_idx,
+			same->pt,same->pt,same->time,result,conflict_net,0);
 
 		// handle fluidic check result
 		switch( fluid_result ){
@@ -292,13 +348,17 @@ bool Router::route_subnet(Point src,Point dst,
 			assert(conflict_netid != which);
 			conflict_net.increment( conflict_netid );
 			break;
-		case SAFE:
-			p.push(same);
+		case SAFE: // do not have both violation
+			if( !not_elect_violate ){
+				p.push(same);
 #ifdef DEBUG
-			cout<<"\tAdd:"<<*same<<endl;
+				cout<<"\tAdd:"<<*same<<endl;
 #endif
+			}
 			break;
 		}
+		*/
+
 
 		// propagate current point
 		//ConflictSet possible_nets(netcount);
@@ -327,23 +387,31 @@ bool Router::route_subnet(Point src,Point dst,
 	// This subnet is successully routed
 	// backtrack phase, stores results to RouteResult
 	backtrack(which,pin_idx,current,result);
+	//output_result(result);
 	p.free();
 	return true;
 
 }
 
 // given a net with index `which' , route all its subnets
-bool Router::route_net(int which,RouteResult &result)//, ConflictSet &conflict_net)
-{
+bool Router::route_net(int which,RouteResult &result) {
 	cout<<"** Routing net["<<which<<"] **"<<endl;
 	Net * pNet = &pProb->net[which];
 	output_netinfo(pNet);
 	Point src;
 	Point dst = get_netdst_pt(which);
+	bool rerouted=false;
 	// decompose to (numPin-1) subnet
 	for (int i = 0; i < pNet->numPin-1; i++) {
 		src=pNet->pin[i].pt; // route pin-i
 		ConflictSet conflict_net(netcount);
+		/*
+		if( rerouted&& netorder[2] == 1){
+			cout<<"before----------------------------------"<<endl;
+			output_result(result);
+			cout<<"before----------------------------------"<<endl;
+		}
+		*/
 		bool success = route_subnet(src,dst,which,i,
 			result,conflict_net);
 		if( success == false ){
@@ -351,31 +419,76 @@ bool Router::route_net(int which,RouteResult &result)//, ConflictSet &conflict_n
 				return false;
 			cerr<<"Error: route subnet "<<which<<"-"<<i
 			    <<" failed ,try ripup-reroute!"<<endl;
-			ripup_reroute(which,result,conflict_net);
+			bool ret;
+			ret = ripup_reroute(which,result,conflict_net);
+			if( ret == false ) return false;
 			output_netorder(netorder,netcount);
-			i--; // re-route this one
+		//	cout<<"after rip"<<endl;
+		//	output_result(result);
+			cout<<"re-route net "<<which<<endl;
+			i=-1; // re-route WHOLE net
+			last_ripper_id = which;
+			rerouted=true;
 		}
 		//output_result(result);
 	}
+
 	return true;
 }
 
 // for a given net `which', find a valid net order to reroute it
 // POSTCONDITION: the net order will be changed
-int Router::ripup_reroute(int which,RouteResult & result,
+bool Router::ripup_reroute(int which,RouteResult & result,
 		ConflictSet &conflict_net){
 	// cancel the route result of some conflict net
 	// now use the most conflict net=`max_id'
 	int max_id = conflict_net.max_id;
 	assert(max_id>=0);
-	cout<<"ripping net "<<max_id<<" count="<<
-		conflict_net.conflict_count[max_id]<<endl;
+
+	// check if max_id is the net that rip `which' previously
+	if(max_id == last_ripper_id){
+		cout<<"deadlock...break using the 2nd largest"<<endl;
+		// find the 2nd largest
+		int max_count=-1;
+		max_id=-1;
+		for (int i = 0; i < conflict_net.net_num; i++) {
+			//cout<<"confclit "<<i<<"="
+			//    <<conflict_net.conflict_count[i]<<endl;
+			if( max_count < conflict_net.conflict_count[i] &&
+			    i != conflict_net.max_id ){
+				max_count = conflict_net.conflict_count[i];
+				max_id = i;
+			}
+		}
+	}
+	
+	if( max_id == -1 ){ // there is no 2nd largest...
+		return false;
+	}
+
+	cout<<"** ripping net "<<max_id<<",conflict count="
+	    <<conflict_net.conflict_count[max_id]
+	    <<" last ripper = "<<last_ripper_id<<" **"<<endl;
+	result.path[max_id].clear(); // cancel the routed path
+
+	// clear the conflict result of this net
+	conflict_net =  ConflictSet(conflict_net.net_num);
+
+	// find there index in netorder
 	int max_id_inorder,which_id_inorder;
 	for(int i = 0; i < netcount; i++) {
 		if( netorder[i] == max_id) max_id_inorder = i;
 		if( netorder[i] == which) which_id_inorder = i;
 	}
-	result.path[max_id].clear(); // cancel the routed path
+
+	// re-push into queue(so that re route `max_id')
+	nets.push_front(max_id);
+
+	// re-order route order
+	IntVector temp(netorder,netorder+netcount);
+	temp.erase(temp.begin()+max_id_inorder);          //remove net=max
+	temp.insert(temp.begin()+which_id_inorder,max_id);//insert after which
+	copy(temp.begin(),temp.end(),netorder);
 
 	// remove the edges caused by this net in the graph
 	// now just clear all graph, and re-add constraint
@@ -383,90 +496,95 @@ int Router::ripup_reroute(int which,RouteResult & result,
 	allocate_graph();
 	for (int i=0;i<netcount && netorder[i]!=which; i++) {
 		int checking_idx = netorder[i];
+		//if( i == max_id_inorder ) continue; // do not add this net
 		const NetRoute & route = result.path[checking_idx];
 		for(int j=0;j<route.num_pin-1;j++){
 			const PtVector & pin_path = 
 				result.path[checking_idx].pin_route[j];
+			// reconstruct the graph
 			update_graph(checking_idx,j,pin_path,result);
 		}
 	}
 
-	// re-push into queue: re route `last'
-	nets.push_front(max_id);
-
-	// re-order route order
-	IntVector temp(netorder,netorder+netcount);
-	temp.erase(temp.begin()+max_id_inorder);        // remove net=max
-	temp.insert(temp.begin()+which_id_inorder,max_id);// insert it after which
-	copy(temp.begin(),temp.end(),netorder);
-	return which_id_inorder-1;// net=which moved one place before in netorder
+	//`which' moved one place before in netorder
+	//return which_id_inorder-1;
+	return true;
 }
 
-// given a point `current' during propagation stage of routing net `which',
+// given a grid point `gp_from' during propagation of routing net `which',
 // generate its neighbours push into heap if satisfies constraint.
 // dst : the sink point, 
 // result: store the routing result
 // p: heap
 // possible_nets : keep info. of the conflicting net
 // return false it NO cells pushed
-bool Router::propagate_nbrs(int which, int pin_idx,GridPoint * current,
+bool Router::propagate_nbrs(int which, int pin_idx,GridPoint * gp_from,
 			    Point & dst,RouteResult & result,
 			    GP_HEAP & p,ConflictSet &possible_nets){
 	bool has_pushed=false;
+	Point from_pt = gp_from->pt;
 	// get its neighbours( PROBLEM: can it be back? )
-	PtVector nbr = get_neighbour(current->pt);
-	const int t = (current->time + 1);
+	PtVector nbr = get_neighbour(from_pt);
+	const int t = (gp_from->time + 1);
 
 	// enqueue neighbours
-	GridPoint * par_par = current->parent; 
+	GridPoint * par_par = gp_from->parent; 
 	for(size_t i=0;i<nbr.size();i++){
 		int x=nbr[i].x,y=nbr[i].y;
-		// 0.current pt should be avoided
+		// 0.gp_from pt should be avoided(why?)
 		// 1.parent should not be propagated again
 		// 2.check if there is blockage 
-		// 3.forbid circular move (1->2...->1)
+		// 3.forbid circular move (1->2...->1) unless it is stalling
 		// IMPORTANT: shall we check the backward move?
 		// there should be some rule to drop GridPoint
-		if( nbr[i] == current->pt ) continue;
+		//if( nbr[i] != pt && nbr[i] == from_pt ) continue;
 		if( blockage[x][y] == BLOCK ) continue;
 		if( (par_par != NULL) && 
-		    (nbr[i] == par_par->pt) )
+		     (nbr[i] == par_par->pt) &&
+			(nbr[i] != from_pt) )
 			continue;
+
 		// calculate its weight
-		Point tmp(x,y);
-		int f_pen=0,e_pen=0,bending=current->bend;
-		int conflict_netid;
+		Point moving_to(x,y);
+		int f_pen=0,e_pen=0,bending=gp_from->bend;
+		//int conflict_netid;
 
 		// fluidic constraint check
 		FLUIDIC_RESULT fluid_result=fluidic_check(which,pin_idx,
-				tmp,t,result,conflict_netid);
+				moving_to,t,result,possible_nets);
 		if( fluid_result == SAMENET ){
 			// multipin net, leave it blank currently
 			report_exit("fluid_result == SAMENET");
 		} else if( fluid_result == VIOLATE ){
-			assert(conflict_netid != which);
-			possible_nets.increment(conflict_netid);
+			//assert(conflict_netid != which);
+			//possible_nets.increment(conflict_netid);
+			//cout<<"net "<<which<<" fluidic violation:"
+			//    <<from_pt<<"->"<<moving_to<<endl;
 			continue;
 		}
+		else if (fluid_result == SRC_VIOLATE)
+			continue;
 
 		// electro constraint check
-		bool elect_violate=electrode_check(which,pin_idx,
-			       	tmp,current->pt,t,result,possible_nets,0);
-		if( !elect_violate ){
+		bool not_elect_violate=electrode_check(which,pin_idx,
+			       	moving_to,from_pt,t,result,possible_nets,0);
+		if( !not_elect_violate ){
+			//cout<<"net "<<which<<" electrode violation:"
+			 //   <<from_pt<<"->"<<moving_to<<endl;
 			continue;
 		}
 
 		// bending update
 		if( par_par != NULL &&
-		    check_bending(tmp,par_par->pt) == true )
+		    check_bending(moving_to,par_par->pt) == true )
 			bending++;
 
 		GridPoint *nbpt = new GridPoint(
-				tmp,current,
+				moving_to,gp_from,
 				t, bending,
 				f_pen, e_pen,
-				current->stalling,
-				MHT(tmp,dst));
+				gp_from->stalling,
+				MHT(moving_to,dst));
 		p.push(nbpt);
 		has_pushed = true;
 #ifdef DEBUG
@@ -527,10 +645,10 @@ void Router::update_graph(int which,int pin_idx,
 		DIRECTION dir = pt_relative_pos(q,p);
 		if( dir != STAY ){
 			//int t = current->time;
-			bool ret = electrode_check(which,pin_idx,
+			bool success = electrode_check(which,pin_idx,
 					p,q,i,result,dummy,1);
 			// IMPORTANT: return value must be true here!
-			assert(ret == true);
+			assert(success == true);
 		}
 	}
 }
@@ -558,6 +676,7 @@ PtVector Router::get_neighbour(const Point & pt){
 		if( in_grid(p) )
 			s.push_back(p);
 	}
+	s.push_back(pt); // add the same position for stalling
 	return s;
 }
 
@@ -589,6 +708,11 @@ int Router::cmp_net(const void* id1,const void* id2){
 void Router::sort_net(Subproblem *pProb, int * netorder){
 	int num=pProb->nNet;
 	qsort(netorder,num,sizeof(int),cmp_net);
+	// test: set predefined netorder here
+	/*
+	int predefine[]={2,0,1,3};
+	std::copy(predefine,predefine+4,netorder);
+	*/
 }
 
 void Router::output_netinfo(Net *pNet){
@@ -623,9 +747,6 @@ bool Router::electrode_check(int which, int pin_idx,
 		return false;\
 	}
 
-	//cout<<"count["<<(c_net).max_id<<"]="<<(c_net).conflict_count[(c_net).max_id]<<endl;
-	//cout<<"count["<<net_id<<"]="<<(c_net).conflict_count[net_id]<<endl;
-
 	// no need to check at time t=0, no row/col activate
 	if( t == 0 ) return true; 
 	
@@ -657,6 +778,13 @@ bool Router::electrode_check(int which, int pin_idx,
 		for (int j = 0; j<route.num_pin-1; j++) {
 			const PtVector & pin = route.pin_route[j];
 			// pin[t] is the location at time t(activated at t-1)
+			// IMOPRTANT:some droplet may disappear(waste disposal)
+			if( t >= (int)pin.size() ) break;
+			// IMPORTANT: 
+			// if two droplet's sharing same activating row/column
+			// NO need to check the constraint!( my assumption )
+			if( pt.x == pin[t].x || pt.y == pin[t].y ) continue;
+
 			// Type 2: check if net-which+other-net affect d2
 			if( dir1 != STAY ){
 				add_result=check_droplet_conflict(
@@ -718,10 +846,11 @@ bool Router::check_droplet_conflict(
 // S and T are the droplet's position
 PtVector Router::geometry_check_H(int hline,const Point & S,const Point & T){
 	assert(hline>=0);
-	PtVector pts,cells(3);
+	PtVector pts,cells;
 	const int xs[]={T.x-1,T.x,T.x+1};
 	for (int i = 0; i < 3; i++) 
-		if( xs[i] >= 0 ) cells.push_back( Point(xs[i],hline) );
+		if( xs[i] >= 0 && xs[i] < W ) 
+			cells.push_back( Point(xs[i],hline) );
 	DIRECTION dir = pt_relative_pos(S,T);
 
 	// if the line not intersect with 5x5 bounding box(BB) of T
@@ -730,19 +859,19 @@ PtVector Router::geometry_check_H(int hline,const Point & S,const Point & T){
 	if( ABS(delta) <=1 ){// intersect with 3x3 BB
 		pts = cells;
 		switch( dir ){
-			case LEFT: 
-				if( S.x+1 >= 0 )
+			case RIGHT: 
+				if( S.x+1 < W )
 					pts.push_back(Point(S.x+1,S.y));
 				break;
-			case RIGHT:
+			case LEFT:
 				if( S.x-1 >= 0 )
 					pts.push_back(Point(S.x-1,S.y));
 				break;
 			default:break; // stalling or moving vertically
 		}
 	}
-	else if( (dir == UP   && hline == S.y-1) || 
-		 (dir == DOWN && hline == S.y+1)) {// ABS(delta) = 2
+	else if( (dir == DOWN   && hline == S.y-1) || 
+		 (dir == UP && hline == S.y+1)) {// ABS(delta) = 2
 		// intersects with upper or lower boundary of 5x5 BB
 		pts = cells;
 	}
@@ -754,10 +883,11 @@ PtVector Router::geometry_check_H(int hline,const Point & S,const Point & T){
 // IMPORTANT: remember to check whether a point is in the chip
 PtVector Router::geometry_check_V(int vline,const Point & S,const Point & T){
 	assert( vline >= 0 );
-	PtVector pts,cells(3);
+	PtVector pts,cells;
 	const int ys[]={T.y-1,T.y,T.y+1};
 	for (int i = 0; i < 3; i++) 
-		if( ys[i] >= 0 ) cells.push_back( Point(vline,ys[i]) );
+		if( ys[i] >= 0 && ys[i] < H ) 
+			cells.push_back( Point(vline,ys[i]) );
 	DIRECTION dir = pt_relative_pos(S,T);
 
 	// if the line not intersect with 5x5 bounding box(BB) of T
@@ -766,20 +896,20 @@ PtVector Router::geometry_check_V(int vline,const Point & S,const Point & T){
 	if( ABS(delta) <=1 ){// intersect with 3x3 BB
 		pts = cells;
 		switch( dir ){
-			case UP: 
+			case DOWN: 
 				if( S.y-1 >= 0 )
 					pts.push_back(Point(vline,S.y-1));
 				break;
-			case DOWN:
-				if( S.y+1 >= 0 )
+			case UP:
+				if( S.y+1 < H )
 					pts.push_back(Point(vline,S.y+1));
 				break;
 			default:break; // stalling or moving vertically
 		}
 	}
-	else if( (dir == LEFT  && vline == S.x+1) || 
-		 (dir == RIGHT && vline == S.x-1)) {// ABS(delta) = 2
-		// intersects with upper or lower boundary of 5x5 BB
+	else if( (dir == RIGHT  && vline == S.x+1) || 
+		 (dir == LEFT && vline == S.x-1)) {// ABS(delta) = 2
+		// intersects with left or right boundary of 5x5 BB
 		pts = cells;
 	}
 	return pts;
@@ -804,21 +934,26 @@ bool Router::try_add_edge(NType ntype,int lineid,
 	PtVector pts = geometry_check(ntype,lineid,S,T);
 	bool result;
 	for (size_t i = 0; i < pts.size(); i++) {
+		// TEST: if pts is in blockage, do not check it
+		int x = pts[i].x, y = pts[i].y;
+		if( blockage[x][y] == BLOCK ) continue;
 		// get the information of cell i in graph
 		if( ntype == ROW ){
 			// get the node of col pts[i].x
-			GNode col_node(COL,pts[i].x);
+			GNode col_node(COL,x);
 			GNode row_node(ROW,lineid);
 			if( p_graph->get_node_color(col_node) != G ){
-				result = p_graph->add_edge_color(col_node,row_node,SAME);
+				result = p_graph->add_edge_color(
+						col_node,row_node,SAME);
 				if(result == false) return false;
 			}
 		}	
 		else{// COL
 			GNode col_node(COL,lineid);
-			GNode row_node(ROW,pts[i].y);
+			GNode row_node(ROW,y);
 			if( p_graph->get_node_color(row_node) != G ){
-				result = p_graph->add_edge_color(col_node,row_node,SAME);
+				result = p_graph->add_edge_color(
+						col_node,row_node,SAME);
 				if(result == false) return false;
 			}
 		}
@@ -839,7 +974,7 @@ bool Router::try_add_edge(NType ntype,int lineid,
 	fluidic_violate(pt,t,1)
 FLUIDIC_RESULT Router::fluidic_check(int which,int pin_idx,
 	       	const Point & pt,int t,
-		const RouteResult & result,int & conflict_netid){
+		const RouteResult & result,ConflictSet & conflict_set){
 	// for each routed net(including partial), 
 	// check if the current routing net(which) violate fluidic rule
 	// we have known the previous routed net 
@@ -847,7 +982,8 @@ FLUIDIC_RESULT Router::fluidic_check(int which,int pin_idx,
 	// t's range: [0..T]
 	assert( (t <= this->T) && (t >= 0) );
 	// for all the net routed before which
-	for(int i=0;i<netcount && netorder[i]!=which;i++){
+	int i;
+	for(i=0;i<netcount && netorder[i]!=which;i++){
 		int checking_idx = netorder[i];
 		// NOTE: if two nets have same dest, they are going to
 		// the waste disposal point
@@ -857,27 +993,36 @@ FLUIDIC_RESULT Router::fluidic_check(int which,int pin_idx,
 		for (int j = 0; j < route.num_pin-1; j++) {
 			const PtVector & path = route.pin_route[j];
 			// static fluidic check
-			//if ( !(abs(pt.x - path[t].x) >=2 || abs(pt.y - path[t].y) >=2) ){
 			if( static_violate(pt,t) || 
 		            dynamic_violate(pt,t) ){
-				//conflict_net.insert(checking_idx);
-				conflict_netid = checking_idx;
+				DIRECTION dir = pt_relative_pos(
+						path[t],path[t-1]);
+				if( dir != STAY )
+					conflict_set.increment(checking_idx);
 				return VIOLATE;
 			}
-			// dynamic fluidic check
-			// IMPORTANT!!
-			// how to treat this case? 1=t,2=t+1 position
-			// 1 2 1 2
-			// the second 1 will have two direction to go
-			// but both 1 belong to the same net!!
-			//if ( !(abs(pt.x - path[t-1].x) >=2 || abs(pt.y - path[t-1].y) >=2) ){
 		} // end of for j
-	} // end of for i
+	} // end of for i, now i == which or i>=netcount
+	
+	// IMPORTANT: check whether it hits unrouted net
+	/*
+	for(i=i+1;i<netcount;i++){
+		int checking_idx = netorder[i];
+		Net * pNet = &(pProb->net[checking_idx]);
+		for (int j = 0; j < pNet->numPin-1; j++) {
+			Point src = pNet->pin[j].pt;
+			if( !(abs(pt.x - src.x) >=2 || 
+			      abs(pt.y - src.y) >=2) )
+				return SRC_VIOLATE;
+		}
+	}
+	*/
 
-	// check whether it hit into inself
-	const NetRoute & route = result.path[which];
+	// check whether it hit into inself?
+
 	// for all the subnet routed before this pin
 	// only need to do it for 3-pin net
+	const NetRoute & route = result.path[which];
 	if( route.num_pin == 3 ){
 		const PtVector & path = route.pin_route[0];
 		if( static_violate(pt,t) || dynamic_violate(pt,t) ){

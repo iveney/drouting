@@ -42,7 +42,7 @@ template <typename T,typename Container, typename Compare>
 class Container::iterator heap<T,Container,Compare>::end(){ return c.end(); }
 
 template <typename T,typename Container, typename Compare>
-class Container::iterator heap<T,Container,Compare>::begin(){ return c.begin(); }
+class Container::iterator heap<T,Container,Compare>::begin(){return c.begin();}
 
 template <typename T,typename Container, typename Compare>
 void heap<T,Container,Compare>::sort(){

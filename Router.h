@@ -4,6 +4,7 @@
 #include <deque>
 #include <vector>
 #include <cassert>
+#include <string>
 #include "header.h"
 #include "GridPoint.h"
 #include "heap.h"
@@ -11,9 +12,10 @@
 #include "ConstraintGraph.h"
 using std::deque;
 using std::vector;
+using std::string;
 
 // return value of fluidic constraint check
-enum FLUIDIC_RESULT{SAFE,VIOLATE,SAMENET,SAMEDEST};
+enum FLUIDIC_RESULT{SAFE,VIOLATE,SRC_VIOLATE,SAMENET,SAMEDEST};
 enum FUNCTION_PLACE{FREE,BLOCK,WASTE};
 
 // implements simple set function
@@ -21,25 +23,14 @@ enum FUNCTION_PLACE{FREE,BLOCK,WASTE};
 // count the conflict net
 class ConflictSet{
 public:
-	ConflictSet(int num):net_num(num),max_id(-1),
-	//	isConflict(IntVector(net_num,0)),
+	ConflictSet(int num):net_num(num),max_id(-1),total(0),
 		conflict_count(IntVector(net_num,0)){
 	}
-	/*
-	void insert(int net_idx){
-		if( isConflict[net_idx] ) return;
-		isConflict[net_idx] = 1;
-		order.push_back(net_idx);
-	}
-	int get_last(){
-		assert( order.size() > 0 );
-		return order.back();
-	}
-	*/
 	
 	// increment a net's count by 1
 	void increment(int net_id){
 		int tmp = ++conflict_count[net_id];
+		total++;
 		if( max_id == -1 || conflict_count[max_id] < tmp ){
 			// update max conflict net
 			max_id = net_id;
@@ -50,20 +41,19 @@ public:
 	void add_nets(const ConflictSet & toadd){
 		for (int i = 0; i < net_num; i++) {
 			conflict_count[i]+=toadd.conflict_count[i];
+			total+=toadd.conflict_count[i];
 			// update max conflict net
 			if( max_id == -1 || 
 			    conflict_count[i] > conflict_count[max_id] ){
-		//		std::cout<<"update max_id = "<<max_id<<endl;
 				max_id = i;
 			}
 		}
-//		std::cout<<"after add:"<<max_id<<endl;
 	}
+
 	int net_num;
 	int max_id;		// which net causes most conflict
+	int total;
 	IntVector conflict_count;
-	//IntVector isConflict;
-	//IntVector order;
 };
 
 // struct tracks the routing information of a net
@@ -93,13 +83,20 @@ class RouteResult{
 public:
 	// constructor, must use T and prob to initialize
 	RouteResult(int T_,int W_,int H_,Subproblem * subprob):
-		T(T_),W(W_),H(H_),pProb(subprob) 
+		T(T_),W(W_),H(H_),pProb(subprob),
+		v_row(vector< vector<COLOR> >(T+1)),
+		v_col(vector< vector<COLOR> >(T+1)), // T for dummy use
+		activated(vector< PtVector >(T+1))
 	{
 		// allocate route solution space for each net
 		for (int i = 0; i < subprob->nNet; i++) {
 			path.push_back(NetRoute(i,get_pinnum(i),T));
 		}
-
+		for (int i = 0; i <=T; i++) {
+			v_row[i] = vector<COLOR>(H);
+			v_col[i] = vector<COLOR>(W);
+			activated[i] = PtVector();
+		}
 	}
 
 	// data members
@@ -118,9 +115,11 @@ public:
 	// voltage assignment for each time step from 1 up to T
 	// at each t, there is a list of H and a list of L, those not
 	// in these two lists are assume to be G(ground)
-	// 1st diemstion = time, 2nd dimenstion = some voltage
-	//vector< IntVector > tHigh;
-	//vector< IntVector > tLow;
+	// 1st dimension = time, 2nd dimenstion = row/col index
+	vector< vector<COLOR> > v_row;
+	vector< vector<COLOR> > v_col;
+	// a list of activated cell at time t
+	vector< PtVector > activated;
 };
 
 // main class for routing the droplets net
@@ -137,10 +136,10 @@ public:
 
 	void init();
 
-	void output_result(const RouteResult & result);
+	void output_result(RouteResult & result);
 
 	// do rip up and re route for a net
-	int ripup_reroute(int which,RouteResult & result,
+	bool ripup_reroute(int which,RouteResult & result,
 			ConflictSet &conflict_net);
 
 	// read the file and subproblem number from cmd line argument
@@ -150,10 +149,10 @@ public:
 	void output_heap(const GP_HEAP & h);
 
 	// output voltage assignment status;
-	void output_voltage();
+	void output_voltage(RouteResult & result);
 
 	// given a net index, route the net
-	bool route_net(int which,RouteResult &result);//,ConflictSet &conflict_net);
+	bool route_net(int which,RouteResult &result);
 
 	// solve all the subproblems
 	ResultVector solve_all();
@@ -170,7 +169,7 @@ public:
 	FLUIDIC_RESULT fluidic_check(int which, int pin_idx,
 			const Point & pt,int t,
 			const RouteResult & result,
-			int & conflict_netid);
+			ConflictSet & conflict_set);
 
 	// determines if there is electrode constraint violation
 	// 2nd Point is parent's location
@@ -240,8 +239,11 @@ public:
 	static Subproblem * pProb;
 	deque<int> nets;
 	ConstraintGraph * graph[MAXTIME+1]; // each time step's graph
+	int max_t;
 
 private:
+	int last_ripper_id;
+
 	// sort the net according to some criteria defined in cmp_net
 	void sort_net(Subproblem *pProb, int * netorder);
 
@@ -257,7 +259,8 @@ private:
 
 	// init blockage bitmap for use
 	void init_place(Subproblem *p);
-
+	
+	string filename;
 };
 
 #endif

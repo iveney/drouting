@@ -1,9 +1,56 @@
+problem:
+if several nets are stalling outside th WAT(waiting to disappear)
+many conflict will be caused
+what about cancel some conflict by detecting if the causer is stalling?
+
+deadlock breaking
+if going to rip up the one rip up itself previously,
+try to rip up another net: second-most
+-----------------------------------------------------------------------------------------------
+one question
+when checking electrode constraint
+what if one of the droplet's adjacent cell is blockage?
+shall we check whether it will be extra activated?
+NOW loose our constraint: do not check it
+-----------------------------------------------------------------------------------------------
+IMPORTANT:!!!!!!!!!!!!!!!!!!!!!!!!
+if some net i's dest near some net j's src,
+if we route net i first, it is impossible for it to stay at dest!!
+
+it can be solved if j is going away before i moves near it
+-----------------------------------------------------------------------------------------------
+now:
+1. test if can queue in to waste disposal point
+2. test merge of 3-pin net
+-----------------------------------------------------------------------------------------------
+wanna to implement a visualizer for the cross-routing result, including the functionality:
+for **each time frame** of the result, (hence the output file contains T pages)
+* draw activation cells,rows,columns
+* draw droplet current position(or movement)
+-- DONE
+-----------------------------------------------------------------------------------------------
+added a very loose condition, don't know if any error:
+if two droplet sharing col/row when moving(activate the electrode on that row/col)
+don't check their type 2 constraint
+-----------------------------------------------------------------------------------------------
+IMPORTANT: idea of avoiding useless propagation:
+do not propagate again the cells that have been reached in a route.
+e.g.
+A->B->C->D->... ->B
+is not allowed since B is contained in the path
+cons:how to implement efficiently
+-----------------------------------------------------------------------------------------------
+IMPORTANT: during the dectection of `see whether it can stay in destination', we should also check electrode constraint
+during the fluidic check
+also need to checki if path[t]  affect checking[t-1]
+-----------------------------------------------------------------------------------------------
 *how to know what nets are affecting it when coloring?
 
 *how to do ripup? how to know what edge to remove?
 I guess there will be not much rip-up and reroute
 and re-do coloring is very fast
 so just remove all things in the graph, and re-add all edges
+NOTE: now seems need to rip up all the net before the current routing net
 -----------------------------------------------------------------------------------------------
 * an idea to speed up fluidic constraint check
 use 3D bitmap to mark the forbidden cell occupied by the routed nets
