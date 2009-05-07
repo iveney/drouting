@@ -22,6 +22,7 @@ solved: added a heuristic, when some net is causing too much conflict, ripup it
 problem:
 for 30, it is better to search for larger conflict count
 for 45, it is better to switch net order earlier
+--> what about add a heuristic, try stalling for some time, but not 1 step each time
 
 
 case 47: 3-pin net, need implementation

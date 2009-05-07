@@ -100,8 +100,12 @@ RouteResult Router::solve_subproblem(int prob_idx){
 	RouteResult result(this->T,this->W,this->H,this->pProb);
 
 	// set the parameter
-	MAX_SINGLE_CFLT = this->W * this->H * this->T / (pProb->nNet/2);
+	int div = (pProb->nNet/2);
+	MAX_SINGLE_CFLT = this->W * this->H * this->T /(div==0?1:div) ;
 	MAXCFLT = MAX_SINGLE_CFLT;
+
+	//MAX_SINGLE_CFLT = 100;
+	//MAXCFLT = 300;
 
 	// start to route each net according to sorted order
 	nets.clear();
@@ -321,9 +325,8 @@ bool Router::route_subnet(Point src,Point dst,
 				break;
 			}
 		}
-
-		// stall at the same position, stall for 1 time step
 		/*
+		// stall at the same position, stall for 1 time step
 		GridPoint *same = new GridPoint( current->pt,
 				current, t,current->bend,  
 				current->fluidic, current->electro, 
@@ -358,21 +361,10 @@ bool Router::route_subnet(Point src,Point dst,
 			break;
 		}
 		*/
-
-
 		// propagate current point
-		//ConflictSet possible_nets(netcount);
 		propagate_nbrs(which,pin_idx,
 				current,dst,result,p,conflict_net);
 
-		/*
-		bool propagate_result=propagate_nbrs(which,pin_idx,
-				current,dst,result,p,conflict_net);
-		if( propagate_result == false ){// update conflict information
-			//cout<<"adding nets"<<endl;
-			conflict_net.add_nets(possible_nets);
-		}
-		*/
 	}// end of propagate
 	
 	// failed to find path
@@ -994,9 +986,7 @@ FLUIDIC_RESULT Router::fluidic_check(int which,int pin_idx,
 			// static fluidic check
 			if( static_violate(pt,t) || 
 		            dynamic_violate(pt,t) ){
-				DIRECTION dir = pt_relative_pos(
-						path[t],path[t-1]);
-				if( dir != STAY )
+				if( pProb->net[i].pin[1].pt != this->chip.WAT )
 					conflict_set.increment(checking_idx);
 				return VIOLATE;
 			}
