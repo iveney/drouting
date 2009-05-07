@@ -45,7 +45,8 @@ public:
 	void sort();
 
 	template <typename _T,typename _Container, typename _Compare>
-	friend ostream & operator <<(ostream & out,const heap<_T,_Container,_Compare> & h);
+	friend ostream & operator <<(ostream & out,
+			const heap<_T,_Container,_Compare> & h);
 
 	// returns the begin/end iterator of Container
 	iterator begin();

@@ -107,7 +107,8 @@ COLOR ConstraintGraph::erase_color(const GNode & node){
 
 // try to add edge with color awareness
 // return EXIST if the edge exists already
-bool ConstraintGraph::add_edge_color(const GNode &u,const GNode &v, EType type){
+bool ConstraintGraph::add_edge_color(const GNode &u,const GNode &v, EType type)
+{
 	// first check if edge exist
 	int a=get_node_idx(u);
 	int b=get_node_idx(v);
@@ -166,8 +167,10 @@ bool ConstraintGraph::add_edge_color(const GNode &u,const GNode &v, EType type){
 		return SUCCESS;
 	}
 	else{// u,v not standalone => u,v has colors, but not connected
-		if( (ucolor != vcolor && type == DIFF) || // different color, DIFF edge
-		    (ucolor == vcolor && type == SAME))   // same color, SAME edge
+		if( (ucolor != vcolor && 
+		     type == DIFF) || 		// different color, DIFF edge
+		    (ucolor == vcolor && 
+		     type == SAME))   		// same color, SAME edge
 		{// type compatible
 			do_add_edge(u,v,type); // safely link them
 			return SUCCESS;
@@ -176,9 +179,10 @@ bool ConstraintGraph::add_edge_color(const GNode &u,const GNode &v, EType type){
 		// try to swap the color 
 		// of one connected component
 		ConstraintGraph bak(*this); // make backup
-		reverse_color(v);           // reverse the coloring of v component
+		reverse_color(v);       // reverse the coloring of v component
 		COLOR u_newcolor = get_color(u);
-		if( ucolor != u_newcolor ){ // if u's color changed=>2-color failed
+		if( ucolor != u_newcolor ){ 
+			// if u's color changed=>2-color failed
 			*this = bak;
 			return FAIL;
 		}

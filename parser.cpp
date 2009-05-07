@@ -108,26 +108,28 @@ void drawSubproblem(Subproblem * prob, int W,int H,int num,char * name){
 	Net * pNet = prob->net;
 	for(i=0;i<prob->nNet;i++){
 		if(pNet[i].numPin==2){
-			fprintf(fig,"\\drawtwopin{%s}{%d}{%d}{%s}{%d}{%d}{%s!70}\n",
-					pNet[i].pin[0].name,
-					pNet[i].pin[0].pt.x,
-					pNet[i].pin[0].pt.y,
-					pNet[i].pin[1].name,
-					pNet[i].pin[1].pt.x,
-					pNet[i].pin[1].pt.y,
-					getColor());
+			fprintf(fig,
+			"\\drawtwopin{%s}{%d}{%d}{%s}{%d}{%d}{%s!70}\n",
+			pNet[i].pin[0].name,
+			pNet[i].pin[0].pt.x,
+			pNet[i].pin[0].pt.y,
+			pNet[i].pin[1].name,
+			pNet[i].pin[1].pt.x,
+			pNet[i].pin[1].pt.y,
+			getColor());
 		}
 		else{// 3 pin net
-			fprintf(fig,"\\drawthreepin{%s}{%d}{%d}{%s}{%d}{%d}{%s}{%d}{%d}\n",
-					pNet[i].pin[0].name,
-					pNet[i].pin[0].pt.x,
-					pNet[i].pin[0].pt.y,
-					pNet[i].pin[1].name,
-					pNet[i].pin[1].pt.x,
-					pNet[i].pin[1].pt.y,
-					pNet[i].pin[2].name,
-					pNet[i].pin[2].pt.x,
-					pNet[i].pin[2].pt.y);
+			fprintf(fig,
+			"\\drawthreepin{%s}{%d}{%d}{%s}{%d}{%d}{%s}{%d}{%d}\n",
+			pNet[i].pin[0].name,
+			pNet[i].pin[0].pt.x,
+			pNet[i].pin[0].pt.y,
+			pNet[i].pin[1].name,
+			pNet[i].pin[1].pt.x,
+			pNet[i].pin[1].pt.y,
+			pNet[i].pin[2].name,
+			pNet[i].pin[2].pt.x,
+			pNet[i].pin[2].pt.y);
 		}
 	}
 

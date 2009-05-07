@@ -1,3 +1,15 @@
+one question
+when checking electrode constraint
+what if one of the droplet's adjacent cell is blockage?
+shall we check whether it will be extra activated?
+NOW loose our constraint: do not check it
+-----------------------------------------------------------------------------------------------
+IMPORTANT:!!!!!!!!!!!!!!!!!!!!!!!!
+if some net i's dest near some net j's src,
+if we route net i first, it is impossible for it to stay at dest!!
+
+it can be solved if j is going away before i moves near it
+-----------------------------------------------------------------------------------------------
 now:
 1. test if can queue in to waste disposal point
 2. test merge of 3-pin net

@@ -15,7 +15,7 @@ using std::vector;
 using std::string;
 
 // return value of fluidic constraint check
-enum FLUIDIC_RESULT{SAFE,VIOLATE,SAMENET,SAMEDEST};
+enum FLUIDIC_RESULT{SAFE,VIOLATE,SRC_VIOLATE,SAMENET,SAMEDEST};
 enum FUNCTION_PLACE{FREE,BLOCK,WASTE};
 
 // implements simple set function
@@ -23,25 +23,14 @@ enum FUNCTION_PLACE{FREE,BLOCK,WASTE};
 // count the conflict net
 class ConflictSet{
 public:
-	ConflictSet(int num):net_num(num),max_id(-1),
-	//	isConflict(IntVector(net_num,0)),
+	ConflictSet(int num):net_num(num),max_id(-1),total(0),
 		conflict_count(IntVector(net_num,0)){
 	}
-	/*
-	void insert(int net_idx){
-		if( isConflict[net_idx] ) return;
-		isConflict[net_idx] = 1;
-		order.push_back(net_idx);
-	}
-	int get_last(){
-		assert( order.size() > 0 );
-		return order.back();
-	}
-	*/
 	
 	// increment a net's count by 1
 	void increment(int net_id){
 		int tmp = ++conflict_count[net_id];
+		total++;
 		if( max_id == -1 || conflict_count[max_id] < tmp ){
 			// update max conflict net
 			max_id = net_id;
@@ -52,20 +41,19 @@ public:
 	void add_nets(const ConflictSet & toadd){
 		for (int i = 0; i < net_num; i++) {
 			conflict_count[i]+=toadd.conflict_count[i];
+			total+=toadd.conflict_count[i];
 			// update max conflict net
 			if( max_id == -1 || 
 			    conflict_count[i] > conflict_count[max_id] ){
-		//		std::cout<<"update max_id = "<<max_id<<endl;
 				max_id = i;
 			}
 		}
-//		std::cout<<"after add:"<<max_id<<endl;
 	}
+
 	int net_num;
 	int max_id;		// which net causes most conflict
+	int total;
 	IntVector conflict_count;
-	//IntVector isConflict;
-	//IntVector order;
 };
 
 // struct tracks the routing information of a net
@@ -164,7 +152,7 @@ public:
 	void output_voltage(RouteResult & result);
 
 	// given a net index, route the net
-	bool route_net(int which,RouteResult &result);//,ConflictSet &conflict_net);
+	bool route_net(int which,RouteResult &result);
 
 	// solve all the subproblems
 	ResultVector solve_all();

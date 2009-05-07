@@ -10,10 +10,11 @@ void begin_figure(FILE * fig){
 		     minimum size=1cm*\\scale, \n \
 		     >=latex, \n \
 		     pin distance = 1.2cm*\\scale, \n \
-		     pins/.style={rectangle,draw,fill=brown,font=\\scriptsize}, \n \
-		     pinsnofill/.style={rectangle,draw,font=\\scriptsize}, \n \
+		     pins/.style={rectangle,draw,fill=brown}, \n \
+		     pinsnofill/.style={rectangle,draw}, \n \
 		     arrow/.style={->,very thick}, \n \
 		     block/.style={gray}]\n"); 
+	  //,font=\\scriptsize
 }
 void end_figure(FILE * fig,int time){
 	fprintf(fig,"\\end{tikzpicture} \n \
