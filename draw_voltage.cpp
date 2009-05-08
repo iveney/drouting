@@ -55,9 +55,12 @@ void draw_voltage(const RouteResult & result,const char *filename){
 				fprintf(fig,"\\drawvline{%d}{%d}\n",i,2);
 		}
 		// draw activated cells
+		const char * fmtstr_cell = "\\node[pins,fill=%s] () at \
+					    (%d+\\half,%d+\\half) {} ;\n";
 		for(size_t k=0;k<result.activated[t].size();k++){
-			fprintf(fig,"\\node[pins,fill=%s] () at (%d+\\half,%d+\\half) {} ;\n",
-					"green",result.activated[t][k].x,result.activated[t][k].y);
+			fprintf(fig,fmtstr_cell, "green",
+				result.activated[t][k].x,
+				result.activated[t][k].y);
 		}
 
 		// draw block
@@ -70,21 +73,31 @@ void draw_voltage(const RouteResult & result,const char *filename){
 					pBlk[i].pt[1].y);
 		}
 
+		const char * fmtstr_2pin = "\\node[pins,fill=%s] (net_%d_%d) \
+				    at (%d+\\half,%d+\\half) {\\tt %d};\n";
+		const char * fmtstr_3pin = "\\node[pins,fill=%s] (net_%d_%d) \
+					    at (%d+\\half,%d+\\half) \
+				    {$\\mathtt{%d}$\\_$\\mathtt{%d}$};\n";
 
 		// draw each droplet
 		for (i = 0; i < result.pProb->nNet; i++) {
 			const NetRoute & net_path = result.path[i];
 			for (j = 0; j < net_path.num_pin-1; j++) {
 				// for those routed to waste disposal point
-				if( t >= (int)net_path.pin_route[j].size() ) break;
+				if( t >= (int)net_path.pin_route[j].size() ) 
+					break;
 				Point pt = net_path.pin_route[j][t];
 				// temporarily use red color
 				if( net_path.num_pin == 2 )
-					fprintf(fig,"\\node[pins,fill=%s] (net_%d_%d) at (%d+\\half,%d+\\half) {\\tt %d};\n",
+					fprintf(fig,fmtstr_2pin,
 						"red",i,j,pt.x,pt.y,i);
 				else{
-					fprintf(fig,"\\node[pins,fill=%s] (net_%d_%d) at (%d+\\half,%d+\\half) {$\\mathtt{%d}$\\_$\\mathtt{%d}$};\n",
-						"red",i,j,pt.x,pt.y,i,j);
+					if( t<net_path.merge_time )
+						fprintf(fig,fmtstr_3pin,"red",
+							i,j,pt.x,pt.y,i,j);
+					else
+						fprintf(fig,fmtstr_2pin,"red",
+							i,j,pt.x,pt.y,i,j);
 				}
 			}
 		}

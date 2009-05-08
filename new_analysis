@@ -26,4 +26,4 @@ for 45, it is better to switch net order earlier
 
 
 case 47: 3-pin net, need implementation
-49,52,57,61
+47,49,52,56,57

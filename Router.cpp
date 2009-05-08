@@ -306,13 +306,22 @@ bool Router::route_subnet(Point src,Point dst,
 			// see whether it can stay in destination
 			// TODO: also need to check electrode constraint here!!
 			for (int i = reach_t+1; i <= T; i++) {
-				//int conflict_netid;
 				fluid_result = fluidic_check(which,
 						pin_idx, current->pt,
 						i,result,conflict_net);
 				if( fluid_result == VIOLATE ){
 					//assert(conflict_netid != which);
-					//conflict_net.increment(conflict_netid);
+					//conflict_net.increment(
+					//conflict_netid);
+					fail = true;
+					break;
+				}
+
+				bool not_elect_violate=electrode_check(
+						which,pin_idx,
+						current->pt,current->pt,i,
+						result,conflict_net,0);
+				if( !not_elect_violate ){
 					fail = true;
 					break;
 				}
@@ -662,6 +671,7 @@ void Router::backtrack(int which,int pin_idx,GridPoint *current,
 	//     20:(21,3)
 	//
 	PtVector & pin_path = result.path[which].pin_route[pin_idx];
+	pin_path.clear();	// for 3-pin net re-route, may need to clear it
 	Point dst = current->pt;
 	result.path[which].reach_time[pin_idx] = current->time;
 	while( current != NULL ){// trace back from dest to src
@@ -670,19 +680,23 @@ void Router::backtrack(int which,int pin_idx,GridPoint *current,
 		current = current->parent;
 	}
 
-	// add the constraint into ALL graph
-	update_graph(which,pin_idx,pin_path,result);
-
 	// IMPORATANT: for waste disposal point
 	// DO NOT need to generate STAY result
 	// e.g. reaches at t=13, then disppear from t=14
-	if( dst == chip.WAT ) return;
-
-	// NOTE: that some droplet may reach the destination earlier than the
-	// timing constraint. fill all later time with its final position
-	for(int i=pin_path.size();i<=this->T;i++){
-		pin_path.push_back(dst); // dst is destination pt here
+	if( dst != chip.WAT ) {
+		// that some droplet may reach the destination earlier than the
+		// timing constraint. fill later time with its final position
+		for(int i=pin_path.size();i<=this->T;i++){
+			pin_path.push_back(dst); // dst is destination pt here
+		}
 	}
+
+	if( pin_path.size() > T+1 ) {
+		cout<<"net "<<which<<" size "<<pin_path.size()<<endl;
+	}
+
+	// add the constraint into ALL graph
+	update_graph(which,pin_idx,pin_path,result);
 
 	// output result
 	//output_result(result);
@@ -699,6 +713,7 @@ void Router::update_graph(int which,int pin_idx,
 	ConflictSet dummy(netcount);
 	for (size_t i = 1; i < pin_path.size(); i++) {
 		// i is time
+		//if (pin_path.size() > 21 ) cout<<pin_path.size()<<endl;
 		Point p = pin_path[i],q=pin_path[i-1];
 		DIRECTION dir = pt_relative_pos(q,p);
 		if( dir != STAY ){
