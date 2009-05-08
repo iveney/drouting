@@ -350,42 +350,7 @@ bool Router::route_subnet(Point src,Point dst,
 				break;
 			}
 		}
-		/*
-		// stall at the same position, stall for 1 time step
-		GridPoint *same = new GridPoint( current->pt,
-				current, t,current->bend,  
-				current->fluidic, current->electro, 
-				current->stalling+STALL_PENALTY,
-				current->distance );
-		int conflict_netid ;
-		fluid_result=fluidic_check(which,pin_idx,
-			same->pt,same->time,result,conflict_netid);
-		bool not_elect_violate = electrode_check(which,pin_idx,
-			same->pt,same->pt,same->time,result,conflict_net,0);
 
-		// handle fluidic check result
-		switch( fluid_result ){
-		case SAMENET:// multipin net merge
-		case SAMEDEST:
-			success = true;
-			// need to know which net it met and utilize
-			// the existing route, now just route as normal
-			p.push(same);
-			break;
-		case VIOLATE:// IMPORTANT: is it always not reach here?
-			assert(conflict_netid != which);
-			conflict_net.increment( conflict_netid );
-			break;
-		case SAFE: // do not have both violation
-			if( !not_elect_violate ){
-				p.push(same);
-#ifdef DEBUG
-				cout<<"\tAdd:"<<*same<<endl;
-#endif
-			}
-			break;
-		}
-		*/
 		// propagate current point
 		propagate_nbrs(which,pin_idx,
 				current,dst,result,p,conflict_net);
@@ -506,6 +471,7 @@ bool Router::ripup_reroute(int which,RouteResult & result,
 	// now use the most conflict net=`max_id'
 	int max_id = conflict_net.max_id;
 	assert(max_id>=0);
+	assert(max_id!=which);
 
 	// check if max_id is the net that rip `which' previously
 	if(max_id == last_ripper_id){
@@ -691,10 +657,6 @@ void Router::backtrack(int which,int pin_idx,GridPoint *current,
 		}
 	}
 
-	if( pin_path.size() > T+1 ) {
-		cout<<"net "<<which<<" size "<<pin_path.size()<<endl;
-	}
-
 	// add the constraint into ALL graph
 	update_graph(which,pin_idx,pin_path,result);
 
@@ -713,7 +675,6 @@ void Router::update_graph(int which,int pin_idx,
 	ConflictSet dummy(netcount);
 	for (size_t i = 1; i < pin_path.size(); i++) {
 		// i is time
-		//if (pin_path.size() > 21 ) cout<<pin_path.size()<<endl;
 		Point p = pin_path[i],q=pin_path[i-1];
 		DIRECTION dir = pt_relative_pos(q,p);
 		if( dir != STAY ){
@@ -1014,9 +975,9 @@ bool Router::try_add_edge(NType ntype,int lineid,
 	PtVector pts = geometry_check(ntype,lineid,S,T);
 	bool result;
 	for (size_t i = 0; i < pts.size(); i++) {
-		// TEST: if pts is in blockage, do not check it
+		// if pts is in blockage, do not check it
 		int x = pts[i].x, y = pts[i].y;
-		if( blockage[x][y] == BLOCK ) continue;
+		//if( blockage[x][y] == BLOCK ) continue;
 		// get the information of cell i in graph
 		if( ntype == ROW ){
 			// get the node of col pts[i].x

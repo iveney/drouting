@@ -1,5 +1,6 @@
 CC=/usr/bin/g++
-SRC=parser.cpp header.cpp GridPoint.cpp Router.cpp util.cpp ConstraintGraph.cpp draw_voltage.cpp
+SRC=parser.cpp header.cpp GridPoint.cpp Router.cpp util.cpp \
+    ConstraintGraph.cpp draw_voltage.cpp
 HDR=$(SRC:.cpp=.h)
 OBJ=$(SRC:.cpp=.o)
 BIN=main

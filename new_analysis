@@ -9,7 +9,8 @@ updated:
 IMPORTANT:
 case 11 has problem : fixed
 case 16 problem: electrode interference : fixed
-case 20 problem: extra activated electrode : fixed( should waste disposal droplet's location after it reached there)
+case 20 problem: extra activated electrode : fixed( should waste disposal
+droplet's location after it reached there)
 
 case 30 problem: unknown, can not find path
 now solved,too large search space... need some time
@@ -22,8 +23,14 @@ solved: added a heuristic, when some net is causing too much conflict, ripup it
 problem:
 for 30, it is better to search for larger conflict count
 for 45, it is better to switch net order earlier
---> what about add a heuristic, try stalling for some time, but not 1 step each time
+--> what about add a heuristic, try stalling for some time, but not 1 step each
+time
 
 
 case 47: 3-pin net, need implementation
 47,49,52,56,57
+
+-- DAC05_2 --------------------------------------------------------------------
+39: very slow
+53: failed
+59: very slow( actually only one droplet, but MHT=20 )
