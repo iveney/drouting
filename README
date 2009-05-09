@@ -1,3 +1,8 @@
+ask a-fu about the 45 degree MHT line, equal length route to the given two
+point as their merge point.  if the sink is inside/ on the boundary of the
+bounding box, choose sink as merge point, otherwise use some pt in BB.
+
+-------------------------------------------------------------------------------
 for some cases, it is very slow
 what about set a constraint: when MHT=timing constraint, do not stall
 THE PROBLEM IS: the manhattance distance we calculated do not considered

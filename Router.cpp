@@ -18,6 +18,7 @@ using std::sort;
 using std::setw;
 using std::string;
 
+char visited[MAXGRID][MAXGRID][MAXTIME+1];
 int dx[]={-1,1,0,0,0};
 int dy[]={0,0,1,-1,0};
 extern const char *color_string[];
@@ -37,6 +38,8 @@ Router::Router():read(false),max_t(-1){
 
 // desctructor
 Router::~Router(){
+	// release graph
+	destroy_graph();
 }
 
 // read in a chip file
@@ -85,6 +88,8 @@ void Router::init(){
 	H=chip.H;
 	T=chip.T;
 	// generate a series of time frame to store the voltage assignment
+	// TEST: set the visited bitmap to empty
+	memset(visited,0,sizeof(visited));
 	
 	allocate_graph();
 }
@@ -107,13 +112,13 @@ RouteResult Router::solve_subproblem(int prob_idx){
 	// the result to return
 	RouteResult result(this->T,this->W,this->H,this->pProb);
 
-	// set the parameter
-	int div = (pProb->nNet/2);
-	MAX_SINGLE_CFLT = this->W * this->H * this->T /(div==0?1:div) ;
-	MAXCFLT = MAX_SINGLE_CFLT;
+	// heuristic: set the parameter
+	//int div = (pProb->nNet/2);
+	//MAX_SINGLE_CFLT = this->W * this->H * this->T /(div==0?1:div) ;
+	//MAXCFLT = MAX_SINGLE_CFLT;
 
-	MAX_SINGLE_CFLT = 100;
-	MAXCFLT = 300;
+	//MAX_SINGLE_CFLT = 100;
+	//MAXCFLT = 300;
 
 	// start to route each net according to sorted order
 	nets.clear();
@@ -138,9 +143,6 @@ RouteResult Router::solve_subproblem(int prob_idx){
 	char buf[100];
 	sprintf(buf,"%s_%d_sol.tex",filename.c_str(),prob_idx);
 	draw_voltage(result,buf);
-
-	// release graph
-	destroy_graph();
 
 	return result ;
 }
@@ -256,9 +258,12 @@ bool Router::route_subnet(Point src,Point dst,
 	GP_HEAP p;
 
 	// start time = 0, source point = src, no parent
+	GridPoint::counter = 0;
 	GridPoint *gp_src = new GridPoint(src,NULL); 
 	gp_src->distance = MHT(src,dst);
 	p.push(gp_src); // put the source point into heap
+	// mark it
+	visited[src.x][src.y][0] = 1;
 
 	int t=0;               // current time step
 	bool success = false;  // mark if this net is routed successfully
@@ -390,8 +395,9 @@ bool Router::route_net(int which,RouteResult &result) {
 	output_netinfo(pNet);
 	bool success;
 	ConflictSet conflict_net(netcount);
-
+	
 	do{
+		memset(visited,0,sizeof(visited));
 		if( pNet->numPin == 2 )
 			success=route_2pin(which,result,conflict_net);
 		else
@@ -401,8 +407,8 @@ bool Router::route_net(int which,RouteResult &result) {
 			// first net can not be route: routing failed
 			if(netorder[0]==which) 
 				return false;
-			cerr<<"** Error: route net"<<which
-			    <<" failed,ripup-reroute....."<<endl;
+			cerr<<"** Error: route net["<<which
+			    <<"] failed,ripup-reroute....."<<endl;
 			bool ret;
 			ret = ripup_reroute(which,result,conflict_net);
 			if( ret == false ) return false;
@@ -477,6 +483,8 @@ bool Router::ripup_reroute(int which,RouteResult & result,
 	// now use the most conflict net=`max_id'
 	int max_id = conflict_net.max_id;
 	assert(max_id>=0);
+
+	// what about for 3-pin net that is causing constraint on itself?
 	assert(max_id!=which);
 
 	// check if max_id is the net that rip `which' previously
@@ -578,7 +586,8 @@ bool Router::propagate_nbrs(int which, int pin_idx,GridPoint * gp_from,
 		     (nbr[i] == par_par->pt) &&
 			(nbr[i] != from_pt) )
 			continue;
-
+		if( visited[x][y][t] == 1 ) continue; 
+		visited[x][y][t] = 1;
 		// calculate its weight
 		Point moving_to(x,y);
 		int f_pen=0,e_pen=0,bending=gp_from->bend;
@@ -642,6 +651,8 @@ void Router::backtrack(int which,int pin_idx,GridPoint *current,
 	//     2: ...
 	//     20:(21,3)
 	//
+	cout<<" propagated = "<<GridPoint::counter
+	    <<" found at = "<<current->order<<endl;
 	PtVector & pin_path = result.path[which].pin_route[pin_idx];
 	pin_path.clear();	// for 3-pin net re-route, may need to clear it
 	Point dst = current->pt;

@@ -33,7 +33,12 @@ public:
 	static int counter;
 	class GPpointerCmp{
 	public:
+		// true if `a' if less important
 		bool operator()(const GridPoint *a, const GridPoint *b) const{
+			// precedence:
+			// 1. weight
+			// 2. MHT
+			// 3. time
 			if( a->weight == b->weight ){
 				if( a->time == b->time ){
 					if( a->distance == b->distance )
