@@ -6,7 +6,7 @@ OBJ=$(SRC:.cpp=.o)
 BIN=main
 DBG=debug
 parser=parser
-OPT=-Wall -g
+OPT=-Wall -g #-DOUTPUT
 
 release: $(OBJ) main.o tags
 	@echo "Making release..."

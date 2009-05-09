@@ -112,8 +112,8 @@ RouteResult Router::solve_subproblem(int prob_idx){
 	MAX_SINGLE_CFLT = this->W * this->H * this->T /(div==0?1:div) ;
 	MAXCFLT = MAX_SINGLE_CFLT;
 
-	//MAX_SINGLE_CFLT = 100;
-	//MAXCFLT = 300;
+	MAX_SINGLE_CFLT = 100;
+	MAXCFLT = 300;
 
 	// start to route each net according to sorted order
 	nets.clear();
@@ -283,19 +283,25 @@ bool Router::route_subnet(Point src,Point dst,
 		}
 		// get wave_front and propagate its neighbour
 		//p.sort();
-#ifdef DEBUG
+#ifdef OUTPUT
+		if( which == 1 ){
 		cout<<"------------------------------------------------"<<endl;
 		cout<<"[before pop]"<<endl;
 		output_heap(p);
+		}
 #endif 
 		current = p.top();
 		p.pop();
-#ifdef DEBUG
+#ifdef OUTPUT
+		if( which == 1 ){
 		cout<<"[after pop]"<<endl;
-		output_heap(p);
 		cout<<"Pop "         <<current->pt
 		    <<" at time "    <<current->time
 		    <<", queue size="<<p.size()<<endl;
+		output_heap(p);
+//		p.sort();
+//		output_heap(p);
+		}
 #endif 
 
 		// sink reached, but need to check whether it stays
@@ -589,7 +595,7 @@ bool Router::propagate_nbrs(int which, int pin_idx,GridPoint * gp_from,
 			//assert(conflict_netid != which);
 			//possible_nets.increment(conflict_netid);
 			//cout<<"net "<<which<<" fluidic violation:"
-			//    <<from_pt<<"->"<<moving_to<<endl;
+			//    <<from_pt<<"->"<<moving_to<<" time="<<t<<endl;
 			continue;
 		}
 		//else if (fluid_result == SRC_VIOLATE)
@@ -600,7 +606,7 @@ bool Router::propagate_nbrs(int which, int pin_idx,GridPoint * gp_from,
 			       	moving_to,from_pt,t,result,possible_nets,0);
 		if( !not_elect_violate ){
 			//cout<<"net "<<which<<" electrode violation:"
-			 //   <<from_pt<<"->"<<moving_to<<endl;
+			//   <<from_pt<<"->"<<moving_to<<endl;
 			continue;
 		}
 
