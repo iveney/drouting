@@ -20,6 +20,7 @@ using std::string;
 
 const int dx[]={-1,1,0,0,0};
 const int dy[]={0,0,1,-1,0};
+const int visited_size = MAXGRID*MAXGRID*(MAXTIME+1);
 extern const char *color_string[];
 
 // parameter to control the searching
@@ -33,12 +34,39 @@ Subproblem * Router::pProb=NULL;
 // initialize the read flag, netorder, and the max_t
 Router::Router():read(false),max_t(-1){
 	for(int i=0;i<MAXNET;i++) netorder[i]=i;
+	int i,j;
+	visited = new (char **);
+	for (i = 0; i < MAXGRID; i++) {
+		visited[i] = new char *;
+		for (j = 0; j < MAXGRID; j++) {
+			visited[i][j] = new char[MAXTIME+1];
+		}
+	}
 }
 
 // desctructor
 Router::~Router(){
 	// release graph
 	destroy_graph();
+	int i,j;
+	for (i = 0; i < MAXGRID; i++) {
+		for (j = 0; j < MAXGRID; j++) {
+			delete [] visited[i][j];
+		}
+		delete [] visited[i];
+	}
+	delete visited;
+}
+
+void Router::clear_visited(){
+	int i,j,k;
+	for (i = 0; i < MAXGRID; i++) {
+		for (j = 0; j < MAXGRID; j++) {
+			for (k = 0; k < MAXTIME+1; k++) {
+				visited[i][j][k] = 0;
+			}
+		}
+	}
 }
 
 // read in a chip file
@@ -84,7 +112,7 @@ void Router::init(){
 	T=chip.T;
 	// generate a series of time frame to store the voltage assignment
 	// TEST: set the visited bitmap to empty
-	memset(visited,0,sizeof(visited));
+	memset(visited,0,visited_size);
 	
 	allocate_graph();
 }

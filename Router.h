@@ -256,6 +256,8 @@ private:
 			RouteResult & result,
 			ConflictSet & conflict_net);
 
+	void clear_visited();
+
 	// ******************************************************************//
 	// members
 	//
@@ -271,7 +273,7 @@ private:
 
 	deque<int> nets;  			// a list of unrouted nets
 	// marks if ((x,y),t) has been visited
-	char visited[MAXGRID][MAXGRID][MAXTIME+1];
+	char ***visited;//[MAXGRID][MAXGRID][MAXTIME+1];
 
 	ConstraintGraph * graph[MAXTIME+1]; 	// each time step's graph
 	BYTE blockage[MAXGRID][MAXGRID];	// bitmap for block
