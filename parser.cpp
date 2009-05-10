@@ -89,7 +89,7 @@ void drawSubproblem(Subproblem * prob, int W,int H,int num,char * name){
 
 	// define \W and \H
 	fprintf(fig,"%% define the row and column number\n");
-	fprintf(fig,"\\def \\W{%d}",W);
+	fprintf(fig,"\\def \\W{%d}  ",W);
 	fprintf(fig,"\\def \\H{%d}\n",H);
 
 	// draw block

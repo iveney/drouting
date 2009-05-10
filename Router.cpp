@@ -650,9 +650,10 @@ void Router::backtrack(int which,int pin_idx,GridPoint *current,
 	//     1: (2,3)
 	//     2: ...
 	//     20:(21,3)
-	//
+	/*
 	cout<<" propagated = "<<GridPoint::counter
 	    <<" found at = "<<current->order<<endl;
+	    */
 	PtVector & pin_path = result.path[which].pin_route[pin_idx];
 	pin_path.clear();	// for 3-pin net re-route, may need to clear it
 	Point dst = current->pt;
