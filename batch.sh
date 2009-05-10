@@ -24,10 +24,12 @@ echo -n > "$OUTNAME"
 for i in `seq 1 "$NUMSUBPROBLEMS"`
 do
 	echo -n "$i : "
-	result=`./main $FILENAME $i 2>&1 | awk '/max time =/ {print $4}'`
-	if [ -n "$result" ];then
-		echo succeed, time = "$result"
-		echo "$result" >> "$OUTNAME"
+	OUTPUT=`./main "$FILENAME" $i 2>&1 | grep -e "max time" -e "total cell"`
+	MAXTIME=`echo "$OUTPUT" | awk '/max time =/ {print $4}'`
+	if [ -n "$MAXTIME" ];then
+		CELL=`echo "$OUTPUT" | awk '/total cell used/ {print $6}'`
+		echo succeed, time = "$MAXTIME", used cell = "$CELL"
+		echo "$MAXTIME" "$CELL" >> "$OUTNAME"
 	else
 		echo fail
 	fi

@@ -4,4 +4,4 @@ if [ "$#" -lt 1 ];then
 	exit 1
 fi
 
-awk '{sum+=$1} END{print sum/NR}' "$1".time
+awk '{sum+=$1;used+=$2} END{print "avg time=" sum/NR, "cell=" used}' "$1".time

@@ -149,7 +149,9 @@ RouteResult Router::solve_subproblem(int prob_idx){
 
 // output the result to standard output
 void Router::output_result(RouteResult & result){
-	int i,j;
+	int i,j,count=0;
+	char used_cell[MAXGRID][MAXGRID];
+	memset(used_cell,0,sizeof(used_cell));
 	// for each net
 	for (i = 0; i < netcount; i++) {
 		const NetRoute & net_path = result.path[i];
@@ -161,10 +163,16 @@ void Router::output_result(RouteResult & result){
 			for(size_t k=0;k<route.size();k++){
 				cout<<"\t"<<k<<":"
 				<<route[k]<<endl;
+				int x = route[k].x, y = route[k].y;
+				if( used_cell[x][y] == 0 ){
+					count++;
+					used_cell[x][y]=1;
+				}	
 			}
 		}
 	}
 	output_voltage(result);
+	cout<<"**** total cell used : "<<count<<" *****"<<endl;
 }
 
 // output the voltage assignment
