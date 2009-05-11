@@ -1,27 +1,24 @@
 -- DAC05 --
-3,5	:loop, netorder deadlock
-6	:slow, can not find result
-9	:good case, big problem but solved 
+3,5(solved)	:loop, netorder deadlock
+6(solved)	:slow, can not find result
+9		:good case, big problem but solved 
+47,49,52,56,57 : 3-pin net
+slow		: 30, 45,
 
-updated:
-3,5,6 solved!
 --------
 IMPORTANT:
-case 11 has problem : fixed
-case 16 problem: electrode interference : fixed
-case 20 problem: extra activated electrode : fixed( should waste disposal droplet's location after it reached there)
-
-case 30 problem: unknown, can not find path
-now solved,too large search space... need some time
-
-
 case 45: net 3 can not be routed, maybe be blocked by net 1,2
 solved: added a heuristic, when some net is causing too much conflict, ripup it
-
 
 problem:
 for 30, it is better to search for larger conflict count
 for 45, it is better to switch net order earlier
+--> what about add a heuristic, try stalling for some time, but not 1 step each
+time
 
+-- DAC05_2 --------------------------------------------------------------------
+39: very slow
+53: failed, for a 3-pin net, it is blocking it self.
+59: very slow( actually only one droplet, but MHT=20 )
 
-case 47: 3-pin net, need implementation
+-- DATE06 --------------------------------------------------------------------

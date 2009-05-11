@@ -14,6 +14,7 @@ using std::less;
 using std::map;
 using std::ostream;
 using std::endl;
+using std::greater;
 
 template <typename T,typename Container = vector<T>, 
 	 typename Compare = less<typename Container::value_type> >

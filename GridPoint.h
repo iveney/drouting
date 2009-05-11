@@ -13,7 +13,7 @@ public:
 
 	// TODO: how to determine there size if weights are equal?
 	// because we need a strictly weak ordering here for heap comparison..
-	bool operator < (const GridPoint& g) const;
+	//bool operator < (const GridPoint& g) const;
 	bool operator == (const GridPoint &g) const;
 	friend ostream & operator <<(ostream & out,const GridPoint & g);
 
@@ -33,9 +33,22 @@ public:
 	static int counter;
 	class GPpointerCmp{
 	public:
+		// true if `a' if less important
 		bool operator()(const GridPoint *a, const GridPoint *b) const{
-			if( a->weight == b->weight )
-				return (a->order) > (b->order);
+			// precedence:
+			// 1. weight
+			// 2. MHT
+			// 3. time
+			if( a->weight == b->weight ){
+				if( a->time == b->time ){
+					if( a->distance == b->distance )
+						return (a->order) < (b->order);
+					else
+						return a->distance > b->distance;
+				}
+				else
+					return (a->time) < (b->time);
+			}
 			else
 				return a->weight > b->weight;
 		}

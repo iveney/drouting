@@ -16,6 +16,8 @@ using std::string;
 
 // return value of fluidic constraint check
 enum FLUIDIC_RESULT{SAFE,VIOLATE,SRC_VIOLATE,SAMENET,SAMEDEST};
+
+// marks the functional part on chip
 enum FUNCTION_PLACE{FREE,BLOCK,WASTE};
 
 // implements simple set function
@@ -50,10 +52,10 @@ public:
 		}
 	}
 
-	int net_num;
+	int net_num;		// total number of nets
 	int max_id;		// which net causes most conflict
-	int total;
-	IntVector conflict_count;
+	int total;		// total number of conflicts
+	IntVector conflict_count; // each net's conflict count
 };
 
 // struct tracks the routing information of a net
@@ -65,12 +67,14 @@ struct NetRoute{
 		pin_route[0].clear();
 		if( num_pin == 3 ) pin_route[1].clear();
 	}
-	int idx;
-	int num_pin;
-	int timing;
-	int merge_time;
-	// at most 3pin
+	int idx;	// this net's id
+	int num_pin;    // net pins,be 2 or 3
+	int timing;     // total time used
+	int merge_time; // merge time for this net
+	// The route location of this net,
+	// at most 3pin, hence only two elements
 	PtVector pin_route[2]; 
+	int reach_time[2]; // the time a droplet finishes routing
 };
 
 // the class to stores the final routing result
@@ -118,6 +122,7 @@ public:
 	// 1st dimension = time, 2nd dimenstion = row/col index
 	vector< vector<COLOR> > v_row;
 	vector< vector<COLOR> > v_col;
+
 	// a list of activated cell at time t
 	vector< PtVector > activated;
 };
@@ -131,32 +136,24 @@ public:
 	// default constructor: mark the router's input be empty
 	// initialize the netorder vector(default order:1,2,...)
 	Router();
+
 	// free the resources allocated
 	~Router();
 
-	void init();
-
-	void output_result(RouteResult & result);
-
-	// do rip up and re route for a net
-	bool ripup_reroute(int which,RouteResult & result,
-			ConflictSet &conflict_net);
-
 	// read the file and subproblem number from cmd line argument
 	void read_file(int argc, char * argv[]);
+
+	void output_result(RouteResult & result);
 
 	// output all the members in current heap
 	void output_heap(const GP_HEAP & h);
 
 	// output voltage assignment status;
 	void output_voltage(RouteResult & result);
-
-	// given a net index, route the net
-	bool route_net(int which,RouteResult &result);
-
+	
 	// solve all the subproblems
 	ResultVector solve_all();
-
+	
 	// solve a subproblem with index=prob_idx
 	// returns the routing result
 	RouteResult solve_subproblem(int prob_idx);
@@ -164,6 +161,49 @@ public:
 	// solve the problem given in cmd line
 	// returns the routing result of all problems
 	ResultVector solve_cmdline();
+
+	// determine if given point pt is in valid position
+	bool in_grid(const Point & pt);
+
+	// gets the neighbour points of a point
+	PtVector get_neighbour(const Point & pt);
+
+	int get_maxt() const;
+
+private:
+	// ******************************************************************//
+	// methods
+	// sort the net according to some criteria defined in cmp_net
+	void sort_net(Subproblem *pProb, int * netorder);
+
+	// be used for qsort to decide netorder
+	//int cmp_net(const int id1,const int id2);
+	static int cmp_net(const void* id1,const void* id2);
+
+	// output the current netorder
+	void output_netorder(int *netorder,int netcount);
+
+	// output information of pNet
+	void output_netinfo(Net *pNet);
+
+	// init blockage bitmap for use
+	void init_place(Subproblem *p);
+
+	bool route_2pin(int which,RouteResult & result,
+		ConflictSet & conflict_net);
+	
+	bool route_3pin(int which,RouteResult & result,
+		ConflictSet & conflict_net);
+
+	void init();
+
+	// do rip up and re route for a net
+	bool ripup_reroute(int which,RouteResult & result,
+			ConflictSet &conflict_net);
+
+
+	// given a net index, route the net
+	bool route_net(int which,RouteResult &result);
 
 	// determines if there is fluidic constraint violation
 	FLUIDIC_RESULT fluidic_check(int which, int pin_idx,
@@ -201,13 +241,7 @@ public:
 
 	void allocate_graph();
 	void destroy_graph();
-
-	// determine if given point pt is in valid position
-	bool in_grid(const Point & pt);
-
-	// gets the neighbour points of a point
-	PtVector get_neighbour(const Point & pt);
-
+	
 	// backtrack phase, store the result
 	void backtrack(int which,int pin_idx,
 			GridPoint *current,RouteResult &result);
@@ -221,46 +255,30 @@ public:
 			int which,int pin_idx,
 			RouteResult & result,
 			ConflictSet & conflict_net);
-	
 
-	///////////////////////////////////////////////////////////////////
+	// ******************************************************************//
 	// members
+	//
 	bool read;      // mark if configuration has been read
 	Chip chip;      // stores all the information
 	int tosolve;    // which subproblem to solve,given in cmd line
-	ResultVector route_result;
+	ResultVector route_result; // stores the final route result
 
-	///////////////////////////////////////////////////////////////////
-	// members for internal use of routing
-	BYTE blockage[MAXGRID][MAXGRID];
-	int netcount;
-	int W,H,T; // W=width, H=height
-	int netorder[MAXNET];
-	static Subproblem * pProb;
-	deque<int> nets;
-	ConstraintGraph * graph[MAXTIME+1]; // each time step's graph
-	int max_t;
+	string filename;	// TEST: filename to output the tex file
+	int max_t;		// TEST: output maximum time used
 
-private:
-	int last_ripper_id;
+	int last_ripper_id;     // marks which net is the ripper
 
-	// sort the net according to some criteria defined in cmp_net
-	void sort_net(Subproblem *pProb, int * netorder);
+	deque<int> nets;  			// a list of unrouted nets
+	// marks if ((x,y),t) has been visited
+	char visited[MAXGRID][MAXGRID][MAXTIME+1];
 
-	// be used for qsort to decide netorder
-	//int cmp_net(const int id1,const int id2);
-	static int cmp_net(const void* id1,const void* id2);
-
-	// output the current netorder
-	void output_netorder(int *netorder,int netcount);
-
-	// output information of pNet
-	void output_netinfo(Net *pNet);
-
-	// init blockage bitmap for use
-	void init_place(Subproblem *p);
-	
-	string filename;
+	ConstraintGraph * graph[MAXTIME+1]; 	// each time step's graph
+	BYTE blockage[MAXGRID][MAXGRID];	// bitmap for block
+	int netcount;              		// total net number
+	int W,H,T;				// W=width, H=height
+	int netorder[MAXNET];			// the net routing order
+	static Subproblem * pProb; 		// pointer to the current
 };
 
 #endif

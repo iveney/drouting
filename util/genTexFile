@@ -1,15 +1,19 @@
 #!/bin/bash
-# given a filename
-# generate a tex file containg all pattern to filename
+# given a droplet routing benchmark name
+# generate a tex file visulizes all the subproblems
+# REQUIRE: 
+# 1.parser is in the current directory
+# 2.result_header.tex in the current directory
 
 NAME=$1
 ./parser $NAME
-rm -rf "${NAME}.tex"
+cat draw_subproblem_header.tex > "${NAME}.tex"
 NUM=`ls ${NAME}_p* | wc -l`
 for i in `seq 1 $NUM`
 do
 	cat ${1}_p${i}.tex >> "${NAME}.tex"
 done
+echo "\\end{document}" >> "${NAME}.tex"
 rm ${NAME}_p*
 
 exit 0

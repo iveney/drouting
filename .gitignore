@@ -15,3 +15,6 @@ util/*.aux
 cscope.files
 *.pdf
 *.tex
+*.aux
+*.out
+*.log
