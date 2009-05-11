@@ -33,7 +33,8 @@ Subproblem * Router::pProb=NULL;
 // constructer of Router
 // initialize the read flag, netorder, and the max_t
 Router::Router():read(false),max_t(-1){
-	for(int i=0;i<MAXNET;i++) netorder[i]=i;
+	for(int i=0;i<MAXNET;i++) 
+		netorder[i]=i;
 	int i,j;
 	visited = new (char **);
 	for (i = 0; i < MAXGRID; i++) {
@@ -42,6 +43,7 @@ Router::Router():read(false),max_t(-1){
 			visited[i][j] = new char[MAXTIME+1];
 		}
 	}
+	cout<<"hi"<<endl;
 }
 
 // desctructor
