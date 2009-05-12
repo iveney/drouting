@@ -1,4 +1,4 @@
-CC=/usr/bin/g++
+CC=g++
 SRC=parser.cpp header.cpp GridPoint.cpp Router.cpp util.cpp \
     ConstraintGraph.cpp draw_voltage.cpp
 HDR=$(SRC:.cpp=.h)
@@ -10,6 +10,7 @@ OPT=-Wall -g #-DOUTPUT
 
 release: $(OBJ) main.o tags
 	@echo "Making release..."
+	$(CC) -c main.cpp
 	$(CC) $(OPT) -o $(BIN) $(OBJ) main.o
 
 all: parser release debug

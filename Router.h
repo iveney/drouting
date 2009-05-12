@@ -152,7 +152,8 @@ public:
 	void output_voltage(RouteResult & result);
 	
 	// solve all the subproblems
-	ResultVector solve_all();
+	//ResultVector solve_all();
+	void solve_all();
 	
 	// solve a subproblem with index=prob_idx
 	// returns the routing result

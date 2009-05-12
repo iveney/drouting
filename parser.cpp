@@ -33,6 +33,8 @@ Chip * parse(FILE * f,Chip * chip){
 	fscanf(f,"TIMECONSTRAINT: %d\n",&chip->T);
 	fscanf(f,"WAT: %d %d\n",&(chip->WAT.x),&(chip->WAT.y));
 	fscanf(f,"NUMSUBPROBLEMS: %d\n",&chip->nSubProblem);
+	if( chip->nSubProblem > MAXSUB ) 
+		report_exit("Error: too many subproblems");
 	int i,j,k,temp;
 	// scan for each subproblem, index start from 1
 	for(i=1;i<=chip->nSubProblem;i++){

@@ -8,7 +8,9 @@ template <typename T,typename Container, typename Compare>
 heap<T,Container,Compare>::heap(){}
 
 template <typename T,typename Container, typename Compare>
-heap<T,Container,Compare>::~heap(){}
+heap<T,Container,Compare>::~heap(){
+
+}
 
 template <typename T,typename Container, typename Compare>
 int heap<T,Container,Compare>::size() const{
@@ -39,7 +41,7 @@ void heap<T,Container,Compare>::pop() {
 }
 
 template <typename T,typename Container, typename Compare>
-class Container::iterator heap<T,Container,Compare>::end(){ return c.end(); }
+class Container::iterator heap<T,Container,Compare>::end(){return c.end(); }
 
 template <typename T,typename Container, typename Compare>
 class Container::iterator heap<T,Container,Compare>::begin(){return c.begin();}
@@ -60,7 +62,10 @@ void heap<T,Container,Compare>::free(){
 	for(size_t i=0;i<resource.size();i++)
 		delete resource[i];
 	resource.clear();
+	//resource.resize(0);
 	order.clear();
+	//order.resize(0);
+	counter=0;
 }
 
 template <typename T,typename Container, typename Compare>

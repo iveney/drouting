@@ -32,7 +32,9 @@ Subproblem * Router::pProb=NULL;
 // constructer of Router
 // initialize the read flag, netorder, and the max_t
 Router::Router():read(false),max_t(-1){
-	for(int i=0;i<MAXNET;i++) netorder[i]=i;
+	for (int i = 0; i < MAXTIME; i++) {
+		graph[i] = NULL;
+	}
 }
 
 // desctructor
@@ -45,11 +47,10 @@ Router::~Router(){
 // read e.g. DAC05 for example
 void Router::read_file(int argc, char * argv[]){
 	FILE * f;
-	if(argc<=2)
-		report_exit("Usage ./main filename subproblem\n");
+	//if(argc<=2) report_exit("Usage ./main filename subproblem\n");
 	
 	// now only allows to solve a given subproblem
-	//if(argc<2) report_exit("Usage ./main filename [subproblem]\n");
+	if(argc<2) report_exit("Usage ./main filename [subproblem]\n");
 
 	//const char * filename = argv[1];
 	filename = string(argv[1]);
@@ -58,9 +59,9 @@ void Router::read_file(int argc, char * argv[]){
 	else            tosolve = -1;   // not given in cmdline, solve all
 	if( (f = fopen(filename.c_str(),"r")) == NULL )
 		report_exit("open file error\n");
+	read=true;
 	parse(f,&chip); // now `chip' stores subproblems
 	fclose(f);
-	init();
 }
 
 // allocate space for each time step of the graph
@@ -72,34 +73,39 @@ void Router::allocate_graph(){
 
 // free the space allocated to constraint graph
 void Router::destroy_graph(){
-	for (int i = 1; i <= T; i++)
+	for (int i = 1; i <= T; i++){
 		delete graph[i];
+		graph[i] = NULL;
+	}
 }
 
-// do initialization for global variables W H T and graph
+// put initialization stuff here
 void Router::init(){
-	read=true;
+	for(int i=0;i<MAXNET;i++) netorder[i]=i;
 	W=chip.W;
 	H=chip.H;
 	T=chip.T;
-	// generate a series of time frame to store the voltage assignment
-	// TEST: set the visited bitmap to empty
+	max_t = -1;
+	last_ripper_id = -1;
 	memset(visited,0,sizeof(visited));
+	GridPoint::counter=0;
 	
+	destroy_graph();
 	allocate_graph();
 }
 
 // solve subproblem `prob_idx'
 RouteResult Router::solve_subproblem(int prob_idx){
 	if( read == false ) report_exit("Must read input first!");
+	if( prob_idx > this->chip.nSubProblem ) 
+		report_exit("subproblem id out of bound!");
+	init();
 	cout<<"--- Solving subproblem ["<<prob_idx<<"] ---"<<endl;
 
 	pProb = &chip.prob[prob_idx];
 	netcount = pProb->nNet;
 	sort_net(pProb,netorder);// sort : decide net order
 	output_netorder(netorder,netcount);
-
-	last_ripper_id = -1;
 
 	// generate blockage bitmap
 	init_place(pProb);
@@ -138,6 +144,7 @@ RouteResult Router::solve_subproblem(int prob_idx){
 	char buf[MAXBUF];
 	sprintf(buf,"%s_%d_sol.tex",filename.c_str(),prob_idx);
 	draw_voltage(result,buf);
+	cout<<"max time = "<<get_maxt()<<" "<<endl;
 
 	return result ;
 }
@@ -242,10 +249,11 @@ void Router::init_place(Subproblem *p){
 }
 
 // DEPRECATE: solves all the subproblems
-ResultVector Router::solve_all(){
-	for(int i=0;i<chip.nSubProblem;i++)
-		solve_subproblem(i);
-	return route_result;
+void Router::solve_all(){
+	// note that subproblem starts from 1
+	for(int i=1;i<=chip.nSubProblem;i++)
+		route_result.push_back(solve_subproblem(i));
+	//return route_result;
 }
 
 // given a net `which', route its `pin_idx' pin
@@ -263,7 +271,9 @@ bool Router::route_subnet(Point src,Point dst,
 	GridPoint *current;
 
 	// initialize the heap
-	GP_HEAP p;
+	GP_HEAP *pp = new GP_HEAP;
+	GP_HEAP & p = *pp;
+	//GP_HEAP p;
 
 	// start time = 0, source point = src, no parent
 	GridPoint::counter = 0;
@@ -321,22 +331,26 @@ bool Router::route_subnet(Point src,Point dst,
 			bool fail = false;
 			// see whether it can stay in destination
 			// do fluidic/electrode check
-			for (int i = reach_t+1; i <= T; i++) {
-				fluid_result = fluidic_check(which,
-						pin_idx, current->pt,
-						i,result,conflict_net);
-				if( fluid_result == VIOLATE ){
-					fail = true;
-					break;
-				}
+			if( dst != chip.WAT ){
+				// IMPORTANT: for WAT, no need to check!
+				for (int i = reach_t+1; i <= T; i++) {
+					fluid_result = fluidic_check(which,
+							pin_idx, current->pt,
+							i,result,conflict_net);
+					if( fluid_result == VIOLATE ){
+						fail = true;
+						break;
+					}
 
-				bool not_elect_violate=electrode_check(
-						which,pin_idx,
-						current->pt,current->pt,i,
-						result,conflict_net,0);
-				if( !not_elect_violate ){
-					fail = true;
-					break;
+					bool not_elect_violate=electrode_check(
+							which,pin_idx,
+							current->pt,
+							current->pt,i,
+							result,conflict_net,0);
+					if( !not_elect_violate ){
+						fail = true;
+						break;
+					}
 				}
 			}
 
@@ -384,6 +398,7 @@ bool Router::route_subnet(Point src,Point dst,
 	backtrack(which,pin_idx,current,result);
 	//output_result(result);
 	p.free();
+	delete pp; pp = NULL;
 	return true;
 
 }
@@ -1080,7 +1095,7 @@ FLUIDIC_RESULT Router::fluidic_check(int which,int pin_idx,
 ResultVector Router::solve_cmdline(){
 	// tosolve is not given in cmdline
 	if( this->tosolve == -1 ) 
-		route_result = solve_all();
+		solve_all();
 	else
 		route_result.push_back(solve_subproblem(tosolve));
 	return route_result;

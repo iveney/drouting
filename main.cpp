@@ -20,6 +20,5 @@ int main(int argc, char * argv[]){
 	Router router;
 	router.read_file(argc,argv);
 	router.solve_cmdline();
-	cout<<"max time = "<<router.get_maxt()<<" "<<endl;
 	return 0;
 }
