@@ -5,30 +5,29 @@ HDR=$(SRC:.cpp=.h)
 OBJ=$(SRC:.cpp=.o)
 BIN=main
 DBG=debug
-parser=parser
-OPT=-Wall -g #-DOUTPUT
+PARSER=parser
+OPT=-Wall -g 
 
-release: $(OBJ) main.o tags
-	@echo "Making release..."
-	$(CC) -c main.cpp
+main: $(OBJ) main.o tags
+	@echo "Making main..."
 	$(CC) $(OPT) -o $(BIN) $(OBJ) main.o
-
-all: parser release debug
-	cp ./main ./util/
-
-debug: $(HDR) $(SRC)
-	@echo "Making debug..."
-	$(CC) -c -DDEBUG $(SRC) main.cpp
-	$(CC) $(OPT) -o $(DBG) $(OBJ) 
 
 parser: $(OBJ) parser_main.o
 	@echo "Making parser..."
-	$(CC) $(OPT) -o $(parser) $(OBJ) parser_main.o
+	$(CC) $(OPT) -o $(PARSER) $(OBJ) parser_main.o
+
+all: parser main debug
+	cp ./main ./util/
+
+debug: $(OBJ) main.cpp
+	@echo "Making debug..."
+	$(CC) -c -DDEBUG $(SRC) main.cpp
+	$(CC) $(OPT) -o $(DBG) $(OBJ) main.o
 
 %.o: %.cpp  %.h
 	$(CC) -c $< $(OPT) -o $@
 
-tags: $(SRC) $(HDR)
+tags: $(SRC) $(HDR) main.cpp main.h parser_main.cpp
 	@echo "Making tags..."
 	cscopegen
 

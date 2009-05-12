@@ -83,6 +83,7 @@ public:
 	bool recur_color(const GNode & node,COLOR assign);
 	bool try_coloring();
 	COLOR get_node_color(const GNode & node);
+	COLOR get_node_color(NType type,int idx);
 
 private:
 	bool do_add_edge(const GNode &u,const GNode &v,EType type);

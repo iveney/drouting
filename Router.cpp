@@ -47,8 +47,6 @@ Router::~Router(){
 // read e.g. DAC05 for example
 void Router::read_file(int argc, char * argv[]){
 	FILE * f;
-	//if(argc<=2) report_exit("Usage ./main filename subproblem\n");
-	
 	// now only allows to solve a given subproblem
 	if(argc<2) report_exit("Usage ./main filename [subproblem]\n");
 
@@ -338,6 +336,9 @@ bool Router::route_subnet(Point src,Point dst,
 							pin_idx, current->pt,
 							i,result,conflict_net);
 					if( fluid_result == VIOLATE ){
+						if( which == 2 ){
+							cout<<"fluidic t="<<current->time<<endl;
+						}
 						fail = true;
 						break;
 					}
@@ -348,6 +349,9 @@ bool Router::route_subnet(Point src,Point dst,
 							current->pt,i,
 							result,conflict_net,0);
 					if( !not_elect_violate ){
+						if( which == 2 ){
+							cout<<"electric t="<<current->time<<endl;
+						}
 						fail = true;
 						break;
 					}
@@ -362,6 +366,8 @@ bool Router::route_subnet(Point src,Point dst,
 				success = true;
 				break;
 			}
+			if( which == 2 ) 
+				cout<<"here t="<<current->time<<endl;
 		}
 
 		// sink not found, continue to search here...
@@ -400,7 +406,6 @@ bool Router::route_subnet(Point src,Point dst,
 	p.free();
 	delete pp; pp = NULL;
 	return true;
-
 }
 
 // given a net with index `which' , route all its subnets
@@ -465,8 +470,11 @@ bool Router::route_3pin(int which,RouteResult & result,
 	int dist2 = MHT(pNet->pin[1].pt,pNet->pin[2].pt);
 	int a=0,b=1;
 	if( dist1 > dist2 ){
+		// route the net with shorter MHT first
 		swap(a,b);
 	}
+
+	cout<<"subnet routing order: <"<<a<<" "<<b<<">"<<endl;
 	
 	// route 1st subnet there
 	src = pNet->pin[a].pt;
@@ -615,13 +623,13 @@ bool Router::propagate_nbrs(int which, int pin_idx,GridPoint * gp_from,
 		// TEST: currently this will not happen
 		if( fluid_result == SAMENET ){
 			// multipin net
-			report_exit("fluid_result == SAMENET");
+			// report_exit("fluid_result == SAMENET");
 		} 
 		else if( fluid_result == VIOLATE ){
 			//assert(conflict_netid != which);
 			//possible_nets.increment(conflict_netid);
 			//cout<<"net "<<which<<" fluidic violation:"
-			//    <<from_pt<<"->"<<moving_to<<" time="<<t<<endl;
+			    //<<from_pt<<"->"<<moving_to<<" time="<<t<<endl;
 			continue;
 		}
 
@@ -630,7 +638,7 @@ bool Router::propagate_nbrs(int which, int pin_idx,GridPoint * gp_from,
 			       	moving_to,from_pt,t,result,possible_nets,0);
 		if( !not_elect_violate ){
 			//cout<<"net "<<which<<" electrode violation:"
-			//   <<from_pt<<"->"<<moving_to<<endl;
+			   //<<from_pt<<"->"<<moving_to<<endl;
 			continue;
 		}
 
@@ -700,7 +708,7 @@ void Router::backtrack(int which,int pin_idx,GridPoint *current,
 // simply re-construct the constraint graph
 void Router::update_graph(int which,int pin_idx,
 		const PtVector & pin_path,
-		const RouteResult & result){
+		RouteResult & result){
 	// we need to update all the coloring status 
 	// for every time step until it reaches the dest, 
 	// however, do not add the stalling frame!
@@ -796,7 +804,7 @@ void Router::output_netorder(int *netorder,int netcount){
 
 // control=0:test / control=1:save
 // droplet d1 is `pin_idx' subnet of net `which'
-// `d1' is moving to a point `pt' at time `t', 
+// `d1' is moving to a point `pt' at time `t' from `parent_pt`
 // determine whether it will violate electrode constraint
 // 1  2  3  4
 // 5  6->7  8
@@ -806,8 +814,9 @@ void Router::output_netorder(int *netorder,int netcount){
 // ensure 2 nets will not cause conflict on another net:1,2,4,9,10,12(type 3)
 bool Router::electrode_check(int which, int pin_idx,
 		const Point & pt,const Point & parent_pt,int t,
-		const RouteResult & result,
+		RouteResult & result,
 		ConflictSet & conflict_net,int control){
+	// TODO: for 3-pin net, we need to recover path for another net
 #define check_result(c_net,net_id) \
 	if(add_result==false){\
 		(c_net).increment(net_id);\
@@ -840,51 +849,88 @@ bool Router::electrode_check(int which, int pin_idx,
 	// let another droplet be `d2'
 	for (int i = 0; i<netcount ; i++) {
 		int checking_idx = netorder[i];
-		const NetRoute & route = result.path[checking_idx];
+		NetRoute & route = result.path[checking_idx];
 		// for each subnet(at most 2)
 		for (int j = 0; j<route.num_pin-1; j++) {
 			// do not check it self!
 			if( checking_idx == which && j == pin_idx ) continue;
+			/*
+			if( checking_idx == 0 && which == 1 && t==2 && pt == Point(15,14)){
+				cout<<"here"<<endl;
+			}
+			*/
 
-			const PtVector & pin = route.pin_route[j];
-			// pin[t] is the location at time t(activated at t-1)
+			PtVector & pin = route.pin_route[j];
+			// pin[t] is the location of d2 at time t(activated at t-1)
 			// IMOPRTANT:some droplet may disappear(waste disposal)
-			if( t >= (int)pin.size() ) break;
-			// IMPORTANT: 
+			if( t >= (int)pin.size() ) continue;
+			//if( t >= (int)pin.size() )break;
 			// if two droplet's sharing same activating row/column
 			// NO need to check the constraint!( my assumption )
-			if( pt.x == pin[t].x || pt.y == pin[t].y ) continue;
+			// IMPORTANT: the idea is correct 
+			// but this statement is WRONG
+			//if( pt.x == pin[t].x || pt.y == pin[t].y ) continue;
 
-			// Type 2: check if net-which+other-net affect d2
+			// special case for 3-pin net: allow violation if merge
+			// NOTE: since when chekcing 3-pin net, it implies that
+			// this is the last net to be checked
+			// hence it means that there will be NO violation when
+			// activating pt considering other nets except `which'
+			// hence the modify of the 3-pin net is always true
+			Point backup;
+			bool changed = false;
+			if(route.num_pin == 3){
+				// if satisfied merge condition...
+				if( pin[t].x == pt.x && abs(pin[t].y-pt.y)==1 || 
+				    pin[t].y == pt.y && abs(pin[t].x-pt.x)==1){
+					// merge vertically
+					route.merge_time = t;
+					backup = pin[t];
+					pin[t] = pt;
+					changed = true;
+					continue;
+				}
+				// we can change the route for 1st one to 2nd
+				// subnet later
+			}
+
+			// Type 2: check if d1+other-net affect d2
 			if( dir1 != STAY ){
 				add_result=check_droplet_conflict(
 						parent_pt,pt,
 						pin[t-1],pin[t],
 						p_graph,t,control);
-				check_result(conflict_net,checking_idx);
+				//check_result(conflict_net,checking_idx);
+				if( add_result == false ){
+					conflict_net.increment(checking_idx);
+			//		pin[t] = backup;
+					return false;
+				}
 			}
-			// Type 3: check if d2+other-net affect net-which
+			// Type 3: check if d2+other-net affect d1
 			DIRECTION dir2 = pt_relative_pos(pin[t-1],pin[t]);
 			if( dir2 != STAY ){
 				add_result=check_droplet_conflict(
 						pin[t-1],pin[t],
 						parent_pt,pt,
 						p_graph,t,control);
-				check_result(conflict_net,checking_idx);
+				//check_result(conflict_net,checking_idx);
+				if( add_result == false ){
+					conflict_net.increment(checking_idx);
+			//		pin[t] = backup;
+					return false;
+				}
 			}
+			
 		} // end of for j
+
 		// after the checking of the same net, break the for loop
+		// NOTE that this has already take 3-pin into account
+		// no matter which is routed first
 		if( checking_idx==which ) break; 
 	} // end of for i
 
-	// check 3-pin net here
-	/*
-	if( get_pinnum(which) == 3 && pin_idx == 1 ){
-		// if it is a merging step, no need to add constraint
-	}
-	*/
-
-	// no electro constraint violation!
+	// no electro constraint violation
 	return true;
 #undef check_result
 }
@@ -892,6 +938,7 @@ bool Router::electrode_check(int which, int pin_idx,
 // check whether droplet d1 will cause conflict on droplet d2 at time t
 // where S1,T1 are d1's location
 // where S2,T2 are d2's location
+// PRE-CONDITION: d1 is moving!
 bool Router::check_droplet_conflict(
 		const Point & S1, const Point & T1,
 		const Point & S2, const Point & T2,
@@ -899,15 +946,21 @@ bool Router::check_droplet_conflict(
 		int t,int control){
 	DIRECTION dir1 = pt_relative_pos(S1,T1);
 	if( dir1 == STAY ) return true;
+	DIRECTION dir2 = pt_relative_pos(S2,T2);
 
 	bool result;
-	// check if the activation of a row affect d2
-	result = try_add_edge(ROW,T1.y,S2,T2,t,p_graph);
-	if( result == false ) return false;
+	// check if the activation of T1.y(d1's dest.y) affect d2
+	// note that if T1.y has been activated, no need to check
+	if( !(dir2 != STAY && T1.y == T2.y) ){
+		result = try_add_edge(ROW,T1.y,S2,T2,t,p_graph);
+		if( result == false ) return false;
+	}
 
-	// check if the activation of a col affect d2
-	result = try_add_edge(COL,T1.x,S2,T2,t,p_graph);
-	if( result == false ) return false;
+	// check if the activation of T1.x(d1's dest.x) affect d2
+	if( !(dir2 != STAY && T1.x == T2.x) ){
+		result = try_add_edge(COL,T1.x,S2,T2,t,p_graph);
+		if( result == false ) return false;
+	}
 
 	return true;
 }
@@ -1065,7 +1118,9 @@ FLUIDIC_RESULT Router::fluidic_check(int which,int pin_idx,
 		// for each subnet
 		for (int j = 0; j < route.num_pin-1; j++) {
 			const PtVector & path = route.pin_route[j];
-			// static fluidic check
+			// path[t] is the location of d2 at time t(activated at t-1)
+			// IMOPRTANT:some droplet may disappear(waste disposal)
+			if( t >= (int)path.size() ) continue;
 			if( STATIC_VIOLATE(pt,t) || 
 		            DYNAMIC_VIOLATE(pt,t) ){
 				if( pProb->net[i].pin[1].pt != this->chip.WAT )
@@ -1076,15 +1131,14 @@ FLUIDIC_RESULT Router::fluidic_check(int which,int pin_idx,
 	} // end of for i, now i == which or i>=netcount
 	
 	// check for 3-pin net
-	/*
 	const NetRoute & route = result.path[which];
 	if( route.num_pin == 3 ){
-		const PtVector & path = route.pin_route[0];
-		if( static_violate(pt,t) || dynamic_violate(pt,t) ){
+		int another_idx = 1-pin_idx;
+		const PtVector & path = route.pin_route[another_idx];
+		if( DYNAMIC_VIOLATE(pt,t) ){
 			return SAMENET;  // they should merge
 		}
 	}
-	*/
 	return SAFE;
 #undef FLUIDIC_VIOLATE
 #undef STATIC_VIOLATE

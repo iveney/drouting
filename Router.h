@@ -61,11 +61,14 @@ public:
 // struct tracks the routing information of a net
 struct NetRoute{
 	NetRoute(int netidx,int pin_num,int timing_):idx(netidx),
-	num_pin(pin_num),timing(timing_) {
+	num_pin(pin_num),timing(timing_),merge_time(-1) {
+		reach_time[0]=reach_time[1]=-1;
 	}
 	void clear(){
 		pin_route[0].clear();
 		if( num_pin == 3 ) pin_route[1].clear();
+		reach_time[0]=reach_time[1]=-1;
+		merge_time=-1;
 	}
 	int idx;	// this net's id
 	int num_pin;    // net pins,be 2 or 3
@@ -216,7 +219,7 @@ private:
 	// 2nd Point is parent's location
 	bool electrode_check(int which, int pin_idx,
 			const Point & pt, const Point & parent_pt,int t,
-			const RouteResult & result,
+			RouteResult & result,
 			ConflictSet & conflict_net,int control);
 
 	bool check_droplet_conflict(
@@ -238,7 +241,7 @@ private:
 
 	void update_graph(int which,int pin_idx,
 			const PtVector & pin_path,
-		const RouteResult & result);
+		RouteResult & result);
 
 	void allocate_graph();
 	void destroy_graph();

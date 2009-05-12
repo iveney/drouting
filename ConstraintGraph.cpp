@@ -276,6 +276,11 @@ bool ConstraintGraph::try_coloring(){
 	return true;
 }
 
+COLOR ConstraintGraph::get_node_color(NType type,int idx){
+	GNode nd(type,idx);
+	return get_node_color(nd);
+}
+
 // COL wins ROW
 // if same type, smaller index wins
 bool operator <(GNode u,GNode v){
