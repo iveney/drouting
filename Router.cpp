@@ -269,9 +269,9 @@ bool Router::route_subnet(Point src,Point dst,
 	GridPoint *current;
 
 	// initialize the heap
-	GP_HEAP *pp = new GP_HEAP;
-	GP_HEAP & p = *pp;
-	//GP_HEAP p;
+	//GP_HEAP *pp = new GP_HEAP;
+	//GP_HEAP & p = *pp;
+	GP_HEAP p;
 
 	// start time = 0, source point = src, no parent
 	GridPoint::counter = 0;
@@ -336,9 +336,8 @@ bool Router::route_subnet(Point src,Point dst,
 							pin_idx, current->pt,
 							i,result,conflict_net);
 					if( fluid_result == VIOLATE ){
-						if( which == 2 ){
-							cout<<"fluidic t="<<current->time<<endl;
-						}
+						//cout<<"fluidic t="
+						 //   <<current->time<<endl;
 						fail = true;
 						break;
 					}
@@ -349,9 +348,8 @@ bool Router::route_subnet(Point src,Point dst,
 							current->pt,i,
 							result,conflict_net,0);
 					if( !not_elect_violate ){
-						if( which == 2 ){
-							cout<<"electric t="<<current->time<<endl;
-						}
+						//cout<<"electric t="
+						    //<<current->time<<endl;
 						fail = true;
 						break;
 					}
@@ -404,7 +402,7 @@ bool Router::route_subnet(Point src,Point dst,
 	backtrack(which,pin_idx,current,result);
 	//output_result(result);
 	p.free();
-	delete pp; pp = NULL;
+	//delete pp; pp = NULL;
 	return true;
 }
 
@@ -722,8 +720,6 @@ void Router::update_graph(int which,int pin_idx,
 			bool success = electrode_check(which,pin_idx,
 					p,q,i,result,dummy,1);
 			// IMPORTANT: return value must be true here!
-			if( !success )
-				cout<<"here: "<<i<<endl;
 			assert(success == true);
 		}
 	}
@@ -858,7 +854,7 @@ bool Router::electrode_check(int which, int pin_idx,
 			if( checking_idx == which && j == pin_idx ) continue;
 
 			PtVector & pin = route.pin_route[j];
-			// pin[t] is the location of d2 at time t(activated at t-1)
+			// pin[t]=location of d2 at time t(activated at t-1)
 			// IMOPRTANT:some droplet may disappear(waste disposal)
 			if( t >= (int)pin.size() ) continue;
 			//if( t >= (int)pin.size() )break;
@@ -885,10 +881,11 @@ bool Router::electrode_check(int which, int pin_idx,
 				}
 				*/
 				// if satisfied merge condition...
-				if( pin[t].x == pt.x && abs(pin[t].y-pt.y)<=1 || 
+				if( pin[t].x == pt.x && abs(pin[t].y-pt.y)<=1||
 				    pin[t].y == pt.y && abs(pin[t].x-pt.x)<=1){
-					cout<<"can merge at "<<pt<<", t="<<t<<endl;
 					/*
+					cout<<"can merge at "
+					    <<pt<<", t="<<t<<endl;
 					route.merge_time = t;
 					backup = pin[t];
 					pin[t] = pt;
@@ -1124,7 +1121,7 @@ FLUIDIC_RESULT Router::fluidic_check(int which,int pin_idx,
 		// for each subnet
 		for (int j = 0; j < route.num_pin-1; j++) {
 			const PtVector & path = route.pin_route[j];
-			// path[t] is the location of d2 at time t(activated at t-1)
+			// path[t]=location of d2 at time t(activated at t-1)
 			// IMOPRTANT:some droplet may disappear(waste disposal)
 			if( t >= (int)path.size() ) continue;
 			if( STATIC_VIOLATE(pt,t) || 
@@ -1160,7 +1157,7 @@ FLUIDIC_RESULT Router::fluidic_check(int which,int pin_idx,
 		//  7  4 8
 		else if( MHT(path[t],pt) == 2 ){
 			if( !(pt.x == path[t].x || pt.y ==path[t].y) ){
-				cout<<"violate here "<<pt<<endl;
+				//cout<<"violate here "<<pt<<endl;
 				return VIOLATE;
 			}
 		}
