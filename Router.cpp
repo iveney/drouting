@@ -722,6 +722,8 @@ void Router::update_graph(int which,int pin_idx,
 			bool success = electrode_check(which,pin_idx,
 					p,q,i,result,dummy,1);
 			// IMPORTANT: return value must be true here!
+			if( !success )
+				cout<<"here: "<<i<<endl;
 			assert(success == true);
 		}
 	}
@@ -854,11 +856,6 @@ bool Router::electrode_check(int which, int pin_idx,
 		for (int j = 0; j<route.num_pin-1; j++) {
 			// do not check it self!
 			if( checking_idx == which && j == pin_idx ) continue;
-			/*
-			if( checking_idx == 0 && which == 1 && t==2 && pt == Point(15,14)){
-				cout<<"here"<<endl;
-			}
-			*/
 
 			PtVector & pin = route.pin_route[j];
 			// pin[t] is the location of d2 at time t(activated at t-1)
@@ -880,14 +877,23 @@ bool Router::electrode_check(int which, int pin_idx,
 			Point backup;
 			bool changed = false;
 			if(route.num_pin == 3){
+				// if we doing update_graph, they have been
+				// merge already
+				/*
+				if( control == 1 && t == route.merge_time ){
+					continue;
+				}
+				*/
 				// if satisfied merge condition...
-				if( pin[t].x == pt.x && abs(pin[t].y-pt.y)==1 || 
-				    pin[t].y == pt.y && abs(pin[t].x-pt.x)==1){
-					// merge vertically
+				if( pin[t].x == pt.x && abs(pin[t].y-pt.y)<=1 || 
+				    pin[t].y == pt.y && abs(pin[t].x-pt.x)<=1){
+					cout<<"can merge at "<<pt<<", t="<<t<<endl;
+					/*
 					route.merge_time = t;
 					backup = pin[t];
 					pin[t] = pt;
 					changed = true;
+					*/
 					continue;
 				}
 				// we can change the route for 1st one to 2nd
@@ -1123,6 +1129,7 @@ FLUIDIC_RESULT Router::fluidic_check(int which,int pin_idx,
 			if( t >= (int)path.size() ) continue;
 			if( STATIC_VIOLATE(pt,t) || 
 		            DYNAMIC_VIOLATE(pt,t) ){
+				// ??? PROBLEM here
 				if( pProb->net[i].pin[1].pt != this->chip.WAT )
 					conflict_set.increment(checking_idx);
 				return VIOLATE;
@@ -1134,9 +1141,28 @@ FLUIDIC_RESULT Router::fluidic_check(int which,int pin_idx,
 	const NetRoute & route = result.path[which];
 	if( route.num_pin == 3 ){
 		int another_idx = 1-pin_idx;
+		// check if another net has been routed
+		if( route.reach_time[another_idx] == -1 )
+			return SAFE;
 		const PtVector & path = route.pin_route[another_idx];
-		if( DYNAMIC_VIOLATE(pt,t) ){
+
+		// check if merge condition satisfies(1-4)
+		//     1
+		//  2 d2 3
+		//     4
+		if( path[t].x == pt.x && abs(path[t].y-pt.y)==1|| 
+		    path[t].y == pt.y && abs(path[t].x-pt.x)==1){
 			return SAMENET;  // they should merge
+		}
+		// check if violate(5-8), but no that not like 9
+		//  5  1 6
+		//  2 d2 3 9
+		//  7  4 8
+		else if( MHT(path[t],pt) == 2 ){
+			if( !(pt.x == path[t].x || pt.y ==path[t].y) ){
+				cout<<"violate here "<<pt<<endl;
+				return VIOLATE;
+			}
 		}
 	}
 	return SAFE;
