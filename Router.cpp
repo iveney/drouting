@@ -709,20 +709,21 @@ void Router::update_graph(int which,int pin_idx,
 		RouteResult & result){
 	// we need to update all the coloring status 
 	// for every time step until it reaches the dest, 
-	// however, do not add the stalling frame!
+	// however, do not add the stalling frame!(why)
 	ConflictSet dummy(netcount);
 	for (size_t i = 1; i < pin_path.size(); i++) {
 		// i is time
 		Point p = pin_path[i],q=pin_path[i-1];
 		DIRECTION dir = pt_relative_pos(q,p);
-		if( dir != STAY ){
+		//if( dir != STAY ){
 			//int t = current->time;
 			bool success = electrode_check(which,pin_idx,
 					p,q,i,result,dummy,1);
 			// IMPORTANT: return value must be true here!
 			assert(success == true);
-		}
+		//}
 	}
+	if( which == 3 && pin_idx==1) output_result(result);
 }
 
 // print out what is in the heap
