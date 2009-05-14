@@ -1,0 +1,13 @@
+3pin:
+46
+53: why the droplet 0_1 do some useless work at the begining of routing?
+guess:
+because the stalling point is not propagated into the heap!!!!
+solution:
+maybe for each point, we generate all(or a set of stalling status there!!)
+57
+60
+67
+70
+73
+

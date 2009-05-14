@@ -1,0 +1,4 @@
+3: very important: net 2 path at time 8,9,10 incorrect. seems that the problem
+is cause by net 2 staying at the sink point
+(it reaches sink point at time 8 or so)
+

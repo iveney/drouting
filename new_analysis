@@ -18,7 +18,13 @@ time
 
 -- DAC05_2 --------------------------------------------------------------------
 39: very slow
-53: failed, for a 3-pin net, it is blocking it self.
+
+53:  why the droplet 0_1 do some useless work at the begining of routing?
+guess:
+because the stalling point is not propagated into the heap!!!!
+solution:
+maybe for each point, we generate all(or a set of stalling status there!!)
+
 59: very slow( actually only one droplet, but MHT=20 )
 
 -- DATE06 --------------------------------------------------------------------
@@ -27,3 +33,5 @@ time
 3: very important: net 2 path at time 8,9,10 incorrect. seems that the problem
 is cause by net 2 staying at the sink point
 (it reaches sink point at time 8 or so)
+new problem appears for 3:
+if use the length, the result is totally a mess

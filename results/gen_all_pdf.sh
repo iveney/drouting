@@ -7,8 +7,8 @@ do
 	for j in `ls "$i"*_sol.tex`
 	do
 		echo "processing $j..."
-		#pdflatex "$j" >/dev/null
+		pdflatex "$j" >/dev/null
 	done
-	cd ..
 	rm *.out  *.log *.aux
+	cd ..
 done
