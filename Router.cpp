@@ -364,6 +364,10 @@ bool Router::route_subnet(Point src,Point dst,
 				success = true;
 				break;
 			}
+			// could not stay at sink point now...
+			else{
+				continue;
+			}
 		}
 
 		// sink not found, continue to search here...

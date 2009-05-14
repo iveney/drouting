@@ -1,3 +1,6 @@
+For DATE06_3, problem 1, if net 0 can stall for more time, 
+the cell used should be minimized
+
 For DATE06_3, problem 2, check how minsik implemented it
 FOR DATE06_3, problem 3, actually for net 4, they can merge at (10,7) 
 FOR DATE06_3, problem 8, why not droplet 0 stays at src point? but move
