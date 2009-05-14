@@ -1,4 +1,12 @@
 For DATE06_3, problem 2, check how minsik implemented it
+FOR DATE06_3, problem 3, actually for net 4, they can merge at (10,7) 
+FOR DATE06_3, problem 8, why not droplet 0 stays at src point? but move
+to (1,10) and move back??
+answer:
+because stalling at the same point and moving to (1,10) and move back
+has the same weight!! while in my implementation, the 2nd one has been pushed 
+to stack more recently, and will be chosen first!
+
 -------------------------------------------------------------------------------
 ask a-fu about the 45 degree MHT line, equal length route to the given two
 point as their merge point.  if the sink is inside/ on the boundary of the

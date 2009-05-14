@@ -29,7 +29,7 @@ public:
 	int electro;
 	int stalling;
 	int distance;   // the manhattance distance to the sink
-	int order;      // orde the GridPoint was generated
+	int order;      // order the GridPoint was generated
 	static int counter;
 	class GPpointerCmp{
 	public:
@@ -39,6 +39,20 @@ public:
 			// 1. weight
 			// 2. MHT
 			// 3. time
+			if( a->weight == b->weight ){
+				if( a->distance == b->distance ){
+					if( a->time== b->time)
+						return (a->order) > (b->order);
+					else
+						return a->time < b->time;
+				}
+				else
+					return (a->distance) > (b->distance);
+			}
+			else
+				return a->weight > b->weight;
+
+			/*
 			if( a->weight == b->weight ){
 				if( a->time == b->time ){
 					if( a->distance == b->distance )
@@ -51,6 +65,7 @@ public:
 			}
 			else
 				return a->weight > b->weight;
+				*/
 		}
 	};
 };

@@ -279,7 +279,7 @@ bool Router::route_subnet(Point src,Point dst,
 	gp_src->distance = MHT(src,dst);
 	p.push(gp_src); // put the source point into heap
 	// mark it
-	visited[src.x][src.y][0] = 1;
+	//visited[src.x][src.y][0] = 1;
 
 	int t=0;               // current time step
 	bool success = false;  // mark if this net is routed successfully
@@ -595,17 +595,19 @@ bool Router::propagate_nbrs(int which, int pin_idx,GridPoint * gp_from,
 	const int t = (gp_from->time + 1);
 
 	// enqueue neighbours
-	GridPoint * par_par = gp_from->parent; 
+	GridPoint * parent_of_from = gp_from->parent; 
+
 	for(size_t i=0;i<nbr.size();i++){
 		int x=nbr[i].x,y=nbr[i].y;
 		// 1.check if there is blockage 
 		// 2.check if ((x,y),t) has been visited
 		// 3.do not move to parent cell(why?)
 		if( blockage[x][y] == BLOCK ) continue;
-		if( (par_par != NULL) && 
-		     (nbr[i] == par_par->pt) &&
-			(nbr[i] != from_pt) )
-			continue;
+		/*
+		if( (parent_of_from != NULL) && 
+		     (nbr[i] == parent_of_from->pt) &&
+			(nbr[i] != from_pt) ) continue;
+			*/
 		if( visited[x][y][t] == 1 ) continue; 
 		visited[x][y][t] = 1;
 
@@ -638,10 +640,11 @@ bool Router::propagate_nbrs(int which, int pin_idx,GridPoint * gp_from,
 			continue;
 		}
 
+		/*
 		// bending update
-		if( par_par != NULL &&
-		    check_bending(moving_to,par_par->pt) == true )
-			bending++;
+		if( parent_of_from != NULL &&
+		    check_bending(moving_to,parent_of_from->pt) == true )
+			bending++; */
 
 		// finally push this into heap
 		GridPoint *nbpt = new GridPoint(
