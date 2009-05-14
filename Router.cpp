@@ -475,6 +475,7 @@ bool Router::route_3pin(int which,RouteResult & result,
 	}
 
 	cout<<"subnet routing order: <"<<a<<" "<<b<<">"<<endl;
+	result.path[which].clear();
 	
 	// route 1st subnet there
 	src = pNet->pin[a].pt;
@@ -616,7 +617,7 @@ bool Router::propagate_nbrs(int which, int pin_idx,GridPoint * gp_from,
 		visited[x][y][t] = 1;
 
 		Point moving_to(x,y);
-		int f_pen=0,e_pen=0,bending=gp_from->bend;
+		int bending=0;//bending=gp_from->bend;
 
 		// fluidic constraint check
 		FLUIDIC_RESULT fluid_result=fluidic_check(which,pin_idx,
@@ -649,12 +650,19 @@ bool Router::propagate_nbrs(int which, int pin_idx,GridPoint * gp_from,
 		if( parent_of_from != NULL &&
 		    check_bending(moving_to,parent_of_from->pt) == true )
 			bending++; */
+		
+		int newlen = gp_from->length;
+		if( pt_relative_pos(moving_to,from_pt) != STAY )
+			++newlen;
+		assert(newlen>=0);
+		newlen=0;
 
 		// finally push this into heap
 		GridPoint *nbpt = new GridPoint(
 				moving_to,gp_from,
-				t, bending, f_pen, e_pen,
-				gp_from->stalling,
+				t,newlen,0,0,
+				//bending,
+				//gp_from->stalling,
 				MHT(moving_to,dst));
 		p.push(nbpt);
 		has_pushed = true; // marks at least one status is pushed

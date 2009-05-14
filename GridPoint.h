@@ -7,7 +7,10 @@
 class GridPoint{
 public:
 	GridPoint(Point pt_=Point(0,0),GridPoint *par=NULL,
-	int t=0,int b=0,int f=0,int e=0,int s=0,int d=0);
+	int t=0,int l=0,int b=0,int s=0,int d=0);
+
+	// copy constructer
+	//GridPoint & operator = (const Gridpoint & gp);
 
 	int updateWeight();
 
@@ -24,9 +27,8 @@ public:
 
 	// weight is the sum of:
 	int time;
+	int length;
 	int bend;
-	int fluidic;
-	int electro;
 	int stalling;
 	int distance;   // the manhattance distance to the sink
 	int order;      // order the GridPoint was generated
@@ -41,7 +43,7 @@ public:
 			// 3. time
 			if( a->weight == b->weight ){
 				if( a->distance == b->distance ){
-					if( a->time== b->time)
+					if( a->time == b->time)
 						return (a->order) > (b->order);
 					else
 						return a->time < b->time;
@@ -51,21 +53,6 @@ public:
 			}
 			else
 				return a->weight > b->weight;
-
-			/*
-			if( a->weight == b->weight ){
-				if( a->time == b->time ){
-					if( a->distance == b->distance )
-						return (a->order) < (b->order);
-					else
-						return a->distance > b->distance;
-				}
-				else
-					return (a->time) < (b->time);
-			}
-			else
-				return a->weight > b->weight;
-				*/
 		}
 	};
 };

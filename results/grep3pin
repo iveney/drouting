@@ -1,0 +1,2 @@
+#!/bin/bash
+awk '/BEGIN/ {idx=$3} /NUMPINS: 3/ {print idx " " $3}' $1 | sort | uniq

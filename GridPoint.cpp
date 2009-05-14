@@ -8,20 +8,13 @@ using std::ios;
 int GridPoint::counter=0;
 
 GridPoint::GridPoint(Point pt_,GridPoint *par,
-		int t,int b,int f,int e,int s,int d):
-	pt(pt_),parent(par),time(t),bend(b),
-	fluidic(f),electro(e),stalling(s),distance(d){
+		int t,int l,int b,int s,int d):
+	pt(pt_),parent(par),time(t),length(l),bend(b),
+	stalling(s),distance(d){
 		order=counter++;
 		updateWeight();
 }
 
-/*
-bool GridPoint::operator < (const GridPoint& g) const{ 
-	if( weight == g.weight ) 
-		if( time == 
-	return weight < g.weight; 
-}
-*/
 
 bool GridPoint::operator == (const GridPoint &g) const{
 	return weight == g.weight;
@@ -29,7 +22,7 @@ bool GridPoint::operator == (const GridPoint &g) const{
 
 int GridPoint::updateWeight(){
 	int old = weight;
-	weight = time+bend+fluidic+electro+stalling+distance;
+	weight = time+length+bend+stalling+distance;
 	return old;
 }	
 
@@ -47,5 +40,14 @@ ostream & operator <<(ostream &out,const GridPoint & g){
 ostream & operator <<(ostream &out,const GridPoint *g){
 	out<<*g;
 	return out;
+}
+*/
+
+
+/*
+bool GridPoint::operator < (const GridPoint& g) const{ 
+	if( weight == g.weight ) 
+		if( time == 
+	return weight < g.weight; 
 }
 */

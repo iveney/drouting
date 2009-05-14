@@ -69,6 +69,7 @@ struct NetRoute{
 		if( num_pin == 3 ) pin_route[1].clear();
 		reach_time[0]=reach_time[1]=-1;
 		merge_time=-1;
+		timing=-1;
 	}
 	int idx;	// this net's id
 	int num_pin;    // net pins,be 2 or 3
