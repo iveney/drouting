@@ -364,8 +364,6 @@ bool Router::route_subnet(Point src,Point dst,
 				success = true;
 				break;
 			}
-			if( which == 2 ) 
-				cout<<"here t="<<current->time<<endl;
 		}
 
 		// sink not found, continue to search here...
@@ -627,7 +625,7 @@ bool Router::propagate_nbrs(int which, int pin_idx,GridPoint * gp_from,
 			//assert(conflict_netid != which);
 			//possible_nets.increment(conflict_netid);
 			//cout<<"net "<<which<<" fluidic violation:"
-			    //<<from_pt<<"->"<<moving_to<<" time="<<t<<endl;
+			//<<from_pt<<"->"<<moving_to<<" time="<<t<<endl;
 			continue;
 		}
 
@@ -636,7 +634,7 @@ bool Router::propagate_nbrs(int which, int pin_idx,GridPoint * gp_from,
 			       	moving_to,from_pt,t,result,possible_nets,0);
 		if( !not_elect_violate ){
 			//cout<<"net "<<which<<" electrode violation:"
-			   //<<from_pt<<"->"<<moving_to<<endl;
+			//<<from_pt<<"->"<<moving_to<<endl;
 			continue;
 		}
 
@@ -714,16 +712,25 @@ void Router::update_graph(int which,int pin_idx,
 	for (size_t i = 1; i < pin_path.size(); i++) {
 		// i is time
 		Point p = pin_path[i],q=pin_path[i-1];
-		DIRECTION dir = pt_relative_pos(q,p);
-		//if( dir != STAY ){
+		//DIRECTION dir = pt_relative_pos(q,p);
+		Point dst = get_netdst_pt(which);
+		// BUG: the correct implementation should not include the `if'
+		// statement below because we have to also consider the
+		// constraint when the droplet stays at the sink point however,
+		// for DAC05 30, there is problem when doing so.  but cancel
+		// the check after it reaches the sink point still gives
+		// correct result till now...  Also I think when doing
+		// electrode_check for other droplets, the violation can also
+		// be detected. So I implement it as follows using 
+		// q!=dst
+		if( q!=dst ){
 			//int t = current->time;
 			bool success = electrode_check(which,pin_idx,
 					p,q,i,result,dummy,1);
 			// IMPORTANT: return value must be true here!
 			assert(success == true);
-		//}
+		}
 	}
-	if( which == 3 && pin_idx==1) output_result(result);
 }
 
 // print out what is in the heap
@@ -871,16 +878,11 @@ bool Router::electrode_check(int which, int pin_idx,
 			// hence it means that there will be NO violation when
 			// activating pt considering other nets except `which'
 			// hence the modify of the 3-pin net is always true
-			Point backup;
-			bool changed = false;
+			//Point backup;
+			//bool changed = false;
 			if(route.num_pin == 3){
 				// if we doing update_graph, they have been
 				// merge already
-				/*
-				if( control == 1 && t == route.merge_time ){
-					continue;
-				}
-				*/
 				// if satisfied merge condition...
 				if( pin[t].x == pt.x && abs(pin[t].y-pt.y)<=1||
 				    pin[t].y == pt.y && abs(pin[t].x-pt.x)<=1){
