@@ -878,12 +878,12 @@ bool Router::electrode_check(int which, int pin_idx,
 			// hence it means that there will be NO violation when
 			// activating pt considering other nets except `which'
 			// hence the modify of the 3-pin net is always true
+
 			//Point backup;
 			//bool changed = false;
 			if(route.num_pin == 3){
-				// if we doing update_graph, they have been
-				// merge already
-				// if satisfied merge condition...
+				// if satisfied merge condition: another net is 
+				// waiting in the sink point
 				if( pin[t].x == pt.x && abs(pin[t].y-pt.y)<=1||
 				    pin[t].y == pt.y && abs(pin[t].x-pt.x)<=1){
 					/*
@@ -1141,9 +1141,9 @@ FLUIDIC_RESULT Router::fluidic_check(int which,int pin_idx,
 	const NetRoute & route = result.path[which];
 	if( route.num_pin == 3 ){
 		int another_idx = 1-pin_idx;
-		// check if another net has been routed
 		if( route.reach_time[another_idx] == -1 )
 			return SAFE;
+		
 		const PtVector & path = route.pin_route[another_idx];
 
 		// check if merge condition satisfies(1-4)
@@ -1152,6 +1152,9 @@ FLUIDIC_RESULT Router::fluidic_check(int which,int pin_idx,
 		//     4
 		if( path[t].x == pt.x && abs(path[t].y-pt.y)==1|| 
 		    path[t].y == pt.y && abs(path[t].x-pt.x)==1){
+			// check if another net reached the point at t
+			if ( route.reach_time[another_idx] >= t )
+				return VIOLATE;
 			return SAMENET;  // they should merge
 		}
 		// check if violate(5-8), but no that not like 9

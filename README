@@ -1,3 +1,5 @@
+For DATE06_3, problem 2, check how minsik implemented it
+-------------------------------------------------------------------------------
 ask a-fu about the 45 degree MHT line, equal length route to the given two
 point as their merge point.  if the sink is inside/ on the boundary of the
 bounding box, choose sink as merge point, otherwise use some pt in BB.
