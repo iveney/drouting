@@ -1,3 +1,6 @@
-rewrite backtrack to store the route result
-note that we must let it know what net and what pin it is 
-backtracking...
+1. DAC05_2 prob 53
+check how to solve the loop movement
+
+2. try to incorporate len as a field in the status
+(but it may not be accurate, because length can not reflect cell used,
+and we are not optimizing length)

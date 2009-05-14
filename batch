@@ -12,7 +12,7 @@ if [ ! -f "$FILENAME" ];then
 	echo "File not exist!"
 	exit 1
 fi
-NUMSUBPROBLEMS=`gawk '/NUMSUBPROBLEMS/ {print $2;}' "$FILENAME"`
+NUMSUBPROBLEMS=`awk '/NUMSUBPROBLEMS/ {print $2;}' "$FILENAME"`
 if [ -z "$NUMSUBPROBLEMS" ];then
 	echo "Error, subproblem num incorrect!"
 	exit 1
