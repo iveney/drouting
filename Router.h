@@ -66,7 +66,11 @@ struct NetRoute{
 	}
 	void clear(){
 		pin_route[0].clear();
-		if( num_pin == 3 ) pin_route[1].clear();
+		cellset[0].clear();
+		if( num_pin == 3 ) {
+			pin_route[1].clear();
+			cellset[1].clear();
+		}
 		reach_time[0]=reach_time[1]=-1;
 		merge_time=-1;
 		timing=-1;
@@ -79,6 +83,7 @@ struct NetRoute{
 	// at most 3pin, hence only two elements
 	PtVector pin_route[2]; 
 	int reach_time[2]; // the time a droplet finishes routing
+	set<Point> cellset[2];
 };
 
 // the class to stores the final routing result
@@ -277,6 +282,8 @@ private:
 	deque<int> nets;  			// a list of unrouted nets
 	// marks if ((x,y),t) has been visited
 	char visited[MAXGRID][MAXGRID][MAXTIME+1];
+	char cell_used[MAXGRID][MAXGRID];
+	int subnet_count;
 
 	ConstraintGraph * graph[MAXTIME+1]; 	// each time step's graph
 	BYTE blockage[MAXGRID][MAXGRID];	// bitmap for block

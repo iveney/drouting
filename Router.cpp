@@ -22,6 +22,7 @@ const int dx[]={-1,1,0,0,0};
 const int dy[]={0,0,1,-1,0};
 extern const char *color_string[];
 
+
 // parameter to control the searching
 int MAXCFLT=10000;
 int MAX_SINGLE_CFLT=1000;
@@ -85,8 +86,18 @@ void Router::init(){
 	T=chip.T;
 	max_t = -1;
 	last_ripper_id = -1;
-	memset(visited,0,sizeof(visited));
 	GridPoint::counter=0;
+	memset(visited,0,sizeof(visited));
+	memset(cell_used,0,sizeof(cell_used));
+	// count the subnets
+	subnet_count = 0;
+	for(int i=0;i<pProb->nNet;i++){
+		Net * pNet = &pProb->net[i];
+		if( pNet->numPin == 3 )
+			subnet_count+=2;
+		else
+			++subnet_count;
+	}
 	
 	destroy_graph();
 	allocate_graph();
@@ -97,11 +108,11 @@ RouteResult Router::solve_subproblem(int prob_idx){
 	if( read == false ) report_exit("Must read input first!");
 	if( prob_idx > this->chip.nSubProblem ) 
 		report_exit("subproblem id out of bound!");
-	init();
 	cout<<"--- Solving subproblem ["<<prob_idx<<"] ---"<<endl;
 
 	pProb = &chip.prob[prob_idx];
 	netcount = pProb->nNet;
+	init();
 	sort_net(pProb,netorder);// sort : decide net order
 	output_netorder(netorder,netcount);
 
@@ -170,6 +181,7 @@ void Router::output_result(RouteResult & result){
 				}	
 			}
 		}
+		count-=pProb->net[i].numPin; 
 	}
 	output_voltage(result);
 	cout<<"**** total cell used : "<<count<<" *****"<<endl;
@@ -381,7 +393,9 @@ bool Router::route_subnet(Point src,Point dst,
 		if( (remain_dist > time_left) || (t > this->T) ){
 			if( p.size() != 0 ) continue;
 			else{// fail,try rip-up and re-route
-				cerr<<"Exceed route time!"<<endl;
+				cerr<<"t= "<<this->T
+				    <<" MHT="<<remain_dist
+				    <<" Exceed route time!"<<endl;
 				success = false;
 				break;
 			}
@@ -518,7 +532,8 @@ bool Router::ripup_reroute(int which,RouteResult & result,
 
 	// check if max_id is the net that rip `which' previously
 	if(max_id == last_ripper_id){
-		cout<<"deadlock...break using the 2nd largest"<<endl;
+		cout<<"rip net["<<max_id<<
+			"], deadlock...break using the 2nd largest"<<endl;
 		// find the 2nd largest
 		int max_count=-1;
 		max_id=-1;
@@ -526,7 +541,8 @@ bool Router::ripup_reroute(int which,RouteResult & result,
 			//cout<<"confclit "<<i<<"="
 			//    <<conflict_net.conflict_count[i]<<endl;
 			if( max_count < conflict_net.conflict_count[i] &&
-			    i != conflict_net.max_id ){
+			    i != conflict_net.max_id &&
+			    i != which){
 				max_count = conflict_net.conflict_count[i];
 				max_id = i;
 			}
@@ -541,6 +557,17 @@ bool Router::ripup_reroute(int which,RouteResult & result,
 	    <<conflict_net.conflict_count[max_id]
 	    <<" last ripper = "<<last_ripper_id<<" **"<<endl;
 
+	// remember to clear the cell used counting of it
+	for (int i=0;i<result.path[max_id].num_pin-1;i++) {
+		set<Point>::iterator it;
+		set<Point> & use = result.path[max_id].cellset[i];
+		for (it=use.begin();it!=use.end();++it) {
+			Point pt=(*it);
+			--cell_used[pt.x][pt.y];
+		}
+	}
+
+	// need to remove the cell used by it also
 	result.path[max_id].clear(); // cancel the routed path
 
 	// clear the conflict result of this net
@@ -595,7 +622,7 @@ bool Router::propagate_nbrs(int which, int pin_idx,GridPoint * gp_from,
 			    GP_HEAP & p,ConflictSet &possible_nets){
 	bool has_pushed=false;
 	Point from_pt = gp_from->pt;
-	// get its neighbours( PROBLEM: can it be back? )
+	// get its neighbours
 	PtVector nbr = get_neighbour(from_pt);
 	const int t = (gp_from->time + 1);
 
@@ -604,10 +631,13 @@ bool Router::propagate_nbrs(int which, int pin_idx,GridPoint * gp_from,
 
 	for(size_t i=0;i<nbr.size();i++){
 		int x=nbr[i].x,y=nbr[i].y;
+		Point moving_to(x,y);
 		// 1.check if there is blockage 
 		// 2.check if ((x,y),t) has been visited
 		// 3.do not move to parent cell(why?)
+		// 4.do not go to WAT if the dest is not
 		if( blockage[x][y] == BLOCK ) continue;
+		//if( moving_to == chip.WAT && dst != chip.WAT ) continue;
 		/*
 		if( (parent_of_from != NULL) && 
 		     (nbr[i] == parent_of_from->pt) &&
@@ -616,7 +646,6 @@ bool Router::propagate_nbrs(int which, int pin_idx,GridPoint * gp_from,
 		if( visited[x][y][t] == 1 ) continue; 
 		visited[x][y][t] = 1;
 
-		Point moving_to(x,y);
 		int bending=0;//bending=gp_from->bend;
 
 		// fluidic constraint check
@@ -635,6 +664,10 @@ bool Router::propagate_nbrs(int which, int pin_idx,GridPoint * gp_from,
 			//<<from_pt<<"->"<<moving_to<<" time="<<t<<endl;
 			continue;
 		}
+		if( moving_to == Point(11,1) &&
+		    from_pt==Point(11,0) &&
+		    which == 3 && pin_idx == 1)
+			cout<<"here"<<endl;
 
 		// electro constraint check
 		bool not_elect_violate=electrode_check(which,pin_idx,
@@ -651,16 +684,22 @@ bool Router::propagate_nbrs(int which, int pin_idx,GridPoint * gp_from,
 		    check_bending(moving_to,parent_of_from->pt) == true )
 			bending++; */
 		
+		// length update, now ignore it here
 		int newlen = gp_from->length;
 		if( pt_relative_pos(moving_to,from_pt) != STAY )
 			++newlen;
 		assert(newlen>=0);
-		newlen=0;
+		cout<<"len="<<newlen<<endl;
+		//newlen=0; // force to 0
+
+		// cell used update
+		int cell = subnet_count - cell_used[x][y];
+		assert(cell>=0); 
 
 		// finally push this into heap
 		GridPoint *nbpt = new GridPoint(
 				moving_to,gp_from,
-				t,newlen,0,0,
+				t,newlen,cell,0,0,
 				//bending,
 				//gp_from->stalling,
 				MHT(moving_to,dst));
@@ -690,9 +729,14 @@ void Router::backtrack(int which,int pin_idx,GridPoint *current,
 	Point dst = current->pt;
 	result.path[which].reach_time[pin_idx] = current->time;
 	
+	set<Point> & used = result.path[which].cellset[pin_idx];
 	// trace back from dest to src
 	while( current != NULL ){
 		pin_path.insert(pin_path.begin(),current->pt);
+		if( used.find(current->pt)==used.end() ){
+			used.insert(current->pt);
+			++cell_used[current->pt.x][current->pt.y];
+		}
 		if( current->parent == NULL ) break;
 		current = current->parent;
 	}
@@ -736,15 +780,14 @@ void Router::update_graph(int which,int pin_idx,
 		// the check after it reaches the sink point still gives
 		// correct result till now...  Also I think when doing
 		// electrode_check for other droplets, the violation can also
-		// be detected. So I implement it as follows using 
-		// q!=dst
-		if( q!=dst ){
+		// be detected. So I implement it as follows using q!=dst
+		//if( q!=dst ){
 			//int t = current->time;
 			bool success = electrode_check(which,pin_idx,
 					p,q,i,result,dummy,1);
 			// IMPORTANT: return value must be true here!
 			assert(success == true);
-		}
+		//}
 	}
 }
 
@@ -884,8 +927,6 @@ bool Router::electrode_check(int which, int pin_idx,
 			// if two droplet's sharing same activating row/column
 			// NO need to check the constraint!( my assumption )
 			// IMPORTANT: the idea is correct 
-			// but this statement is WRONG
-			//if( pt.x == pin[t].x || pt.y == pin[t].y ) continue;
 
 			// special case for 3-pin net: allow violation if merge
 			// NOTE: since when chekcing 3-pin net, it implies that
@@ -894,21 +935,11 @@ bool Router::electrode_check(int which, int pin_idx,
 			// activating pt considering other nets except `which'
 			// hence the modify of the 3-pin net is always true
 
-			//Point backup;
-			//bool changed = false;
 			if(route.num_pin == 3){
 				// if satisfied merge condition: another net is 
 				// waiting in the sink point
 				if( pin[t].x == pt.x && abs(pin[t].y-pt.y)<=1||
 				    pin[t].y == pt.y && abs(pin[t].x-pt.x)<=1){
-					/*
-					cout<<"can merge at "
-					    <<pt<<", t="<<t<<endl;
-					route.merge_time = t;
-					backup = pin[t];
-					pin[t] = pt;
-					changed = true;
-					*/
 					continue;
 				}
 				// we can change the route for 1st one to 2nd
@@ -921,10 +952,8 @@ bool Router::electrode_check(int which, int pin_idx,
 						parent_pt,pt,
 						pin[t-1],pin[t],
 						p_graph,t,control);
-				//check_result(conflict_net,checking_idx);
 				if( add_result == false ){
 					conflict_net.increment(checking_idx);
-			//		pin[t] = backup;
 					return false;
 				}
 			}
@@ -935,10 +964,8 @@ bool Router::electrode_check(int which, int pin_idx,
 						pin[t-1],pin[t],
 						parent_pt,pt,
 						p_graph,t,control);
-				//check_result(conflict_net,checking_idx);
 				if( add_result == false ){
 					conflict_net.increment(checking_idx);
-			//		pin[t] = backup;
 					return false;
 				}
 			}

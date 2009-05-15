@@ -1,3 +1,13 @@
+1. fix the deadlock
+2. check why adding lenght failed
+3. checkou why sometimes deadlock while sometimes not
+4. DAC05_2 53, DAC05 30
+-------------------------------------------------------------------------
+1. minimize cell
+2. loop problem
+3. deadlock problem
+4. fix the reach-sink-point bug(should add electrode constraint there)
+-------------------------------------------------------------------------
 1. DAC05_2 prob 53
 check how to solve the loop movement
 

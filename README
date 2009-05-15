@@ -1,3 +1,16 @@
+DAC05 30: deadlock appears ( 3-4 nets)
+-------------------------------------------------------------------------------
+about cell used:
+now use (nNet- net using this net) as weight
+but since for the same path, it will not better even multiple net
+use it
+for two path, it is better
+
+in my idea, I think it better to be implemented as a switch 
+e.g. if the cell is used, add 0 weight
+otherwise add a penalty
+or some thing. like this proportionally
+-------------------------------------------------------------------------------
 For DATE06_3, problem 1, if net 0 can stall for more time, 
 the cell used should be minimized
 

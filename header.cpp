@@ -30,3 +30,11 @@ bool pt_in_rect(const Block & bb, const Point & pt){
 	return false;
 }
 
+
+bool operator < (const Point &a, const Point &b){
+	if( a.x == b.x )
+		return a.y < b.y;
+	else
+		return a.x < b.x;
+}
+

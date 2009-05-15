@@ -7,7 +7,7 @@
 class GridPoint{
 public:
 	GridPoint(Point pt_=Point(0,0),GridPoint *par=NULL,
-	int t=0,int l=0,int b=0,int s=0,int d=0);
+	int t=0,int l=0,int c=0,int b=0,int s=0,int d=0);
 
 	// copy constructer
 	//GridPoint & operator = (const Gridpoint & gp);
@@ -28,6 +28,7 @@ public:
 	// weight is the sum of:
 	int time;
 	int length;
+	int cell;
 	int bend;
 	int stalling;
 	int distance;   // the manhattance distance to the sink

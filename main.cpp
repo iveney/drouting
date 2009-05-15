@@ -20,5 +20,7 @@ int main(int argc, char * argv[]){
 	Router router;
 	router.read_file(argc,argv);
 	router.solve_cmdline();
+
+	cout<<endl;
 	return 0;
 }

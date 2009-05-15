@@ -41,6 +41,7 @@ public:
 	bool operator == (const Point & pt) const {return x==pt.x && y==pt.y;}
 	bool operator != (const Point & pt) const {return !operator==(pt);}
 	friend ostream &operator <<(ostream&,const Point&);
+	friend bool operator < (const Point &a, const Point &b);
 	int x,y;
 };
 
