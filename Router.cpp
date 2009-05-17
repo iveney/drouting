@@ -152,7 +152,7 @@ RouteResult Router::solve_subproblem(int prob_idx){
 	// TEST: output result to TeX file
 	char buf[MAXBUF];
 	sprintf(buf,"%s_%d_sol.tex",filename.c_str(),prob_idx);
-	draw_voltage(result,buf);
+	draw_voltage(result,chip,buf);
 	cout<<"max time = "<<get_maxt()<<" "<<endl;
 
 	return result ;
@@ -331,10 +331,6 @@ bool Router::route_subnet(Point src,Point dst,
 		output_heap(p);
 		}
 #endif 
-		if( which == 0 && pin_idx == 1 &&
-		    current->pt == Point(6,0) && current->time == 5 ){
-			cout<<"here"<<endl;
-		}
 
 		// sink reached, but need to check whether it stays
 		// there will block others

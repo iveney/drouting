@@ -9,11 +9,7 @@ void begin_figure(FILE * fig){
 		     inner sep=0, \n \
 		     minimum size=1cm*\\scale, \n \
 		     >=latex, \n \
-		     pin distance = 1.2cm*\\scale, \n \
-		     pins/.style={rectangle,draw,fill=brown}, \n \
-		     pinsnofill/.style={rectangle,draw}, \n \
-		     arrow/.style={->,very thick}, \n \
-		     block/.style={gray}]\n"); 
+		     pin distance = 1.2cm*\\scale]\n"); 
 	  //,font=\\scriptsize
 }
 void end_figure(FILE * fig,int time){
@@ -23,7 +19,8 @@ void end_figure(FILE * fig,int time){
 		     \\clearpage\n",time);
 }
 
-void draw_voltage(const RouteResult & result,const char *filename){
+void draw_voltage(const RouteResult & result,const Chip & chip,
+		const char *filename){
 	// fill in template header
 	//const char * fn = filename.c_str();
 	printf("output to %s\n",filename);
@@ -104,6 +101,7 @@ void draw_voltage(const RouteResult & result,const char *filename){
 
 		// draw grids
 		fprintf(fig,"\\drawgrid{%d}{%d}]\n",result.W,result.H);
+		fprintf(fig,"\\drawWAT{%d}{%d}\n",chip.WAT.x,chip.WAT.y);
 
 		// end time frame
 		end_figure(fig,t);

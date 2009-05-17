@@ -9,6 +9,6 @@
 /* parser.c */
 const char *getColor(void);
 Chip *parse(FILE *f, Chip *chip);
-void drawSubproblem(Subproblem *prob, int W, int H, int num, char *name);
+void drawSubproblem(Subproblem *prob, int W, int H, Point WAT, int num, char *name);
 
 #endif

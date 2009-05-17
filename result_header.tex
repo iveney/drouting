@@ -80,6 +80,19 @@
     \draw[line width=10pt,red!50] (#1+\half,0-\half*\half) -- (#1+\half,\W+\half*\half);
     }
 }
+\providecommand{\drawWAT}[2]{
+    \draw[step=\half*\half] (#1,#2) grid (#1+1,#2+1);
+}
+
+\tikzset{
+	srcpin/.style={pin={[pin edge={<-,shorten <=1pt,fill=red,draw=red}]75: \tt s\arabic{netcount}}},
+	dstpin/.style={pin={[pin edge={<-,shorten <=1pt,fill=red,draw=red}]75: \tt t\arabic{netcount}}},
+	pins/.style={rectangle,draw,fill=red,font=\scriptsize},
+	pinsnofill/.style={rectangle,draw,font=\scriptsize},
+	arrow/.style={->,very thick},
+	block/.style={gray}
+}
+
 %
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
