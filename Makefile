@@ -6,7 +6,7 @@ OBJ=$(SRC:.cpp=.o)
 BIN=main
 DBG=debug
 PARSER=parser
-OPT=-Wall -g 
+OPT=-Wall #-g 
 
 main: $(OBJ) main.o tags
 	@echo "Making main..."
@@ -34,4 +34,4 @@ tags: $(SRC) $(HDR) main.cpp main.h parser_main.cpp
 .PHONY : clean
 clean:
 	@echo "Cleaning all..."
-	rm -rf $(OBJ) $(DBG) $(BIN) $(parser)
+	rm -rf *.o $(OBJ) $(DBG) $(BIN) $(parser)
