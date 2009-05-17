@@ -8,6 +8,8 @@
 #include <iomanip>
 #include <iostream>
 #include <vector>
+#include <time.h>
+#include <stdlib.h>
 #include "header.h"
 #include "GridPoint.h"
 #include "Router.h"
@@ -19,8 +21,12 @@ using std::cout;
 int main(int argc, char * argv[]){
 	Router router;
 	router.read_file(argc,argv);
+	clock_t start = clock();
 	router.solve_cmdline();
+	clock_t end = clock();
 
-	cout<<endl;
+	FILE * f=fopen("usetime","w");
+	fprintf(f,"%d\n",end-start);
+	fclose(f);
 	return 0;
 }
