@@ -1,3 +1,9 @@
+DATE06_3 prob 6: net 0 two subnet merged before reach the sink
+should think about some way
+
+DAC05_2 prob 53:
+now net 3 has silly movements, how to avoid
+-------------------------------------------------------------------------
 1. fix the deadlock
 2. check why adding lenght failed
 3. checkou why sometimes deadlock while sometimes not

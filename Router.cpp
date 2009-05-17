@@ -152,7 +152,7 @@ RouteResult Router::solve_subproblem(int prob_idx){
 	// TEST: output result to TeX file
 	char buf[MAXBUF];
 	sprintf(buf,"%s_%d_sol.tex",filename.c_str(),prob_idx);
-	draw_voltage(result,buf);
+	draw_voltage(result,chip,buf);
 	cout<<"max time = "<<get_maxt()<<" "<<endl;
 
 	return result ;
@@ -181,6 +181,7 @@ void Router::output_result(RouteResult & result){
 				}	
 			}
 		}
+		// trick: do not count the pin into cell used
 		count-=pProb->net[i].numPin; 
 	}
 	output_voltage(result);
@@ -276,13 +277,12 @@ bool Router::route_subnet(Point src,Point dst,
 			RouteResult & result,
 			ConflictSet & conflict_net){
 	assert( in_grid(src) && in_grid(dst) );
+	memset(visited,0,sizeof(visited));
 
 	// do Lee's propagation,handles 2-pin net only currently
 	GridPoint *current;
 
 	// initialize the heap
-	//GP_HEAP *pp = new GP_HEAP;
-	//GP_HEAP & p = *pp;
 	GP_HEAP p;
 
 	// start time = 0, source point = src, no parent
@@ -290,8 +290,6 @@ bool Router::route_subnet(Point src,Point dst,
 	GridPoint *gp_src = new GridPoint(src,NULL); 
 	gp_src->distance = MHT(src,dst);
 	p.push(gp_src); // put the source point into heap
-	// mark it
-	//visited[src.x][src.y][0] = 1;
 
 	int t=0;               // current time step
 	bool success = false;  // mark if this net is routed successfully
@@ -316,7 +314,7 @@ bool Router::route_subnet(Point src,Point dst,
 		// get wave_front and propagate its neighbour
 		//p.sort();
 #ifdef PRINT_HEAP
-		if( which == 1 ){
+		if( which == 0 && pin_idx == 1){
 		cout<<"------------------------------------------------"<<endl;
 		cout<<"[before pop]"<<endl;
 		output_heap(p);
@@ -325,7 +323,7 @@ bool Router::route_subnet(Point src,Point dst,
 		current = p.top();
 		p.pop();
 #ifdef PRINT_HEAP
-		if( which == 1 ){
+		if( which == 0 && pin_idx == 1){
 		cout<<"[after pop]"<<endl;
 		cout<<"Pop "         <<current->pt
 		    <<" at time "    <<current->time
@@ -418,7 +416,6 @@ bool Router::route_subnet(Point src,Point dst,
 	backtrack(which,pin_idx,current,result);
 	//output_result(result);
 	p.free();
-	//delete pp; pp = NULL;
 	return true;
 }
 
@@ -433,7 +430,6 @@ bool Router::route_net(int which,RouteResult &result) {
 	ConflictSet conflict_net(netcount);
 	
 	do{
-		memset(visited,0,sizeof(visited));
 		if( pNet->numPin == 2 )
 			success=route_2pin(which,result,conflict_net);
 		else
@@ -635,9 +631,7 @@ bool Router::propagate_nbrs(int which, int pin_idx,GridPoint * gp_from,
 		// 1.check if there is blockage 
 		// 2.check if ((x,y),t) has been visited
 		// 3.do not move to parent cell(why?)
-		// 4.do not go to WAT if the dest is not
 		if( blockage[x][y] == BLOCK ) continue;
-		//if( moving_to == chip.WAT && dst != chip.WAT ) continue;
 		/*
 		if( (parent_of_from != NULL) && 
 		     (nbr[i] == parent_of_from->pt) &&
@@ -664,10 +658,6 @@ bool Router::propagate_nbrs(int which, int pin_idx,GridPoint * gp_from,
 			//<<from_pt<<"->"<<moving_to<<" time="<<t<<endl;
 			continue;
 		}
-		if( moving_to == Point(11,1) &&
-		    from_pt==Point(11,0) &&
-		    which == 3 && pin_idx == 1)
-			cout<<"here"<<endl;
 
 		// electro constraint check
 		bool not_elect_violate=electrode_check(which,pin_idx,
@@ -689,8 +679,10 @@ bool Router::propagate_nbrs(int which, int pin_idx,GridPoint * gp_from,
 		if( pt_relative_pos(moving_to,from_pt) != STAY )
 			++newlen;
 		assert(newlen>=0);
-		cout<<"len="<<newlen<<endl;
-		//newlen=0; // force to 0
+		//cout<<"len="<<newlen;
+#ifdef NOLENGTH
+		newlen=0; // force to 0
+#endif
 
 		// cell used update
 		int cell = subnet_count - cell_used[x][y];
@@ -703,6 +695,7 @@ bool Router::propagate_nbrs(int which, int pin_idx,GridPoint * gp_from,
 				//bending,
 				//gp_from->stalling,
 				MHT(moving_to,dst));
+		//cout<<" new weight="<<nbpt->weight<<endl;
 		p.push(nbpt);
 		has_pushed = true; // marks at least one status is pushed
 	}// end of enqueue neighbours

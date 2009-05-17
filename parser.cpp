@@ -73,7 +73,7 @@ Chip * parse(FILE * f,Chip * chip){
 
 // use tgf/tikz to draw A subproblem
 // can be used with ``gen.sh'' to generate all subproblems
-void drawSubproblem(Subproblem * prob, int W,int H,int num,char * name){
+void drawSubproblem(Subproblem * prob, int W,int H, Point WAT,int num,char * name){
 	char figName[MAXBUF];
 	char filename[MAXBUF];
 	char cmd[MAXBUF];
@@ -137,6 +137,7 @@ void drawSubproblem(Subproblem * prob, int W,int H,int num,char * name){
 
 	// draw grids
 	fprintf(fig,"\\drawgrid{\\W}{\\H}\n");
+	fprintf(fig,"\\drawWAT{%d}{%d}\n",WAT.x,WAT.y);
 
 	// output remaing part
 	fprintf(fig,"\\end{tikzpicture}\n");
