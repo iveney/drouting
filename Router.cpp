@@ -833,7 +833,8 @@ int Router::cmp_net(const void* id1,const void* id2){
 	// use manhattance to judge
 	int m1 = MHT(n1->pin[0].pt,n1->pin[1].pt);
 	int m2 = MHT(n2->pin[0].pt,n2->pin[1].pt);
-	return m1-m2;
+	return m1-m2; // original
+	//return m2-m1;
 }
 
 void Router::sort_net(Subproblem *pProb, int * netorder){

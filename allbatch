@@ -1,0 +1,10 @@
+#!/bin/bash
+
+for CASE in DAC05 DAC05_2 DATE06 DATE06_3
+do
+	echo "Doing $CASE"
+	./batch "$CASE" > "$CASE".time
+	./evaluate.sh "$CASE"
+	echo ""
+done
+./clean.sh
