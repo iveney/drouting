@@ -178,12 +178,12 @@ bool ConstraintGraph::add_edge_color(const GNode &u,const GNode &v, EType type)
 		// H-L, H-H or L-L
 		// try to swap the color 
 		// of one connected component
-		ConstraintGraph bak(*this); // make backup
+		//ConstraintGraph bak(*this); // make backup
 		reverse_color(v);       // reverse the coloring of v component
 		COLOR u_newcolor = get_color(u);
 		if( ucolor != u_newcolor ){ 
 			// if u's color changed=>2-color failed
-			*this = bak;
+		//	*this = bak;
 			return FAIL;
 		}
 		else{
