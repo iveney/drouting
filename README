@@ -1,4 +1,6 @@
-DAC05 30: deadlock appears ( 3-4 nets)
+1. 3-pin net
+2. other heuristics about net ordering
+3. cell used?
 -------------------------------------------------------------------------------
 about cell used:
 now use (nNet- net using this net) as weight
@@ -9,7 +11,7 @@ for two path, it is better
 in my idea, I think it better to be implemented as a switch 
 e.g. if the cell is used, add 0 weight
 otherwise add a penalty
-or some thing. like this proportionally
+or sth. like that proportionally
 -------------------------------------------------------------------------------
 For DATE06_3, problem 1, if net 0 can stall for more time, 
 the cell used should be minimized
