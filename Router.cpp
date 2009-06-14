@@ -129,6 +129,7 @@ RouteResult Router::solve_subproblem(int prob_idx){
 
 	//MAX_SINGLE_CFLT = 100;
 	//MAXCFLT = 300;
+	
 
 	// start to route each net according to sorted order
 	nets.clear();
@@ -278,6 +279,8 @@ bool Router::route_subnet(Point src,Point dst,
 			ConflictSet & conflict_net){
 	assert( in_grid(src) && in_grid(dst) );
 	memset(visited,0,sizeof(visited));
+	MAXCFLT=10000;
+	MAX_SINGLE_CFLT=1000;
 
 	// do Lee's propagation,handles 2-pin net only currently
 	GridPoint *current;
@@ -307,7 +310,7 @@ bool Router::route_subnet(Point src,Point dst,
 		}
 		// if there is some net causing too much conflict
 		int mid = conflict_net.max_id;
-		if( conflict_net.conflict_count[mid] > MAX_SINGLE_CFLT ){
+		if( mid>=0 && conflict_net.conflict_count[mid] > MAX_SINGLE_CFLT ){
 			cerr<<"Too much conflict by net ["<<mid<<"]"<<endl;
 			break;
 		}

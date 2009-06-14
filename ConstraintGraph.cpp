@@ -183,7 +183,7 @@ bool ConstraintGraph::add_edge_color(const GNode &u,const GNode &v, EType type)
 		COLOR u_newcolor = get_color(u);
 		if( ucolor != u_newcolor ){ 
 			// if u's color changed=>2-color failed
-		//	*this = bak;
+			//*this = bak;
 			return FAIL;
 		}
 		else{
