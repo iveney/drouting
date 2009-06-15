@@ -637,12 +637,6 @@ bool Router::propagate_nbrs(int which, int pin_idx,GridPoint * gp_from,
 		// 2.check if ((x,y),t) has been visited
 		// 3.do not move to parent cell(why?)
 
-		/*
-		if( from_pt == Point(9,11) && gp_from->time == 3 ){
-			int dump=0;
-		}
-		*/
-
 		if( blockage[x][y] == BLOCK ) continue;
 		/*
 		if( (parent_of_from != NULL) && 
@@ -779,21 +773,10 @@ void Router::update_graph(int which,int pin_idx,
 		Point p = pin_path[i],q=pin_path[i-1];
 		//DIRECTION dir = pt_relative_pos(q,p);
 		Point dst = get_netdst_pt(which);
-		// BUG: the correct implementation should not include the `if'
-		// statement below because we have to also consider the
-		// constraint when the droplet stays at the sink point however,
-		// for DAC05 30, there is problem when doing so.  but cancel
-		// the check after it reaches the sink point still gives
-		// correct result till now...  Also I think when doing
-		// electrode_check for other droplets, the violation can also
-		// be detected. So I implement it as follows using q!=dst
-		//if( q!=dst ){
-			//int t = current->time;
-			bool success = electrode_check(which,pin_idx,
-					p,q,i,result,dummy,1);
-			// IMPORTANT: return value must be true here!
-			assert(success == true);
-		//}
+		bool success = electrode_check(which,pin_idx,
+				p,q,i,result,dummy,1);
+		// IMPORTANT: return value must be true here!
+		assert(success == true);
 	}
 }
 
@@ -930,7 +913,7 @@ bool Router::electrode_check(int which, int pin_idx,
 			// pin[t]=location of d2 at time t(activated at t-1)
 			// IMOPRTANT:some droplet may disappear(waste disposal)
 			if( t >= (int)pin.size() ) continue;
-			//if( t >= (int)pin.size() )break;
+
 			// if two droplet's sharing same activating row/column
 			// NO need to check the constraint!( my assumption )
 			// IMPORTANT: the idea is correct 

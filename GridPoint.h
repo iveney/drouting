@@ -28,9 +28,9 @@ public:
 	// weight is the sum of:
 	int time;
 	int length;
-	double cell;
-	int bend;
-	int stalling;
+	double cell;    // will be multiplied by a factor
+	int bend;       // NOW no use in Router.cpp
+	int stalling;   // NOW no use in Router.cpp
 	int distance;   // the manhattance distance to the sink
 	int order;      // order the GridPoint was generated
 	static int counter;
