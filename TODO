@@ -1,22 +1,9 @@
-DATE06_3 prob 6: net 0 two subnet merged before reach the sink
-should think about some way
+1. check all the results, summarize problems(check the analysis_xxx file inside results/BENCH_NAME/)
+seems that now only DATE06_3 subproblem 1 has sth. strange
 
-DAC05_2 prob 53:
-now net 3 has silly movements, how to avoid
--------------------------------------------------------------------------
-1. fix the deadlock
-2. check why adding lenght failed
-3. checkou why sometimes deadlock while sometimes not
-4. DAC05_2 53, DAC05 30
--------------------------------------------------------------------------
-1. minimize cell
-2. loop problem
-3. deadlock problem
-4. fix the reach-sink-point bug(should add electrode constraint there)
--------------------------------------------------------------------------
-1. DAC05_2 prob 53
-check how to solve the loop movement
+seems that it is because somehow the programe will not push stalling at the same point for continuous time step...
 
-2. try to incorporate len as a field in the status
-(but it may not be accurate, because length can not reflect cell used,
-and we are not optimizing length)
+2. Evan's Idea: try to multiply a factor to the term ``cell used weight'' to
+adjust the final weight
+3. 3-pin net
+4. try to modify the code so that it can run ISPD08's hard cases

@@ -26,7 +26,7 @@ int main(int argc, char * argv[]){
 	clock_t end = clock();
 
 	FILE * f=fopen("usetime","w");
-	fprintf(f,"%d\n",end-start);
+	fprintf(f,"%ld\n",end-start);
 	fclose(f);
 	return 0;
 }

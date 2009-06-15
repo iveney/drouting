@@ -310,14 +310,16 @@ bool Router::route_subnet(Point src,Point dst,
 		}
 		// if there is some net causing too much conflict
 		int mid = conflict_net.max_id;
-		if( mid>=0 && conflict_net.conflict_count[mid] > MAX_SINGLE_CFLT ){
+		if( mid>=0 && 
+			conflict_net.conflict_count[mid] > MAX_SINGLE_CFLT ){
 			cerr<<"Too much conflict by net ["<<mid<<"]"<<endl;
 			break;
 		}
 		// get wave_front and propagate its neighbour
 		//p.sort();
 #ifdef PRINT_HEAP
-		if( which == 0 && pin_idx == 1){
+		int test_net_id = 0, test_pin_id = 0;
+		if( which == test_net_id && pin_idx == test_pin_id ){
 		cout<<"------------------------------------------------"<<endl;
 		cout<<"[before pop]"<<endl;
 		output_heap(p);
@@ -326,7 +328,7 @@ bool Router::route_subnet(Point src,Point dst,
 		current = p.top();
 		p.pop();
 #ifdef PRINT_HEAP
-		if( which == 0 && pin_idx == 1){
+		if( which == test_net_id && pin_idx == test_pin_id ){
 		cout<<"[after pop]"<<endl;
 		cout<<"Pop "         <<current->pt
 		    <<" at time "    <<current->time
@@ -626,7 +628,7 @@ bool Router::propagate_nbrs(int which, int pin_idx,GridPoint * gp_from,
 	const int t = (gp_from->time + 1);
 
 	// enqueue neighbours
-	GridPoint * parent_of_from = gp_from->parent; 
+	//GridPoint * parent_of_from = gp_from->parent; 
 
 	for(size_t i=0;i<nbr.size();i++){
 		int x=nbr[i].x,y=nbr[i].y;
@@ -634,6 +636,13 @@ bool Router::propagate_nbrs(int which, int pin_idx,GridPoint * gp_from,
 		// 1.check if there is blockage 
 		// 2.check if ((x,y),t) has been visited
 		// 3.do not move to parent cell(why?)
+
+		/*
+		if( from_pt == Point(9,11) && gp_from->time == 3 ){
+			int dump=0;
+		}
+		*/
+
 		if( blockage[x][y] == BLOCK ) continue;
 		/*
 		if( (parent_of_from != NULL) && 
@@ -643,7 +652,7 @@ bool Router::propagate_nbrs(int which, int pin_idx,GridPoint * gp_from,
 		if( visited[x][y][t] == 1 ) continue; 
 		visited[x][y][t] = 1;
 
-		int bending=0;//bending=gp_from->bend;
+		//int bending=0;//bending=gp_from->bend;
 
 		// fluidic constraint check
 		FLUIDIC_RESULT fluid_result=fluidic_check(which,pin_idx,

@@ -1,6 +1,6 @@
-9: hard
-19: hard
-30: hard
+9(solved): hard
+19(solved): hard: now the result shows that net 1 will stall to let net 0 pass first
+30(solved): hard: many subnets but managed to route all
 
 3pin nets:
 47

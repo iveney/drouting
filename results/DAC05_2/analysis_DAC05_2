@@ -1,6 +1,6 @@
 3pin:
 46
-53: why the droplet 0_1 do some useless work at the begining of routing?
+53(solved): why the droplet 0_1 do some useless work at the begining of routing?(solved)
 guess:
 because the stalling point is not propagated into the heap!!!!
 solution:
