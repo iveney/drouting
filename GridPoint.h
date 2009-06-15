@@ -7,12 +7,12 @@
 class GridPoint{
 public:
 	GridPoint(Point pt_=Point(0,0),GridPoint *par=NULL,
-	int t=0,int l=0,int c=0,int b=0,int s=0,int d=0);
+	int t=0,int l=0,double c=0.0,int b=0,int s=0,int d=0);
 
 	// copy constructer
 	//GridPoint & operator = (const Gridpoint & gp);
 
-	int updateWeight();
+	double updateWeight();
 
 	// TODO: how to determine there size if weights are equal?
 	// because we need a strictly weak ordering here for heap comparison..
@@ -23,12 +23,12 @@ public:
 	/////////////////////////////////////////////////////////////////
 	Point pt;		// its position
 	GridPoint * parent;     // from which GridPoint it was propagated
-	int weight;
+	double weight;
 
 	// weight is the sum of:
 	int time;
 	int length;
-	int cell;
+	double cell;
 	int bend;
 	int stalling;
 	int distance;   // the manhattance distance to the sink
@@ -42,7 +42,8 @@ public:
 			// 1. weight
 			// 2. MHT
 			// 3. time
-			if( a->weight == b->weight ){
+			//if( a->weight == b->weight ){
+			if( EQU(a->weight,b->weight)) {
 				if( a->distance == b->distance ){
 					if( a->time == b->time)
 						return (a->order) > (b->order);
@@ -53,7 +54,7 @@ public:
 					return (a->distance) > (b->distance);
 			}
 			else
-				return a->weight > b->weight;
+				return GT(a->weight,b->weight);
 		}
 	};
 };

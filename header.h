@@ -12,6 +12,9 @@ using std::vector;
 #define MHT(s,t) (ABS((s.x)-(t.x)) + ABS((s.y)-(t.y)))
 #define MAX(a,b) ((a)>(b)?(a):(b))
 #define MIN(a,b) ((a)>(b)?(b):(a))
+#define EQU(a,b) (ABS((a)-(b))<=EPSILON)
+#define GT(a,b) ((a)-(b)>EPSILON)
+#define LT(a,b) ((a)-(b)<EPSILON)
 
 typedef unsigned char BYTE ;
 typedef BYTE Grid ;
@@ -26,12 +29,14 @@ const int MAXGRID=30;
 const int MAXTIME=30;
 //const int MAXCFLT=10000;
 //const int MAX_SINGLE_CFLT=1000;
+//const int STALL_PENALTY=20;
 const Grid INF=2<<7-1;
 const int FLUID_PENALTY=20;
 const int ELECT_PENALTY=20;
-//const int STALL_PENALTY=20;
 const int STALL_PENALTY=0;
 const int MAXHEAPSIZE=2<<20;
+const double EPSILON = 0.000000001;
+const double CELL_FACTOR = 10;
 enum CORNER{LL,UR};
 
 class Point{// a point denote by (row,col)

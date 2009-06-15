@@ -697,7 +697,8 @@ bool Router::propagate_nbrs(int which, int pin_idx,GridPoint * gp_from,
 #endif
 
 		// cell used update
-		int cell = subnet_count - cell_used[x][y];
+		double cell = CELL_FACTOR * 
+			(subnet_count - cell_used[x][y]);
 		assert(cell>=0); 
 
 		// finally push this into heap
