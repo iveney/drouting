@@ -30,7 +30,7 @@ int MAX_SINGLE_CFLT=1000;
 // static memeber initialization
 Subproblem * Router::pProb=NULL;
 
-// constructer of Router
+// constructor of Router
 // initialize the read flag, netorder, and the max_t
 Router::Router():read(false),max_t(-1){
 	for (int i = 0; i < MAXTIME; i++) {

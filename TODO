@@ -10,3 +10,8 @@ adjust the final weight
 3. 3-pin net(no idea)
 
 4. try to modify the code so that it can run ISPD08's hard cases
+max block: 12
+max grid : 48
+max net  : 48
+max time : 100
+no 3-pin net
