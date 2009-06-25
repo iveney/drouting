@@ -19,6 +19,7 @@ using std::endl;
 using std::cout;
 
 int main(int argc, char * argv[]){
+	srand(time(NULL));
 	Router router;
 	router.read_file(argc,argv);
 	clock_t start = clock();

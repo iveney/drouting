@@ -199,6 +199,9 @@ private:
 	// init blockage bitmap for use
 	void init_place(Subproblem *p);
 
+	// choose a net to be ripped by drawing a lot
+	int choose_ripped(const ConflictSet & conflict_net);
+
 	bool route_2pin(int which,RouteResult & result,
 		ConflictSet & conflict_net);
 	

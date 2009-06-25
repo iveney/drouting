@@ -518,41 +518,57 @@ bool Router::route_3pin(int which,RouteResult & result,
 	return true;
 }
 
+int Router::choose_ripped(const ConflictSet & conflict_net){
+	// first calculate the probabilities
+	int chance[MAXNET];
+	int sum=0;
+	memset(chance,0,sizeof(chance));
+
+	// calculate the accumulative count
+	// note that sometimes there will be some one who owns a 100% prob.
+	// at this case, choose which?
+	for(int i=0;i<conflict_net.net_num;i++){
+		chance[i] = sum+conflict_net.conflict_count[i];
+		sum+=conflict_net.conflict_count[i];
+		//printf("chance[%d]=%d\n",i,chance[i]);
+	}
+
+	const int drawlot = rand()%conflict_net.total;
+	//printf("lot = %d, total = %d\n",drawlot,conflict_net.total);
+	int to_rip_id=0;
+	while(1){
+		if( drawlot >= chance[to_rip_id] )
+			to_rip_id++;
+		else
+			break;
+	}
+	return to_rip_id;
+}
+
 // for a given net `which', rip up the net causing most conflict
 // also re-order the netorder
 // POSTCONDITION: the net order will be changed
 bool Router::ripup_reroute(int which,RouteResult & result,
 		ConflictSet &conflict_net){
-	// cancel the route result of some conflict net
-	// now use the most conflict net=`max_id'
-	int max_id = conflict_net.max_id;
-	assert(max_id>=0);
+	// --- cancel the route result of some conflict net
+	// --- now use the most conflict net=`max_id'
+	// int max_id = conflict_net.max_id;
+	// assert(max_id>=0);
 
 	// what about for 3-pin net that is causing constraint on itself?
-	assert(max_id!=which);
+	// assert(max_id!=which);
 
-	// check if max_id is the net that rip `which' previously
-	if(max_id == last_ripper_id){
-		cout<<"rip net["<<max_id<<
-			"], deadlock...break using the 2nd largest"<<endl;
-		// find the 2nd largest
-		int max_count=-1;
-		max_id=-1;
-		for (int i = 0; i < conflict_net.net_num; i++) {
-			//cout<<"confclit "<<i<<"="
-			//    <<conflict_net.conflict_count[i]<<endl;
-			if( max_count < conflict_net.conflict_count[i] &&
-			    i != conflict_net.max_id &&
-			    i != which){
-				max_count = conflict_net.conflict_count[i];
-				max_id = i;
-			}
-		}
-	}
-	
-	if( max_id == -1 ){ // there is no 2nd largest...
-		return false;
-	}
+	int max_id;
+	//printf("max = %d\n",conflict_net.max_id);
+
+	// draw a lot to decide which net to rip
+	do{
+		max_id = choose_ripped(conflict_net);
+		printf("DEBUG: which = %d, max_id = %d, last = %d\n",
+				which,max_id,last_ripper_id);
+	}while(max_id == which || max_id == last_ripper_id);
+
+	assert( max_id >=0 );
 
 	cout<<"** ripping net "<<max_id<<",conflict count="
 	    <<conflict_net.conflict_count[max_id]
