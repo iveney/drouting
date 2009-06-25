@@ -36,7 +36,7 @@ const int ELECT_PENALTY=20;
 const int STALL_PENALTY=0;
 const int MAXHEAPSIZE=2<<20;
 const double EPSILON = 0.000000001;
-const double CELL_FACTOR = 1;
+const double CELL_FACTOR = 5;
 enum CORNER{LL,UR};
 
 class Point{// a point denote by (row,col)

@@ -2,5 +2,5 @@
 
 for i in DAC05 DAC05_2 DATE06 DATE06_3
 do
-	(cd "$i" && ../main $i &)
+	(cd "$i" && ../main $i >/dev/null 2>&1 &)
 done
