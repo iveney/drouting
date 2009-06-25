@@ -643,7 +643,8 @@ bool Router::propagate_nbrs(int which, int pin_idx,GridPoint * gp_from,
 		     (nbr[i] == parent_of_from->pt) &&
 			(nbr[i] != from_pt) ) continue;
 			*/
-		if( visited[x][y][t] == 1 ) continue; 
+		DIRECTION dir = pt_relative_pos(moving_to,from_pt);
+		if( visited[x][y][t] == 1 && dir != STAY ) continue; 
 		visited[x][y][t] = 1;
 
 		//int bending=0;//bending=gp_from->bend;
@@ -691,16 +692,18 @@ bool Router::propagate_nbrs(int which, int pin_idx,GridPoint * gp_from,
 #endif
 
 		// cell used update
-		double cell = CELL_FACTOR * 
-			(subnet_count - cell_used[x][y]);
+		double cell = (cell_used[x][y]>0)?0.0:1.0;
+		cell*=CELL_FACTOR;
+
+		/*double cell = CELL_FACTOR*(subnet_count - cell_used[x][y]);*/
 		assert(cell>=0); 
 
 		// finally push this into heap
 		GridPoint *nbpt = new GridPoint(
 				moving_to,gp_from,
-				t,newlen,cell,0,0,
-				//bending,
-				//gp_from->stalling,
+				//t,newlen,cell,0,0,
+				//now for `cell' use accumulate method
+				t,newlen,cell+gp_from->cell,0,0,
 				MHT(moving_to,dst));
 		//cout<<" new weight="<<nbpt->weight<<endl;
 		p.push(nbpt);

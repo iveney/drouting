@@ -25,6 +25,7 @@ int main(int argc, char * argv[]){
 	router.solve_cmdline();
 	clock_t end = clock();
 
+	// TEST: print the time used in solving the problem
 	FILE * f=fopen("usetime","w");
 	fprintf(f,"%ld\n",end-start);
 	fclose(f);

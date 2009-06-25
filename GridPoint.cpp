@@ -30,8 +30,11 @@ double GridPoint::updateWeight(){
 ostream & operator <<(ostream &out,const GridPoint & g){
 	out<<"t="<<setw(2)<<std::left<<g.time<<" at "
 		 <<std::left<<g.pt<<",\tw="
-		 <<setw(3)<<std::left<<g.weight<<"\t MHT="
-		 <<setw(3)<<std::left<<g.distance<<", par=";
+		 <<setw(3)<<g.distance<<" +"
+		 <<setw(3)<<g.time<<" +"
+		 <<setw(3)<<g.length<<" +"
+		 <<setw(3)<<g.cell<<" ="
+		 <<setw(3)<<std::left<<g.weight<<", par=";
 	if( g.parent == NULL ) out<<"NULL";
 	else out<<g.parent->pt;
 	return out;
