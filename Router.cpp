@@ -518,15 +518,20 @@ bool Router::route_3pin(int which,RouteResult & result,
 	return true;
 }
 
-int Router::choose_ripped(const ConflictSet & conflict_net){
+// choose a net to be ripped by drawing a lot
+// NOTE: 1. should choose a net that has been routed
+//       2. should choose a net which is not the current routing net
+//       3. in order to prevent deadlock, do not choose last_ripper
+// PROB: sometimes there is only one net causing conflict, and that is last_ripper
+//       should choose another routed net 
+int Router::choose_ripped(int which, RouteResult & result,
+		const ConflictSet & conflict_net){
 	// first calculate the probabilities
 	int chance[MAXNET];
 	int sum=0;
 	memset(chance,0,sizeof(chance));
 
 	// calculate the accumulative count
-	// note that sometimes there will be some one who owns a 100% prob.
-	// at this case, choose which?
 	for(int i=0;i<conflict_net.net_num;i++){
 		chance[i] = sum+conflict_net.conflict_count[i];
 		sum+=conflict_net.conflict_count[i];
@@ -536,11 +541,26 @@ int Router::choose_ripped(const ConflictSet & conflict_net){
 	const int drawlot = rand()%conflict_net.total;
 	//printf("lot = %d, total = %d\n",drawlot,conflict_net.total);
 	int to_rip_id=0;
+	int counter=0;
 	while(1){
 		if( drawlot >= chance[to_rip_id] )
 			to_rip_id++;
 		else
 			break;
+		if( counter++ > 10000 ) 
+			report_exit("infinite loop here");
+	}
+	counter=0;
+	if( to_rip_id == which || to_rip_id == last_ripper_id ){
+		do{
+			to_rip_id = rand() % conflict_net.net_num;
+			if( counter++ > 10000 ) {
+				printf("which=%d,to_rip_id=%d,last_ripper=%d",which,to_rip_id,last_ripper_id);
+				report_exit("infinite loop here");
+			}
+		}while( to_rip_id == which ||
+			to_rip_id == last_ripper_id ||
+			result.path[to_rip_id].timing <= 0);
 	}
 	return to_rip_id;
 }
@@ -562,11 +582,11 @@ bool Router::ripup_reroute(int which,RouteResult & result,
 	//printf("max = %d\n",conflict_net.max_id);
 
 	// draw a lot to decide which net to rip
-	do{
-		max_id = choose_ripped(conflict_net);
+	//do{
+		max_id = choose_ripped(which,result,conflict_net);
 		printf("DEBUG: which = %d, max_id = %d, last = %d\n",
 				which,max_id,last_ripper_id);
-	}while(max_id == which || max_id == last_ripper_id);
+	//}while(max_id == which || max_id == last_ripper_id);
 
 	assert( max_id >=0 );
 

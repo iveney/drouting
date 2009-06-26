@@ -74,6 +74,7 @@ struct NetRoute{
 		reach_time[0]=reach_time[1]=-1;
 		merge_time=-1;
 		timing=-1;
+		routed=false;
 	}
 	int idx;	// this net's id
 	int num_pin;    // net pins,be 2 or 3
@@ -84,6 +85,7 @@ struct NetRoute{
 	PtVector pin_route[2]; 
 	int reach_time[2]; // the time a droplet finishes routing
 	set<Point> cellset[2];
+	bool routed;    // marks if this net is routed
 };
 
 // the class to stores the final routing result
@@ -200,7 +202,8 @@ private:
 	void init_place(Subproblem *p);
 
 	// choose a net to be ripped by drawing a lot
-	int choose_ripped(const ConflictSet & conflict_net);
+	int choose_ripped(int which, RouteResult & result,
+		const ConflictSet & conflict_net);
 
 	bool route_2pin(int which,RouteResult & result,
 		ConflictSet & conflict_net);
