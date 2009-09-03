@@ -18,3 +18,4 @@ cscope.files
 *.aux
 *.out
 *.log
+*.result
