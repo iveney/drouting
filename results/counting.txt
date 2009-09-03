@@ -1,0 +1,10 @@
+using cell factor = 10/1.5
+	   
+	   STALLING(sum)    MHT diff(sum)
+DATE06     11/17            33/11
+           12               45
+DATE06_3   23/26            39/44
+DAC05      36/37            136/136
+DAC05_2    40/38            214/205
+
+NOTE: since the rip-up has randomness, the result varies

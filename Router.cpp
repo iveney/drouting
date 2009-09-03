@@ -22,6 +22,10 @@ const int dx[]={-1,1,0,0,0};
 const int dy[]={0,0,1,-1,0};
 extern const char *color_string[];
 
+#ifndef NOCOUNTING
+int STALLING_COUNT = 0;
+int MHT_DIFF = 0;
+#endif
 
 // parameter to control the searching
 int MAXCFLT=10000;
@@ -149,6 +153,10 @@ RouteResult Router::solve_subproblem(int prob_idx){
 	// finally, output result
 	cout<<"Subproblem "<<prob_idx<<" solved!"<<endl;
 	output_result(result);
+#ifndef NOCOUNTING
+	cerr<<"STALL STEP = "<<STALLING_COUNT<<endl;
+	cerr<<"MHT DIFF = "<<MHT_DIFF<<endl;
+#endif
 
 	// TEST: output result to TeX file
 	char buf[MAXBUF];
@@ -169,6 +177,16 @@ void Router::output_result(RouteResult & result){
 		const NetRoute & net_path = result.path[i];
 		// for each subnet in a net
 		for (j = 0; j < net_path.num_pin-1; j++) {
+#ifndef NOCOUNTING
+			Point src = get_pinpt(i,j);
+			Point dst = get_netdst_pt(i);
+			Pin src_pin,dst_pin;
+			src_pin.pt = src; dst_pin.pt = dst;
+			//int mht_dist = MHT(src,dst);
+			Block bb = get_bbox(src_pin,dst_pin);
+			int diff = 0;
+			map<Point,bool> detour;
+#endif
 			cout<<"net["<<i<<"]:"<<this->T<<endl;
 			const PtVector & route = net_path.pin_route[j];
 			// output each time step
@@ -176,11 +194,32 @@ void Router::output_result(RouteResult & result){
 				cout<<"\t"<<k<<":"
 				<<route[k]<<endl;
 				int x = route[k].x, y = route[k].y;
+#ifndef NOCOUNTING
+				// count the stalling 
+				if( k>0 && route[k] != dst && 
+				    route[k] == route[k-1] ){
+					cerr<<"STALLING here"<<endl;
+					STALLING_COUNT++;
+				}
+				// count the MHT difference of this subnet
+				// check if this is a detour step
+				// NOTE: for this subnet, same cell only count once
+				if( !pt_in_rect(bb,route[k]) && 
+				    !detour[route[k]]) {
+					diff++;
+					cerr<<"detour:"<<route[k]<<endl;
+				}
+				// END of counting
+#endif
 				if( used_cell[x][y] == 0 ){
 					count++;
 					used_cell[x][y]=1;
 				}	
 			}
+#ifndef NOCOUNTING
+			MHT_DIFF += diff;
+			cerr<<"net("<<i<<","<<j<<") DIFF = "<<diff<<endl;
+#endif
 		}
 		// trick: do not count the pin into cell used
 		count-=pProb->net[i].numPin; 
