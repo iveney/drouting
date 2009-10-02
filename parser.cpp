@@ -98,11 +98,12 @@ void drawSubproblem(Subproblem * prob, int W,int H, Point WAT,int num,char * nam
 	fprintf(fig,"%% blockages\n");
 	Block * pBlk = prob->block;
 	for(i=0;i<prob->nBlock;i++){
-		fprintf(fig,"\\blockage{%d}{%d}{%d}{%d}\n",
+		fprintf(fig,"\\blockage{%d}{%d}{%d}{%d}{%s}\n",
 				pBlk[i].pt[0].x,
 				pBlk[i].pt[0].y,
 				pBlk[i].pt[1].x,
-				pBlk[i].pt[1].y);
+				pBlk[i].pt[1].y,
+				pBlk[i].name);
 	}
 
 	// draw net
