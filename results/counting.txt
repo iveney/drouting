@@ -1,6 +1,6 @@
 using cell factor = 10/1.5
 	   
-	   STALLING(sum)    MHT diff(sum)
+           STALLING(sum)    MHT diff(sum)
 DATE06     11/17            33/11
            12               45
 DATE06_3   23/26            39/44
