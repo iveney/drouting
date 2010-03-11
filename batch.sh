@@ -24,7 +24,9 @@ echo -n > "$OUTNAME"
 time for i in `seq -1 "$NUMSUBPROBLEMS"`
 do
 	echo -n "$i : "
-	OUTPUT=`./main "$FILENAME" $i 2>&1 | grep -e "max time" -e "total cell"`
+	OUTPUT=`./main "$FILENAME" $i 2>&1`
+	echo "$OUTPUT" > check
+       	OUTPUT=`echo "$OUTPUT" | grep -e "max time" -e "total cell"`
 	MAXTIME=`echo "$OUTPUT" | awk '/max time =/ {print $4}'`
 	if [ -n "$MAXTIME" ];then
 		CELL=`echo "$OUTPUT" | awk '/total cell used/ {print $6}'`

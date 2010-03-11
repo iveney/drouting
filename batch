@@ -22,5 +22,6 @@ echo running "$FILENAME", subproblem count = "$NUMSUBPROBLEMS"
 echo -n > "$OUTNAME"
 
 # column1 = cell used , column2 = run time
-time ./main "$FILENAME" 2>&1 | awk '/used/ {printf("%d ",$6)} /max/ {printf("%d\n",$4)}' > "$OUTNAME"
+time ./main "$FILENAME" > check 2>&1 
+cat check | awk '/used/ {printf("%d ",$6)} /max/ {printf("%d\n",$4)}' > "$OUTNAME"
 exit 0

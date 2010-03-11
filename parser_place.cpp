@@ -71,11 +71,9 @@ Chip * parse(FILE * f,Chip * chip){
 	return chip;
 }
 
-char * replace_hyphen(char * str){
-	int len=strlen(str);
-	for(int i=0;i<len;i++)
-		str[i]=='_'?str[i]='-':0;
-	return str;
+// generate placement input file
+void genPlacementInput(Subproblem * prob, int W,int H, Point WAT,int num,char * name){
+
 }
 
 // use tgf/tikz to draw A subproblem
@@ -89,7 +87,7 @@ void drawSubproblem(Subproblem * prob, int W,int H, Point WAT,int num,char * nam
 	sprintf(cmd,"cp template.tex %s",filename);	
 	// note that if the file name contains `_', 
 	// should manually replace it, since it is a special charater in LaTeX
-	sprintf(figName,"%s-subproblem-%d",replace_hyphen(name),num);
+	sprintf(figName,"%s\\_subproblem\\_%d",name,num);
 	// output tex head from template
 	system(cmd);
 
@@ -110,21 +108,20 @@ void drawSubproblem(Subproblem * prob, int W,int H, Point WAT,int num,char * nam
 				pBlk[i].pt[0].y,
 				pBlk[i].pt[1].x,
 				pBlk[i].pt[1].y,
-				replace_hyphen(pBlk[i].name));
+				pBlk[i].name);
 	}
 
 	// draw net
 	fprintf(fig,"%% nets\n");
 	Net * pNet = prob->net;
 	for(i=0;i<prob->nNet;i++){
-		break;
 		if(pNet[i].numPin==2){
 			fprintf(fig,
 			"\\drawtwopin{%s}{%d}{%d}{%s}{%d}{%d}{%s!70}\n",
-			replace_hyphen(pNet[i].pin[0].name),
+			pNet[i].pin[0].name,
 			pNet[i].pin[0].pt.x,
 			pNet[i].pin[0].pt.y,
-			replace_hyphen(pNet[i].pin[1].name),
+			pNet[i].pin[1].name,
 			pNet[i].pin[1].pt.x,
 			pNet[i].pin[1].pt.y,
 			getColor());
@@ -132,13 +129,13 @@ void drawSubproblem(Subproblem * prob, int W,int H, Point WAT,int num,char * nam
 		else{// 3 pin net
 			fprintf(fig,
 			"\\drawthreepin{%s}{%d}{%d}{%s}{%d}{%d}{%s}{%d}{%d}\n",
-			replace_hyphen(pNet[i].pin[0].name),
+			pNet[i].pin[0].name,
 			pNet[i].pin[0].pt.x,
 			pNet[i].pin[0].pt.y,
-			replace_hyphen(pNet[i].pin[1].name),
+			pNet[i].pin[1].name,
 			pNet[i].pin[1].pt.x,
 			pNet[i].pin[1].pt.y,
-			replace_hyphen(pNet[i].pin[2].name),
+			pNet[i].pin[2].name,
 			pNet[i].pin[2].pt.x,
 			pNet[i].pin[2].pt.y);
 		}

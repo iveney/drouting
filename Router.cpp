@@ -577,6 +577,13 @@ int Router::choose_ripped(int which, RouteResult & result,
 		//printf("chance[%d]=%d\n",i,chance[i]);
 	}
 
+	int div;
+	if(conflict_net.total == 0 ){
+		//printf("Floating point\n");
+		div = MAXNET;
+	}
+	else
+		div = conflict_net.total;
 	const int drawlot = rand()%conflict_net.total;
 	//printf("lot = %d, total = %d\n",drawlot,conflict_net.total);
 	int to_rip_id=0;
