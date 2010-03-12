@@ -87,11 +87,13 @@ void drawSubproblem(Subproblem * prob, int W,int H, Point WAT,int num,char * nam
 	sprintf(filename,"%s_p%d.tex",name,num);
 	// dump a template to the target file
 	sprintf(cmd,"cp template.tex %s",filename);	
-	// note that if the file name contains `_', 
-	// should manually replace it, since it is a special charater in LaTeX
-	sprintf(figName,"%s-subproblem-%d",replace_hyphen(name),num);
 	// output tex head from template
 	system(cmd);
+
+	// note that if the file name contains `_', 
+	// should manually replace it, since it is a special charater in LaTeX
+	sprintf(figName,"%s-subproblem-%d",name,num);
+	replace_hyphen(figName);
 
 	FILE * fig = fopen(filename,"a");
 	int i;
@@ -117,7 +119,7 @@ void drawSubproblem(Subproblem * prob, int W,int H, Point WAT,int num,char * nam
 	fprintf(fig,"%% nets\n");
 	Net * pNet = prob->net;
 	for(i=0;i<prob->nNet;i++){
-		break;
+		//break;
 		if(pNet[i].numPin==2){
 			fprintf(fig,
 			"\\drawtwopin{%s}{%d}{%d}{%s}{%d}{%d}{%s!70}\n",
