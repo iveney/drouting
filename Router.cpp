@@ -31,6 +31,9 @@ int MHT_DIFF = 0;
 int MAXCFLT=10000;
 int MAX_SINGLE_CFLT=1000;
 
+// 
+bool allow_detour=false;
+
 // static memeber initialization
 Subproblem * Router::pProb=NULL;
 
@@ -146,8 +149,20 @@ RouteResult Router::solve_subproblem(int prob_idx){
 		nets.pop_front();
 		bool success = route_net(which,result);
 		if( success == false ){
-			// first net can not be routed means fail
-			report_exit("Error: route failed!");
+			// occurs only when the first net can not be routed 
+			// change strategy: allow detour to previous arrived
+			// location
+			if( allow_detour == true )
+				report_exit("Error: route failed!");
+			else{
+				// insert this net into queue, re-route it
+				printf("OK: we allow detour now.\n");
+				init();
+				nets.clear();
+				nets.insert(nets.begin(),netorder,netorder+netcount);
+				allow_detour = true;
+				continue;
+			}
 		}
 		result.path[which].routed=true;
 		routed_count++;
@@ -363,23 +378,18 @@ bool Router::route_subnet(Point src,Point dst,
 		// get wave_front and propagate its neighbour
 		//p.sort();
 #ifdef PRINT_HEAP
-		int test_net_id = 0, test_pin_id = 0;
-		if( which == test_net_id && pin_idx == test_pin_id ){
 		cout<<"------------------------------------------------"<<endl;
 		cout<<"[before pop]"<<endl;
 		output_heap(p);
-		}
 #endif 
 		current = p.top();
 		p.pop();
 #ifdef PRINT_HEAP
-		if( which == test_net_id && pin_idx == test_pin_id ){
 		cout<<"[after pop]"<<endl;
 		cout<<"Pop "         <<current->pt
 		    <<" at time "    <<current->time
 		    <<", queue size="<<p.size()<<endl;
 		output_heap(p);
-		}
 #endif 
 
 		// sink reached, but need to check whether it stays
@@ -397,7 +407,7 @@ bool Router::route_subnet(Point src,Point dst,
 							i,result,conflict_net);
 					if( fluid_result == VIOLATE ){
 						//cout<<"fluidic t="
-						 //   <<current->time<<endl;
+						//   <<current->time<<endl;
 						fail = true;
 						break;
 					}
@@ -408,13 +418,13 @@ bool Router::route_subnet(Point src,Point dst,
 							current->pt,i,
 							result,conflict_net,0);
 					if( !not_elect_violate ){
-						//cout<<"electric t="
-						    //<<current->time<<endl;
+					//cout<<"electric t="
+					//<<current->time<<endl;
 						fail = true;
 						break;
 					}
-				}
-			}
+				}// end of for
+			} // end of if
 
 			// safely enter destination and stay
 			if( !fail ){
@@ -425,10 +435,10 @@ bool Router::route_subnet(Point src,Point dst,
 				break;
 			}
 			// could not stay at sink point now...
-			else{
-				continue;
-			}
-		}
+			//else{
+			//	continue;
+			//}
+		}//end of if(current_pt=dst)
 
 		// sink not found, continue to search here...
 		
@@ -493,7 +503,10 @@ bool Router::route_net(int which,RouteResult &result) {
 			    <<"] failed, try ripup-reroute **"<<endl;
 			bool ret;
 			ret = ripup_reroute(which,result,conflict_net);
+
+			// cannot do ripup-reroute
 			if( ret == false ) return false;
+
 			// output the new net order
 			output_netorder(netorder,netcount);
 			//cout<<"after rip"<<endl;
@@ -594,6 +607,8 @@ int Router::choose_ripped(int which, RouteResult & result,
 	}
 
 	int sum=chance[conflict_net.net_num-1];
+	if(sum==0) // this only happens when `which' is the first net
+		return -1;
 	const int drawlot = rand()%sum;
 	//printf("lot = %d, sum = %d\n",drawlot,sum);
 	int to_rip_id=0, counter=0;
@@ -669,6 +684,7 @@ bool Router::ripup_reroute(int which,RouteResult & result,
 			which,rip_netid,last_ripper_id);
 #endif
 
+	// returns -1 means cannot find a net to rip
 	if( rip_netid < 0 ) return false;
 
 	cout<<"** ripup net ["<<rip_netid<<"]";
@@ -758,14 +774,8 @@ bool Router::propagate_nbrs(int which, int pin_idx,GridPoint * gp_from,
 		Point moving_to(x,y);
 		// 1.check if there is blockage 
 		// 2.check if ((x,y),t) has been visited
-		// 3.do not move to parent cell(why?)
 
 		if( blockage[x][y] == BLOCK ) continue;
-		/*
-		if( (parent_of_from != NULL) && 
-		     (nbr[i] == parent_of_from->pt) &&
-			(nbr[i] != from_pt) ) continue;
-			*/
 		DIRECTION dir = pt_relative_pos(moving_to,from_pt);
 		if( visited[x][y][t] == 1 && dir != STAY ) continue; 
 		visited[x][y][t] = 1;
