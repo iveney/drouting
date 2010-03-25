@@ -22,6 +22,7 @@ const int dx[]={-1,1,0,0,0};
 const int dy[]={0,0,1,-1,0};
 extern const char *color_string[];
 
+
 #ifdef DEBUG
 int STALLING_COUNT = 0;
 int MHT_DIFF = 0;
@@ -30,9 +31,6 @@ int MHT_DIFF = 0;
 // parameter to control the searching
 int MAXCFLT=10000;
 int MAX_SINGLE_CFLT=1000;
-
-// 
-bool allow_detour=false;
 
 // static memeber initialization
 Subproblem * Router::pProb=NULL;
@@ -132,14 +130,6 @@ RouteResult Router::solve_subproblem(int prob_idx){
 	// the result to return
 	RouteResult result(this->T,this->W,this->H,this->pProb);
 
-	// heuristic: set the parameter
-	//int div = (pProb->nNet/2);
-	//MAX_SINGLE_CFLT = this->W * this->H * this->T /(div==0?1:div) ;
-	//MAXCFLT = MAX_SINGLE_CFLT;
-
-	//MAX_SINGLE_CFLT = 100;
-	//MAXCFLT = 300;
-
 	// start to route each net according to sorted order
 	nets.clear();
 	nets.insert(nets.begin(),netorder,netorder+netcount);
@@ -149,20 +139,9 @@ RouteResult Router::solve_subproblem(int prob_idx){
 		nets.pop_front();
 		bool success = route_net(which,result);
 		if( success == false ){
-			// occurs only when the first net can not be routed 
-			// change strategy: allow detour to previous arrived
-			// location
-			if( allow_detour == true )
-				report_exit("Error: route failed!");
-			else{
-				// insert this net into queue, re-route it
-				printf("OK: we allow detour now.\n");
-				init();
-				nets.clear();
-				nets.insert(nets.begin(),netorder,netorder+netcount);
-				allow_detour = true;
-				continue;
-			}
+			report_exit("Error: route failed!");
+			// other action may be taken here, e.g., random shuffle
+			// net order
 		}
 		result.path[which].routed=true;
 		routed_count++;
@@ -434,10 +413,7 @@ bool Router::route_subnet(Point src,Point dst,
 				success = true;
 				break;
 			}
-			// could not stay at sink point now...
-			//else{
-			//	continue;
-			//}
+			// else, could not stay at sink point now
 		}//end of if(current_pt=dst)
 
 		// sink not found, continue to search here...
@@ -451,7 +427,7 @@ bool Router::route_subnet(Point src,Point dst,
 		if( (remain_dist > time_left) || (t > this->T) ){
 			if( p.size() != 0 ) continue;
 			else{// fail,try rip-up and re-route
-				cerr<<"Warning: time left="<<this->T
+				cerr<<"Give up: time left="<<this->T
 				    <<", remaining MHT="<<remain_dist<<endl;
 				success = false;
 				break;
@@ -621,19 +597,6 @@ int Router::choose_ripped(int which, RouteResult & result,
 			report_exit("Infinite loop 1");
 	}
 	counter=0;
-	/*
-	for(int i=0;i<conflict_net.net_num;i++){
-		// put all routed net id (except the last ripper) into a set
-		if (i == which)
-			printf("%d not put because itself\n",i);
-		else if( result.path[i].routed ==false )
-			printf("%d not put because not route\n",i);
-		else if ( i==last_ripper_id )
-			printf("%d not put because last_ripper\n",i);
-		else
-			 routed.push_back(i);
-	}
-	*/
 	
 	// don't rip itself, and don't rip the one that was the last ripper
 	// if unfortunately the to_rip_id is in either case, just randomly pick 
@@ -648,18 +611,6 @@ int Router::choose_ripped(int which, RouteResult & result,
 		to_rip_id=routed[rand()%routed.size()];
 	}
 	
-	/*
-	while( to_rip_id == which || to_rip_id == last_ripper_id ||
-		result.path[to_rip_id].timing < 0)
-	{
-		to_rip_id = rand() % conflict_net.net_num;
-		if( counter++ > MAX_COUNTER ) {
-			printf("which=%d,to_rip_id=%d,last_ripper=%d",
-					which,to_rip_id,last_ripper_id);
-			report_exit("Infinite loop 2");
-		}
-	}
-	*/
 	return to_rip_id;
 }
 
@@ -808,24 +759,19 @@ bool Router::propagate_nbrs(int which, int pin_idx,GridPoint * gp_from,
 			continue;
 		}
 
-		/*
-		// bending update
-		if( parent_of_from != NULL &&
-		    check_bending(moving_to,parent_of_from->pt) == true )
-			bending++; */
-		
 		// length update, now ignore it here
 		int newlen = gp_from->length;
-		if( pt_relative_pos(moving_to,from_pt) != STAY )
-			++newlen;
-		assert(newlen>=0);
-		//cout<<"len="<<newlen;
+		if( dir != STAY ) ++newlen;
 #ifdef NOLENGTH
 		newlen=0; // force to 0
 #endif
 
 		// cell used update
-		double cell = (cell_used[x][y]>0)?0.0:1.0;
+		double cell;
+		if (cell_used[x][y]>0 || dir==STAY)
+			cell=0.0;
+		else
+			cell=1.0;
 		cell*=CELL_FACTOR;
 
 		/*double cell = CELL_FACTOR*(subnet_count - cell_used[x][y]);*/

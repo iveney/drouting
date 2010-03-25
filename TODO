@@ -1,3 +1,18 @@
+PROBLEM:
+seems that in the current implementation:
+when computing the weight of a grid
+the cell_used is not correct
+it only considers the cell used by previous nets
+without considering the cell it is using
+
+in this sense, stalling is good because it uses cell at most to moving
+to different cell
+ - so maybe I use length to measure this?
+
+but its very hard to keep this information, because you need to keep one
+for every different route
+
+any simpler idea?
 -------------------------------------------------------------------------------
 1. 3-pin net
 2. other heuristics about net ordering
