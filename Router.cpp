@@ -144,8 +144,6 @@ RouteResult Router::solve_subproblem(int prob_idx){
 	while( !nets.empty() ){
 		int which = nets.front();
 		nets.pop_front();
-		// TEST: reset last ripper here
-		last_ripper_id=-1;
 		bool success = route_net(which,result);
 		if( success == false ){
 			// first net can not be routed means fail
