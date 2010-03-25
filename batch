@@ -23,5 +23,5 @@ echo -n > "$OUTNAME"
 
 # column1 = cell used , column2 = run time
 time ./main "$FILENAME" > check 2>&1 
-cat check | awk '/used/ {printf("%d ",$6)} /max/ {printf("%d\n",$4)}' > "$OUTNAME"
+cat check | awk '/used/ {printf("%d ",$6)} /max / {printf("%d\n",$4)}' > "$OUTNAME"
 exit 0
