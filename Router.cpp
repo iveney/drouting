@@ -697,7 +697,7 @@ bool Router::ripup_reroute(int which,RouteResult & result,
 	conflict_net =  ConflictSet(conflict_net.net_num);
 
 	// find there index in netorder
-	int rip_netid_inorder,which_id_inorder;
+	int rip_netid_inorder=-1,which_id_inorder=-1;
 	for(int i = 0; i < netcount; i++) {
 		if( netorder[i] == rip_netid) rip_netid_inorder = i;
 		if( netorder[i] == which) which_id_inorder = i;

@@ -6,11 +6,12 @@ OBJ=$(SRC:.cpp=.o)
 BIN=main
 DBG=debug
 PARSER=parser
-OPT=-Wall -g #-DPRINT_HEAP 
+OPT=-Wall -O3 #-DPRINT_HEAP 
+DBGOPT=-Wall -g -DDEBUG #-DPRINT_HEAP 
 
 main: $(OBJ) main.o tags
 	@echo "Making main..."
-	$(CC) $(OPT) -o $(BIN) $(OBJ) main.o
+	$(CC) -Wall -o $(BIN) $(OBJ) main.o
 
 compare: $(OBJ) main.o
 	$(CC) -c $(OPT) Router.cpp
@@ -27,8 +28,8 @@ all: parser main debug
 
 debug: $(OBJ) main.cpp
 	@echo "Making debug..."
-	$(CC) -c $(OPT) -DDEBUG $(SRC) main.cpp
-	$(CC) $(OPT) -o $(DBG) $(OBJ) main.o
+	$(CC) -c $(DBGOPT) $(SRC) main.cpp
+	$(CC) $(DBGOPT) -o $(DBG) $(OBJ) main.o
 
 %.o: %.cpp  %.h
 	$(CC) -c $< $(OPT) -o $@

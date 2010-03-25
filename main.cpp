@@ -25,11 +25,12 @@ int main(int argc, char * argv[]){
 	clock_t start = clock();
 	router.solve_cmdline();
 	clock_t end = clock();
+	clock_t time_used = end-start;
 
 	// print the time used in solving the problem
 #ifdef DEBUG
 	FILE * f=fopen("usetime","w");
-	fprintf(f,"%ld\n",end-start);
+	fprintf(f,"%ld\n",time_used);
 	fclose(f);
 #endif
 	return 0;
