@@ -17,7 +17,12 @@ using std::vector;
 // Note that it is wrapped by a macro `report_exit'
 // Do NOT use this directly.
 void _report_exit(const char *location, const char *msg){
+// don't output file name in release version
+#ifdef DEBUG
 	  fprintf(stderr,"Error at %s: %s\n", location, msg);
+#else
+	  fprintf(stderr,"%s\n", msg);
+#endif
 	  exit(1);
 }
 

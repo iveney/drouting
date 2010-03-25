@@ -2,7 +2,7 @@
 // main entrance of the program
 //
 // Author : Xiao Zigang
-// Modifed: < Tue Mar 17 10:39:54 HKT 2009 >
+// <Thu Mar 25 10:27:39 CST 2010>
 // ----------------------------------------------------------------//
 
 #include <iomanip>
@@ -26,9 +26,11 @@ int main(int argc, char * argv[]){
 	router.solve_cmdline();
 	clock_t end = clock();
 
-	// TEST: print the time used in solving the problem
+	// print the time used in solving the problem
+#ifdef DEBUG
 	FILE * f=fopen("usetime","w");
 	fprintf(f,"%ld\n",end-start);
 	fclose(f);
+#endif
 	return 0;
 }

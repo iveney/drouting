@@ -22,9 +22,11 @@ void end_figure(FILE * fig,int time){
 void draw_voltage(const RouteResult & result,const Chip & chip,
 		const char *filename){
 	// fill in template header
-	//const char * fn = filename.c_str();
+	// const char * fn = filename.c_str();
+#ifdef DEBUG
 	printf("output to %s\n",filename);
-	char cmd[100];
+#endif
+	char cmd[MAXBUF];
        	sprintf(cmd,"cat result_header.tex > %s",filename);
 	system(cmd);
 

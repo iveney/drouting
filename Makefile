@@ -6,7 +6,7 @@ OBJ=$(SRC:.cpp=.o)
 BIN=main
 DBG=debug
 PARSER=parser
-OPT=-Wall -g  #-DPRINT_HEAP 
+OPT=-Wall -g #-DPRINT_HEAP 
 
 main: $(OBJ) main.o tags
 	@echo "Making main..."

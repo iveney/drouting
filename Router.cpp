@@ -22,7 +22,7 @@ const int dx[]={-1,1,0,0,0};
 const int dy[]={0,0,1,-1,0};
 extern const char *color_string[];
 
-#ifndef NOCOUNTING
+#ifdef DEBUG
 int STALLING_COUNT = 0;
 int MHT_DIFF = 0;
 #endif
@@ -53,15 +53,18 @@ Router::~Router(){
 void Router::read_file(int argc, char * argv[]){
 	FILE * f;
 	// now only allows to solve a given subproblem
-	if(argc<2) report_exit("Usage ./main filename [subproblem]\n");
+	if(argc<2) report_exit("Usage: CrossRouter filename [subproblem id]");
 
 	//const char * filename = argv[1];
 	filename = string(argv[1]);
 
 	if( argc == 3 ) tosolve = atoi(argv[2]);
 	else            tosolve = -1;   // not given in cmdline, solve all
-	if( (f = fopen(filename.c_str(),"r")) == NULL )
-		report_exit("open file error\n");
+	if( (f = fopen(filename.c_str(),"r")) == NULL ){
+		char buf[MAXBUF];
+		sprintf(buf,"Open file '%s' error",filename.c_str());
+		report_exit(buf);
+	}
 	read=true;
 	parse(f,&chip); // now `chip' stores subproblems
 	fclose(f);
@@ -111,7 +114,7 @@ void Router::init(){
 RouteResult Router::solve_subproblem(int prob_idx){
 	if( read == false ) report_exit("Must read input first!");
 	if( prob_idx > this->chip.nSubProblem ) 
-		report_exit("subproblem id out of bound!");
+		report_exit("Subproblem id out of bound!");
 	cout<<"--- Solving subproblem ["<<prob_idx<<"] ---"<<endl;
 
 	pProb = &chip.prob[prob_idx];
@@ -133,7 +136,6 @@ RouteResult Router::solve_subproblem(int prob_idx){
 
 	//MAX_SINGLE_CFLT = 100;
 	//MAXCFLT = 300;
-	
 
 	// start to route each net according to sorted order
 	nets.clear();
@@ -142,27 +144,31 @@ RouteResult Router::solve_subproblem(int prob_idx){
 	while( !nets.empty() ){
 		int which = nets.front();
 		nets.pop_front();
+		// TEST: reset last ripper here
+		last_ripper_id=-1;
 		bool success = route_net(which,result);
 		if( success == false ){
 			// first net can not be routed means fail
 			report_exit("Error: route failed!");
 		}
+		result.path[which].routed=true;
 		routed_count++;
 	}
 
 	// finally, output result
-	cout<<"Subproblem "<<prob_idx<<" solved!"<<endl;
+	cout<<"*** Subproblem ["<<prob_idx<<"] solved! ***"<<endl;
 	output_result(result);
-#ifndef NOCOUNTING
+
+#ifdef DEBUG
 	cerr<<"STALL STEP = "<<STALLING_COUNT<<endl;
 	cerr<<"MHT DIFF = "<<MHT_DIFF<<endl;
-#endif
 
-	// TEST: output result to TeX file
+	// output result to TeX file
 	char buf[MAXBUF];
 	sprintf(buf,"%s_%d_sol.tex",filename.c_str(),prob_idx);
 	draw_voltage(result,chip,buf);
 	cout<<"max time = "<<get_maxt()<<" "<<endl;
+#endif
 
 	return result ;
 }
@@ -177,7 +183,7 @@ void Router::output_result(RouteResult & result){
 		const NetRoute & net_path = result.path[i];
 		// for each subnet in a net
 		for (j = 0; j < net_path.num_pin-1; j++) {
-#ifndef NOCOUNTING
+#ifdef DEBUG
 			Point src = get_pinpt(i,j);
 			Point dst = get_netdst_pt(i);
 			Pin src_pin,dst_pin;
@@ -194,7 +200,7 @@ void Router::output_result(RouteResult & result){
 				cout<<"\t"<<k<<":"
 				<<route[k]<<endl;
 				int x = route[k].x, y = route[k].y;
-#ifndef NOCOUNTING
+#ifdef DEBUG
 				// count the stalling 
 				if( k>0 && route[k] != dst && 
 				    route[k] == route[k-1] ){
@@ -216,7 +222,7 @@ void Router::output_result(RouteResult & result){
 					used_cell[x][y]=1;
 				}	
 			}
-#ifndef NOCOUNTING
+#ifdef DEBUG
 			MHT_DIFF += diff;
 			cerr<<"net("<<i<<","<<j<<") DIFF = "<<diff<<endl;
 #endif
@@ -225,7 +231,9 @@ void Router::output_result(RouteResult & result){
 		count-=pProb->net[i].numPin; 
 	}
 	output_voltage(result);
+#ifdef DEBUG
 	cout<<"**** total cell used : "<<count<<" *****"<<endl;
+#endif
 }
 
 // output the voltage assignment
@@ -435,9 +443,8 @@ bool Router::route_subnet(Point src,Point dst,
 		if( (remain_dist > time_left) || (t > this->T) ){
 			if( p.size() != 0 ) continue;
 			else{// fail,try rip-up and re-route
-				cerr<<"t= "<<this->T
-				    <<" MHT="<<remain_dist
-				    <<" Exceed route time!"<<endl;
+				cerr<<"Warning: time left="<<this->T
+				    <<", remaining MHT="<<remain_dist<<endl;
 				success = false;
 				break;
 			}
@@ -481,10 +488,11 @@ bool Router::route_net(int which,RouteResult &result) {
 
 		if( success == false ){
 			// first net can not be route: routing failed
+			// NOTE: change strategy: allow detour now
 			if(netorder[0]==which) return false;
 
-			cerr<<"** Error: route net["<<which
-			    <<"] failed,ripup-reroute ..."<<endl;
+			cerr<<"** Warning: route net["<<which
+			    <<"] failed, try ripup-reroute **"<<endl;
 			bool ret;
 			ret = ripup_reroute(which,result,conflict_net);
 			if( ret == false ) return false;
@@ -493,12 +501,10 @@ bool Router::route_net(int which,RouteResult &result) {
 			//cout<<"after rip"<<endl;
 			//output_result(result);
 			cout<<"re-route net ["<<which<<"]"<<endl;
-
-			// `which' becomes the last ripper
-			last_ripper_id = which; 
 		}
 	}while(success == false); // keeps routing it...
 
+	// routing succeed
 	return true;
 }
 
@@ -567,47 +573,80 @@ int Router::choose_ripped(int which, RouteResult & result,
 		const ConflictSet & conflict_net){
 	// first calculate the probabilities
 	int chance[MAXNET];
-	int sum=0;
 	memset(chance,0,sizeof(chance));
+	vector<int> routed;
 
-	// calculate the accumulative count
+	// compute each 'accumulative' ripup probabilites of each net
+	// NOTE: sometimes, the unroutable net is not caused by other nets(really?)
+	// then the chances of all nets and sum will be 0
+	// Give a base probability of 1 to each net except itself
+	// Don't give chance to the last_ripper
 	for(int i=0;i<conflict_net.net_num;i++){
-		chance[i] = sum+conflict_net.conflict_count[i];
-		sum+=conflict_net.conflict_count[i];
+		// don't need to compute the net being routed
+		int base=0;
+		if(i!=0) base=chance[i-1];
+		chance[i]=base;
+		if( i!=which && i!=last_ripper_id )
+			chance[i]+=1+conflict_net.conflict_count[i];
 		//printf("chance[%d]=%d\n",i,chance[i]);
+		
+		// put all routed net id (except the last ripper) into a set
+		if( result.path[i].routed == true && i!=last_ripper_id)
+			routed.push_back(i);
 	}
 
-	int div;
-	if(conflict_net.total == 0 ){
-		//printf("Floating point\n");
-		div = MAXNET;
-	}
-	else
-		div = conflict_net.total;
-	const int drawlot = rand()%conflict_net.total;
-	//printf("lot = %d, total = %d\n",drawlot,conflict_net.total);
-	int to_rip_id=0;
-	int counter=0;
-	while(1){
+	int sum=chance[conflict_net.net_num-1];
+	const int drawlot = rand()%sum;
+	//printf("lot = %d, sum = %d\n",drawlot,sum);
+	int to_rip_id=0, counter=0;
+	while(1){// see which slot the lottery is in
 		if( drawlot >= chance[to_rip_id] )
 			to_rip_id++;
 		else
 			break;
-		if( counter++ > 10000 ) 
-			report_exit("infinite loop here");
+		if( counter++ > MAX_COUNTER ) 
+			report_exit("Infinite loop 1");
 	}
 	counter=0;
-	if( to_rip_id == which || to_rip_id == last_ripper_id ){
-		do{
-			to_rip_id = rand() % conflict_net.net_num;
-			if( counter++ > 10000 ) {
-				printf("which=%d,to_rip_id=%d,last_ripper=%d",which,to_rip_id,last_ripper_id);
-				report_exit("infinite loop here");
-			}
-		}while( to_rip_id == which ||
-			to_rip_id == last_ripper_id ||
-			result.path[to_rip_id].timing <= 0);
+	/*
+	for(int i=0;i<conflict_net.net_num;i++){
+		// put all routed net id (except the last ripper) into a set
+		if (i == which)
+			printf("%d not put because itself\n",i);
+		else if( result.path[i].routed ==false )
+			printf("%d not put because not route\n",i);
+		else if ( i==last_ripper_id )
+			printf("%d not put because last_ripper\n",i);
+		else
+			 routed.push_back(i);
 	}
+	*/
+	
+	// don't rip itself, and don't rip the one that was the last ripper
+	// if unfortunately the to_rip_id is in either case, just randomly pick 
+	// one that was routed 
+	if( to_rip_id == which || to_rip_id == last_ripper_id ||
+		result.path[to_rip_id].routed ==false ){
+		//printf("last_rip=%d, choose from: ", last_ripper_id);
+		//for(unsigned int i=0;i<routed.size();i++)
+			//printf("%d ",routed[i]);
+		//printf("\n");
+		if(routed.size() == 0 ) return -1; // failed to choose
+		to_rip_id=routed[rand()%routed.size()];
+	}
+	
+	/*
+	while( to_rip_id == which || to_rip_id == last_ripper_id ||
+		result.path[to_rip_id].timing < 0)
+	{
+		to_rip_id = rand() % conflict_net.net_num;
+		if( counter++ > MAX_COUNTER ) {
+			printf("which=%d,to_rip_id=%d,last_ripper=%d",
+					which,to_rip_id,last_ripper_id);
+			report_exit("Infinite loop 2");
+		}
+	}
+	*/
 	return to_rip_id;
 }
 
@@ -617,33 +656,34 @@ int Router::choose_ripped(int which, RouteResult & result,
 bool Router::ripup_reroute(int which,RouteResult & result,
 		ConflictSet &conflict_net){
 	// --- cancel the route result of some conflict net
-	// --- now use the most conflict net=`max_id'
-	// int max_id = conflict_net.max_id;
-	// assert(max_id>=0);
+	// --- now use the most conflict net=`rip_netid'
+	// int rip_netid = conflict_net.rip_netid;
+	// assert(rip_netid>=0);
 
 	// what about for 3-pin net that is causing constraint on itself?
-	// assert(max_id!=which);
 
-	int max_id;
-	//printf("max = %d\n",conflict_net.max_id);
+	int rip_netid;
 
 	// draw a lot to decide which net to rip
-	//do{
-		max_id = choose_ripped(which,result,conflict_net);
-		printf("DEBUG: which = %d, max_id = %d, last = %d\n",
-				which,max_id,last_ripper_id);
-	//}while(max_id == which || max_id == last_ripper_id);
+	rip_netid = choose_ripped(which,result,conflict_net);
+#ifdef DEBUG
+	printf("DEBUG: which = %d, rip_netid = %d, last = %d\n",
+			which,rip_netid,last_ripper_id);
+#endif
 
-	assert( max_id >=0 );
+	if( rip_netid < 0 ) return false;
 
-	cout<<"** ripping net "<<max_id<<",conflict count="
-	    <<conflict_net.conflict_count[max_id]
-	    <<" last ripper = "<<last_ripper_id<<" **"<<endl;
+	cout<<"** ripup net ["<<rip_netid<<"]";
+#ifdef DEBUG
+	cout<<" conflict count="<<conflict_net.conflict_count[rip_netid]
+	    <<" last ripper = "<<last_ripper_id;
+#endif
+	cout<<" **"<<endl;
 
 	// remember to clear the cell used counting of it
-	for (int i=0;i<result.path[max_id].num_pin-1;i++) {
+	for (int i=0;i<result.path[rip_netid].num_pin-1;i++) {
 		set<Point>::iterator it;
-		set<Point> & use = result.path[max_id].cellset[i];
+		set<Point> & use = result.path[rip_netid].cellset[i];
 		for (it=use.begin();it!=use.end();++it) {
 			Point pt=(*it);
 			--cell_used[pt.x][pt.y];
@@ -651,25 +691,25 @@ bool Router::ripup_reroute(int which,RouteResult & result,
 	}
 
 	// need to remove the cell used by it also
-	result.path[max_id].clear(); // cancel the routed path
+	result.path[rip_netid].clear(); // cancel the routed path
 
 	// clear the conflict result of this net
 	conflict_net =  ConflictSet(conflict_net.net_num);
 
 	// find there index in netorder
-	int max_id_inorder,which_id_inorder;
+	int rip_netid_inorder,which_id_inorder;
 	for(int i = 0; i < netcount; i++) {
-		if( netorder[i] == max_id) max_id_inorder = i;
+		if( netorder[i] == rip_netid) rip_netid_inorder = i;
 		if( netorder[i] == which) which_id_inorder = i;
 	}
 
-	// re-push into queue(so that re route `max_id')
-	nets.push_front(max_id);
+	// re-push into queue(so that re route `rip_netid')
+	nets.push_front(rip_netid);
 
 	// re-order route order
 	IntVector temp(netorder,netorder+netcount);
-	temp.erase(temp.begin()+max_id_inorder);          //remove net=max
-	temp.insert(temp.begin()+which_id_inorder,max_id);//insert after which
+	temp.erase(temp.begin()+rip_netid_inorder);          //remove net=max
+	temp.insert(temp.begin()+which_id_inorder,rip_netid);//insert after which
 	copy(temp.begin(),temp.end(),netorder);
 
 	// remove the edges caused by this net in the graph
@@ -678,7 +718,7 @@ bool Router::ripup_reroute(int which,RouteResult & result,
 	allocate_graph();
 	for (int i=0;i<netcount && netorder[i]!=which; i++) {
 		int checking_idx = netorder[i];
-		//if( i == max_id_inorder ) continue; // do not add this net
+		//if( i == rip_netid_inorder ) continue; // do not add this net
 		const NetRoute & route = result.path[checking_idx];
 		for(int j=0;j<route.num_pin-1;j++){
 			const PtVector & pin_path = 
@@ -687,6 +727,9 @@ bool Router::ripup_reroute(int which,RouteResult & result,
 			update_graph(checking_idx,j,pin_path,result);
 		}
 	}
+
+	// `which' becomes the last ripper
+	last_ripper_id = which; 
 
 	//`which' moved one place before in netorder
 	//return which_id_inorder-1;
@@ -1300,7 +1343,6 @@ ResultVector Router::solve_cmdline(){
 		route_result.push_back(solve_subproblem(tosolve));
 	return route_result;
 }
-
 
 // returns the maximum time used
 int Router::get_maxt() const{

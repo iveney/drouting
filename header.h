@@ -38,6 +38,7 @@ const int MAXHEAPSIZE=2<<20;
 const double EPSILON = 0.000000001;
 const double CELL_FACTOR = 10;
 //const double CELL_FACTOR = 1.5;
+const int MAX_COUNTER=500;
 enum CORNER{LL,UR};
 
 class Point{// a point denote by (row,col)

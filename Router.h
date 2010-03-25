@@ -32,7 +32,7 @@ public:
 	// increment a net's count by 1
 	void increment(int net_id){
 		int tmp = ++conflict_count[net_id];
-		total++;
+		++this->total;
 		if( max_id == -1 || conflict_count[max_id] < tmp ){
 			// update max conflict net
 			max_id = net_id;
@@ -63,6 +63,7 @@ struct NetRoute{
 	NetRoute(int netidx,int pin_num,int timing_):idx(netidx),
 	num_pin(pin_num),timing(timing_),merge_time(-1) {
 		reach_time[0]=reach_time[1]=-1;
+		routed=false;
 	}
 	void clear(){
 		pin_route[0].clear();
@@ -74,17 +75,18 @@ struct NetRoute{
 		reach_time[0]=reach_time[1]=-1;
 		merge_time=-1;
 		timing=-1;
+		routed=false;
 	}
 	int idx;	// this net's id
 	int num_pin;    // net pins,be 2 or 3
-	int timing;     // total time used
+	int timing;     // timing constraint( what's the usage? )
 	int merge_time; // merge time for this net
 	// The route location of this net,
 	// at most 3pin, hence only two elements
 	PtVector pin_route[2]; 
 	int reach_time[2]; // the time a droplet finishes routing
 	set<Point> cellset[2];
-	//bool routed;    // marks if this net is routed
+	bool routed;    // marks if this net is routed
 };
 
 // the class to stores the final routing result

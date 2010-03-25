@@ -1,17 +1,267 @@
-1. check all the results, summarize problems(check the analysis_xxx file inside results/BENCH_NAME/)
-seems that now only DATE06_3 subproblem 1 has sth. strange
+-------------------------------------------------------------------------------
+1. 3-pin net
+2. other heuristics about net ordering
+3. cell used?
+-------------------------------------------------------------------------------
+about cell used:
+now use (nNet- net using this net) as weight
+but since for the same path, it will not better even multiple net
+use it
+for two path, it is better
 
-seems that it is because somehow the programe will not push stalling at the same point for continuous time step...
+in my idea, I think it better to be implemented as a switch 
+e.g. if the cell is used, add 0 weight
+otherwise add a penalty
+or sth. like that proportionally
+-------------------------------------------------------------------------------
+For DATE06_3, problem 1, if net 0 can stall for more time, 
+the cell used should be minimized
 
-2. Evan's Idea: try to multiply a factor to the term ``cell used weight'' to
-adjust the final weight
-(DONE)
+For DATE06_3, problem 2, check how minsik implemented it
+FOR DATE06_3, problem 3, actually for net 4, they can merge at (10,7) 
+FOR DATE06_3, problem 8, why not droplet 0 stays at src point? but move
+to (1,10) and move back??
+answer:
+because stalling at the same point and moving to (1,10) and move back
+has the same weight!! while in my implementation, the 2nd one has been pushed 
+to stack more recently, and will be chosen first!
 
-3. 3-pin net(no idea)
+-------------------------------------------------------------------------------
+ask a-fu about the 45 degree MHT line, equal length route to the given two
+point as their merge point.  if the sink is inside/ on the boundary of the
+bounding box, choose sink as merge point, otherwise use some pt in BB.
 
-4. try to modify the code so that it can run ISPD08's hard cases
-max block: 12
-max grid : 48
-max net  : 48
-max time : 100
-no 3-pin net
+-------------------------------------------------------------------------------
+for some cases, it is very slow
+what about set a constraint: when MHT=timing constraint, do not stall
+THE PROBLEM IS: the manhattance distance we calculated do not considered
+blockage!!
+what about use my source code in CTS
+-------------------------------------------------------------------------------
+IMPORTANT:
+since for 3pin net, electrode conflict might happen between them
+which increases conflict count of the net they belong
+hence may get a rip-up net idx equal themselve!
+
+IMPORTANT:
+for case DAC05 56
+electrode interference happens for net 2
+maybe that is because lack of chekcing electrode constraint after it
+stops there
+-------------------------------------------------------------------------------
+problem:
+if several nets are stalling outside th WAT(waiting to disappear)
+many conflict will be caused
+what about cancel some conflict by detecting if the causer is stalling?
+
+deadlock breaking
+if going to rip up the one rip up itself previously,
+try to rip up another net: second-most
+-------------------------------------------------------------------------------
+one question
+when checking electrode constraint
+what if one of the droplet's adjacent cell is blockage?
+shall we check whether it will be extra activated?
+NOW loose our constraint: do not check it
+-------------------------------------------------------------------------------
+IMPORTANT:!!!!!!!!!!!!!!!!!!!!!!!!
+if some net i's dest near some net j's src,
+if we route net i first, it is impossible for it to stay at dest!!
+
+it can be solved if j is going away before i moves near it
+-------------------------------------------------------------------------------
+now:
+1. test if can queue in to waste disposal point
+2. test merge of 3-pin net
+-------------------------------------------------------------------------------
+wanna to implement a visualizer for the cross-routing result,
+including the functionality: for **each time frame** of the result,
+(hence the output file contains T pages)
+* draw activation cells,rows,columns draw droplet current position(or
+* movement)
+-- DONE
+-------------------------------------------------------------------------------
+added a very loose condition, don't know if any error: if two droplet
+sharing col/row when moving(activate the electrode on that row/col)
+don't check their type 2 constraint
+-------------------------------------------------------------------------------
+IMPORTANT: idea of avoiding useless propagation: do not propagate
+again the cells that have been reached in a route.  e.g.
+A->B->C->D->... ->B is not allowed since B is contained in the path
+cons:how to implement efficiently
+-------------------------------------------------------------------------------
+IMPORTANT: during the dectection of `see whether it can stay in
+destination', we should also check electrode constraint during the
+fluidic check
+also need to checki if path[t]  affect checking[t-1]
+-------------------------------------------------------------------------------
+*how to know what nets are affecting it when coloring?
+
+*how to do ripup? how to know what edge to remove?
+I guess there will be not much rip-up and reroute
+and re-do coloring is very fast
+so just remove all things in the graph, and re-add all edges
+NOTE: now seems need to rip up all the net before the current routing net
+-------------------------------------------------------------------------------
+* an idea to speed up fluidic constraint check
+use 3D bitmap to mark the forbidden cell occupied by the routed nets i.e. do
+not need to check it one net by one net
+
+1. use add_bitmap to add a routed net based on previous 3D bitmap 2. if rip-up
+re-route, bitmap need to reconstruct, (is it ok to just remove existing route
+for that net?  suppose NOT, then can clear the 3Dbitmap first, and use
+add_bitmap to re-add all routed net but the ripped net)
+
+-------------------------------------------------------------------------------
+an idea for 3-pin net route_subnet use src and dest as parameter(don't use Net)
+and return a route regarding the previous RouteResult then 3-pin net can be
+modelled as route pin0,pin1 to their merge point first and route merge point to
+sink point,finally store the result into this Net's RouteResult.
+-------------------------------------------------------------------------------
+CHANGE: rewrite the ConstraintGraph class(use matrix) now need to rewrite the
+constraint part in electrode constraint
+
+HOW TO DO rip-up reroute?  Routing net X, keep info. that how many times each
+net will block it use the net which causes most conflict numbers to rip-up
+Detail: when doing propagation, if the net can not move for some reason RESULT:
+sometimes can not find a net that cause this currently just use my method: when
+propagating a gridpoint, every time violation happens, the count for the net
+causing this ++
+-------------------------------------------------------------------------------
+SUMMARY of questions that need to handle:
+** When doing rip-up and re-route, should also remove the voltage assignment
+  1.the same procedure like in electro constraint, however remove edge
+  but not add edge
+see PROBLEM below
+
+  *2.clear all colors and reconstruct the graph (try_do_coloring)
+   this may be correct
+
+  3.keep track of what node/edge has been added by a net,
+    and use this information to delete them -> but also need to know
+    the later routed net's intrduced conflict caused by this net.
+    by using this method, we may also have the information that
+    which net introduced most conflicts
+PROBLEM: if do it like this, there is problem, e.g.
+two droplets use row=5, and both have an edge between row=6
+but if one be ripped up, the edge will be removed,
+however, another droplet still require this conflict
+
+SOLUTION: keep edge count!!  PROBLEM again: when adding constraint, e.g.  for a
+droplet A, droplet B,C will introduce constraint for A, hence there might be 2
+edges when doing checking,i.e. B->C and C->B(but actually they are the same
+edge)
+
+** how to handle the electro constraint of 3-pin net Evan's IDEA: find a merge
+point first, and consider a path with odd number of steps
+
+** 3-pin(multipin) net testing(merging),check how utexas handle
+  my idea:the late net should use the route after merged
+
+** stalling problem of coloring(add dotted line(different edge))
+
+** waste disposal checking(check what?) -- DONE
+
+-------------------------------------------------------------------------------
+2009年 04月 17日 星期五 17:07:23 CST
+NOTE: when a droplet 
+1.stalling
+2.reaches destination and stop there, 
+no need to add voltage assignment on that time step( i.e. coloring )
+
+-------------------------------------------------------------------------------
+2009年 04月 13日 星期一 20:36:14 CST
+IMPORTANT:
+how to treat the waste disposal?  seems that they should be queued in, but
+after reaches at t+1, can disappear at t+1
+
+IMPORTANT NOTE: according to utexas input, they specify the waste disposal
+point in the case
+
+now I added those points into the test case file
+-------------------------------------------------------------------------------
+
+Fri Apr 10 10:59:58 HKT 2009 IMPORTANT: for multipin net/same dest net if they
+can merge earlier, than it can potentially decreases conflict(since droplet
+number is decreased) But we do not know if use this method would increase
+conflict rate or note before they merge!
+
+how to do?  my idea: build MRST, calculate merge point, then route to there,
+and do post processing to finalize the route
+
+problem: if we do it like now.i.e. hierachically route net, for each net for
+each subnet but not
+  decompose net into a series subnet
+  for each subnets
+
+there is sth. we might miss
+1. can not specify the routing order of multi-pin's subnet -- is it important?
+   the order would be pin-0,pin-1...(althought only 3 pin here)
+
+-------------------------------------------------------------------------------
+2009年 04月 08日 星期三 10:27:50 CST
+* important problem:
+  now found out that can not simply fill up the destination point till
+timing constraint, when a droplet reach there(e.g. T=20, droplet 1
+reach dest at t=13,then for t=14 to 20, I just simply fill the route
+with same dest) but other droplet may pass by later, and it might
+blocks the way!
+
+-> proposed solution: add fluidic Check in EVERY time step till timing
+constraint reached.  NOTE: even for the step STALLING, this check
+needs.
+
+Tue Apr  7 13:51:16 HKT 2009
+* 3-pin net rip-up reroute --> 
+  when there is more than 1 net blocking it, how do we know which net
+to choose to rip-up?  is there any good heuristic? or just rip-up all
+net?  is it possible that two net block each other?
+
+* implement Evan's Idea 4 : 2-coloring
+-------------------------------------------------------------------------------
+3-24
+* implement Evan's Idea 1 -- DONE write class about routing result --
+* DONE How to terminate a net-routing if it take too long a time?
+
+Evan's Idea: 1. delete electro/fluidic penalty, when encounter such a
+case, just do not put into heap 2. stalling problem. whether to add
+stall at each step or add it when no grid to go?  3. how to avoid
+propagating the same cell(is it matter when GridPoint has a same
+pt,but different time? or same time) 4. think about how to use
+2-coloring 5. is bending really matter?  6. how to make use of electro
+detection? (for some routed nets, there exist some feasible assignment
+of voltage, and may be more than one configuration, how to avoid
+totally re-do the 2-coloring?
+
+TODO:
+* note that a cell that was propagated is not nessessary to be
+* propagated again
+  however, if the cell is reached before at time A, and reached at
+another time B 1. A<=B , no need to propagate 2. A>B  , can propagate
+
+* implement a priority queue for use!
+  since STL manual says that priority_queue can not be raondomly
+accessed have to implement a heap by own, or wrap make_heap sort_heap
+into a custom class
+
+* how to denote a node's parent?
+  is it reasonable to use Reference Type in C++ in the class?  or use
+map + macro to find its parent?  one idea is tha map is a static
+member in the class, which stores all the mapping and use a method to
+return current object's parent BUT:  map has to declare the type, but
+the definition of this class is not ended!
+
+* what is the definition of parent?
+  Position + time already enough?
+    3
+    |
+  1-2
+
+  2-3
+  |
+  1
+
+ for both case, 3 is two bend with time = 3, position the same
+ but its parent is different!
+ HENCE: it's neccessary to let different obj have own parent
+
