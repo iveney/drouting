@@ -7,7 +7,7 @@ BIN=main
 DBG=debug
 PARSER=parser
 OPT=-Wall -O3
-DBGOPT=-Wall -g -DDEBUG #-DPRINT_HEAP #-DNOLENGTH 
+DBGOPT=-Wall -O3 -g -DDEBUG #-DPRINT_HEAP #-DNOLENGTH 
 
 main: $(OBJ) main.o tags
 	@echo "Making main..."

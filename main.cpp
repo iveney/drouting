@@ -6,7 +6,9 @@
 // ----------------------------------------------------------------//
 
 #include <iomanip>
+#include <string>
 #include <iostream>
+#include <fstream>
 #include <vector>
 #include <time.h>
 #include <stdlib.h>
@@ -17,6 +19,7 @@
 using std::vector;
 using std::endl;
 using std::cout;
+using std::ofstream;
 
 int main(int argc, char * argv[]){
 	srand(time(NULL));
@@ -27,11 +30,13 @@ int main(int argc, char * argv[]){
 	clock_t end = clock();
 	clock_t time_used = end-start;
 
-	// print the time used in solving the problem
 #ifdef DEBUG
-	FILE * f=fopen("usetime","w");
-	fprintf(f,"%ld\n",time_used);
-	fclose(f);
+	// print the time used in solving the problem
+	string filename(argv[1]);
+	filename+=".usetime";
+	ofstream fout(filename.c_str());
+	fout<<time_used;
+	fout.close();
 #endif
 	return 0;
 }

@@ -427,7 +427,7 @@ bool Router::route_subnet(Point src,Point dst,
 		if( (remain_dist > time_left) || (t > this->T) ){
 			if( p.size() != 0 ) continue;
 			else{// fail,try rip-up and re-route
-				cerr<<"Give up: time left="<<this->T
+				cerr<<"Give up: time left="<<time_left
 				    <<", remaining MHT="<<remain_dist<<endl;
 				success = false;
 				break;
