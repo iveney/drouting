@@ -17,6 +17,7 @@ using std::endl;
 using std::sort;
 using std::setw;
 using std::string;
+using std::random_shuffle;
 
 const int dx[]={-1,1,0,0,0};
 const int dy[]={0,0,1,-1,0};
@@ -31,6 +32,9 @@ int MHT_DIFF = 0;
 // parameter to control the searching
 int MAXCFLT=10000;
 int MAX_SINGLE_CFLT=1000;
+
+const int MAX_TRYTIME=5;
+int tried_time=0;
 
 // static memeber initialization
 Subproblem * Router::pProb=NULL;
@@ -138,10 +142,14 @@ RouteResult Router::solve_subproblem(int prob_idx){
 		int which = nets.front();
 		nets.pop_front();
 		bool success = route_net(which,result);
-		if( success == false ){
+		if( success == false && tried_time++ < MAX_TRYTIME ){
 			report_exit("Error: route failed!");
 			// other action may be taken here, e.g., random shuffle
 			// net order
+			init();
+			nets.clear();
+			nets.insert(nets.begin(),netorder,netorder+netcount);
+			random_shuffle(nets.begin(),nets.end());
 		}
 		result.path[which].routed=true;
 		routed_count++;
