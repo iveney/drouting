@@ -6,7 +6,7 @@ tags
 debug
 parser
 main
-util/*.tex
+util/DA*.tex
 util/*.pdf
 util/*.out
 util/*.bak
