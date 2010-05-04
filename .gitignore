@@ -6,15 +6,9 @@ tags
 debug
 parser
 main
-util/DA*.tex
-util/*.pdf
-util/*.out
-util/*.bak
-util/*.log
-util/*.aux
 cscope.files
 *.pdf
-*.tex
 *.aux
 *.out
 *.log
+*.tex
