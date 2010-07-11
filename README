@@ -1,5 +1,33 @@
+// readme file of CrossRouter source folder
+
+
+Makefile:
 debug version: debug
 release version: release
 
 debug version will output all the information and write the solution of each 
 subproblem to a tex file
+
+
+Folders:
+- ASPDAC10_expr/
+- ILP_placement/
+- ISPD10_expr/
+- ISPD_benchmark_minsik/
+- Makefile
+
+
+Script files:
+There are several script files for various kinds of usages.
+
+- allbatch
+- batch
+- batch.sh
+- clean.sh
+- evaluate.sh
+- parser
+- result_footer.tex
+- result_header.tex
+- run.sh
+- util
+- wrap.sh
