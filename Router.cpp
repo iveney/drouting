@@ -216,19 +216,23 @@ void Router::output_result(RouteResult & result){
 					cerr<<"detour:"<<route[k]<<endl;
 				}
 				// END of counting
-#endif
-				if( used_cell[x][y] == 0 ){
+				if( used_cell[x][y] == 0 && 
+				    route[k] != src &&
+				    route[k] != dst ){
 					count++;
 					used_cell[x][y]=1;
 				}	
+#endif
 			}
 #ifdef DEBUG
 			MHT_DIFF += diff;
 			cerr<<"net("<<i<<","<<j<<") DIFF = "<<diff<<endl;
 #endif
 		}
-		// trick: do not count the pin into cell used
-		count-=pProb->net[i].numPin; 
+		// do not count the pin into cell used
+		// count-=pProb->net[i].numPin; 
+		// note that in some subproblems, there is not any movement
+		//if(count<0) count=0; 
 	}
 	output_voltage(result);
 #ifdef DEBUG

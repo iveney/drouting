@@ -8,6 +8,7 @@ fi
 
 FILENAME="$1"
 OUTNAME="$FILENAME".result
+LOG="$FILENAME".log
 if [ ! -f "$FILENAME" ];then
 	echo "File not exist!"
 	exit 1
@@ -21,8 +22,12 @@ fi
 echo running "$FILENAME", subproblem count = "$NUMSUBPROBLEMS"
 echo output to "$OUTNAME"
 echo -n > "$OUTNAME"
+echo log file is "$LOG"
 
 # column1 = cell used , column2 = run time
-time ./debug "$FILENAME" > check 2>&1 
-cat check | awk '/used/ {printf("%d ",$6)} /max / {printf("%d\n",$4)}' > "$OUTNAME"
+time ./debug "$FILENAME" > $LOG 2>&1 
+cat $LOG | awk '/used/ {printf("%d ",$6)} /max / {printf("%d\n",$4)}' > "$OUTNAME"
+
+# output evaluation result
+./evaluate.sh $FILENAME
 exit 0
