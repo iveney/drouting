@@ -6,6 +6,7 @@ OBJ=$(SRC:.cpp=.o)
 BIN=main
 DBG=debug
 PARSER=parser
+DRAWROUTE=droute_draw
 OPT=-Wall -O3
 DBGOPT=-Wall -O3 -g -DDEBUG #-DPRINT_HEAP #-DNOLENGTH 
 
@@ -22,6 +23,10 @@ compare: $(OBJ) main.o
 parser: $(OBJ) parser_main.o
 	@echo "Making parser..."
 	$(CC) $(OPT) -o $(PARSER) $(OBJ) parser_main.o
+
+draw_route: droute_draw.cpp
+	@echo "Making droute_draw..."
+	$(CC) droute_draw.cpp -o $(DRAWROUTE) 
 
 all: parser main debug
 	cp ./main ./util/

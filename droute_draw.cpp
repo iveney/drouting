@@ -1,7 +1,9 @@
 // Filename : droute_draw.cpp
-// generate TeX files 
-// read from stdin
-// file format:(e.g.)
+// Use output of CrossRouter (voltage assignments) to generate TeX files 
+// The output is read from stdin.
+// 
+// File format example:
+// --------------------
 // net[0]:20
 //     0: (1,3)
 //     1: (2,3)
@@ -9,8 +11,13 @@
 //     20:(21,3)
 //
 // net[1]:20
+//     0: (4,5)
+//
+// ...
+// -------------------
+//
 // Author : Xiao Zigang
-// Modifed: < Tue Mar 17 10:39:54 HKT 2009 >
+// Modifed: < Sun Jul 11 18:47:00 CST 2010 >
 // ----------------------------------------------------------------//
 
 #include <stdio.h>

@@ -1,6 +1,6 @@
 #!/bin/bash
 # given a droplet routing benchmark name
-# generate a tex file visulizes all the subproblems
+# generate a tex file that visulizes all the subproblems
 # REQUIRE: 
 # 1.parser is in the current directory
 # 2.result_header.tex in the current directory
@@ -13,6 +13,7 @@ for i in `seq 1 $NUM`
 do
 	cat ${1}_p${i}.tex >> "${NAME}.tex"
 done
+
 echo "\\end{document}" >> "${NAME}.tex"
 rm ${NAME}_p*
 
