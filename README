@@ -4,16 +4,16 @@
 
 Makefile
 
+$ make
+to make a release version.
+This will only output the routing result.
+
 $ make debug
 to make a debug version.
 This will output detail information and generate TeX files that can be visulized
 * these two files must be in the run directory
   - result_footer.tex
   - result_header.tex
-
-$ make release
-to make a release version.
-This will only output the routing result.
 
 $ make parser
 Genearte corresponding TeX source that visualizes the benchmark.
