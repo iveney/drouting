@@ -58,7 +58,7 @@ Router::~Router(){
 void Router::read_file(int argc, char * argv[]){
 	FILE * f;
 	// now only allows to solve a given subproblem
-	if(argc<2) report_exit("Usage: CrossRouter filename [subproblem id]");
+	if(argc<2) report_exit("Usage: \n$ ./router filename [subproblem id]");
 
 	//const char * filename = argv[1];
 	filename = string(argv[1]);

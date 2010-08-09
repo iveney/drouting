@@ -7,8 +7,9 @@ BIN=main
 DBG=debug
 PARSER=parser
 DRAWROUTE=droute_draw
-OPT=-Wall -O3
-DBGOPT=-Wall -O3 -g -DDEBUG #-DPRINT_HEAP #-DNOLENGTH 
+DBGOPT=-Wall -g -DDEBUG #-DPRINT_HEAP #-DNOLENGTH 
+#OPTFLAGS=-march=pentium4
+OPT=-Wall -O2 $(OPTFLAGS)
 
 main: $(OBJ) main.o tags
 	@echo "Making main..."
